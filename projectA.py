@@ -18,7 +18,7 @@ def main():
 def moves(boardState):
     print(len(boardState.whiteAvailableMoves))
     print(len(boardState.blackAvailableMoves))
-    pass
+    return
 
 def massacre():
     pass
