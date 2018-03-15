@@ -1,7 +1,7 @@
 import constant
 
 class Board(object):
-
+    #initialise the class
     def __init__(self):
         # define the board state
 
@@ -95,4 +95,13 @@ class Board(object):
                 print("{} ".format(self.boardState[row][col]),end = '')
             print('\n',end = '');
 
-
+    # get the position of each piece on the board
+    def getPiecePos(self):
+        # iterate through the boardState and check for pieces, then append to list
+        for row in range(constant.BOARD_SIZE):
+            for col in range(constant.BOARD_SIZE):
+                if self.boardState[row][col] == constant.WHITE_PIECE:
+                    self.whitePos.append((col,row));
+                elif self.boardState[row][col] == constant.BLACK_PIECE:
+                    self.blackPos.append((col,row));
+        return;
