@@ -1,0 +1,8 @@
+# GLOBAL VARIABLES
+BOARD_SIZE = 8;
+# space types
+FREE_SPACE = '-';
+CORNER_PIECE = 'X';
+WHITE_PIECE = 'O';
+BLACK_PIECE = '@';
+INVALID_SPACE = '.';
