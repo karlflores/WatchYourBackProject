@@ -1,7 +1,9 @@
 import constant
 
+
 class Board(object):
-    #initialise the class
+
+    # initialise the class
     def __init__(self):
         # define the board state
 
@@ -9,33 +11,33 @@ class Board(object):
         self.boardState = []
 
         # list to hold what previous moves have been made on the board so far
-        self.history = [];
+        self.history = []
 
         # list containing the current positions on the board
-        self.whitePos = [];
-        self.blackPos = [];
+        self.whitePos = []
+        self.blackPos = []
 
         # list containing the different available moves for both white
         # and black pieces they have available on the board
-        self.whiteAvailableMoves = [];
-        self.blackAvailableMoves = [];
+        self.whiteAvailableMoves = []
+        self.blackAvailableMoves = []
 
         # phase of the game
         # 0 - placing phase
         # 1 - moving phase
-        self.phase = 0;
+        self.phase = 0
 
         # move counter
-        self.counter = 0;
+        self.counter = 0
 
     def readInitialBoardState(self):
 
         # read 8 lines of std in to fulfill the board
 
         for i in range(constant.BOARD_SIZE):
-            temp = input().strip('\n').split(' ');
-            self.boardState.append(temp);
-        return;
+            temp = input().strip('\n').split(' ')
+            self.boardState.append(temp)
+        return
 
     # update the board state
     def updateBoardState(self,board,piecePosFrom,moveType):
@@ -43,7 +45,7 @@ class Board(object):
 
     # update the phase marker of the board
     def updatePhase(self,phase):
-        if(phase>=1):
+        if phase>=1:
             # return error value
             return 1
 
@@ -52,7 +54,27 @@ class Board(object):
         return 0
 
     def isLegalMove(self,piecePos,moveType):
-        pass
+
+        # get the new position from moveType
+        oldCol,oldRow = piecePos;
+        newCol,newRow = self.convertMoveTypeToCoord(piecePos,moveType);
+
+        # check if the piecePos is actually a piece, if not return false
+        if self.boardState[oldRow][oldCol] not in (constant.WHITE_PIECE,constant.BLACK_PIECE):
+            return False
+        # need to test if the newCol, newRow are in the boundaries of the board
+        if newCol < 0 or newCol > constant.BOARD_SIZE - 1:
+            return False
+        if newRow < 0 or newRow > constant.BOARD_SIZE - 1:
+            return False
+
+        # now need to test whether the new position on board is an free space on the board
+        # if not, it is an invalid position, therefore cannot move to it then return false ;
+        if self.boardState[newRow][newCol] == constant.FREE_SPACE:
+            return True
+        else:
+
+            return False
 
     def convertMoveTypeToCoord(self,piecePos,moveType):
         # piece pos is in the form of a tuple (col,row)
@@ -61,39 +83,37 @@ class Board(object):
         # 1 - down 1 space
         # 2 - right 1 space
         # 3 - top 1 spaces
-
         # 4 - left 2 spaces
         # 5 - down 2 spaces
         # 6 - right 2 spaces
         # 7 - top 2 spaces
 
         # convert the tuple to row, col variable
-
         rowPiecePos,colPiecePos = piecePos;
 
         # do the conversion -- this function does not handle
         if moveType == 0:
-            return rowPiecePos,colPiecePos + 1;
+            return rowPiecePos,colPiecePos + 1
         elif moveType == 1:
-            return rowPiecePos + 1, colPiecePos;
+            return rowPiecePos + 1, colPiecePos
         elif moveType == 2:
-            return rowPiecePos, colPiecePos - 1;
+            return rowPiecePos, colPiecePos - 1
         elif moveType == 3:
-            return rowPiecePos - 1, colPiecePos;
+            return rowPiecePos - 1, colPiecePos
         elif moveType == 4:
-            return rowPiecePos, colPiecePos + 2;
+            return rowPiecePos, colPiecePos + 2
         elif moveType == 5:
-            return rowPiecePos + 2, colPiecePos;
+            return rowPiecePos + 2, colPiecePos
         elif moveType == 6:
-            return rowPiecePos, colPiecePos - 2;
+            return rowPiecePos, colPiecePos - 2
         elif moveType == 7:
-            return rowPiecePos - 2, colPiecePos;
+            return rowPiecePos - 2, colPiecePos
 
     def printBoard(self):
         for row in range(constant.BOARD_SIZE):
             for col in range(constant.BOARD_SIZE):
                 print("{} ".format(self.boardState[row][col]),end = '')
-            print('\n',end = '');
+            print('\n',end = '')
 
     # get the position of each piece on the board
     def getPiecePos(self):
@@ -101,7 +121,7 @@ class Board(object):
         for row in range(constant.BOARD_SIZE):
             for col in range(constant.BOARD_SIZE):
                 if self.boardState[row][col] == constant.WHITE_PIECE:
-                    self.whitePos.append((col,row));
+                    self.whitePos.append((col,row))
                 elif self.boardState[row][col] == constant.BLACK_PIECE:
-                    self.blackPos.append((col,row));
-        return;
+                    self.blackPos.append((col,row))
+        return
