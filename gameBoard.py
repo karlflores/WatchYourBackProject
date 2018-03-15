@@ -1,3 +1,27 @@
+'''
+BOARD GAME CLASS -- INCLUDES ALL THE MECHANICS FOR THE GAME
+
+PARAMETERS:
+    boardState
+    history
+    whitePos
+    blackPos
+    whiteAvailableMoves
+    blackAvailableMoves
+    phase
+    counter
+
+METHODS:
+    readInitalBoardState()
+    updateBoardState(piecePos,moveType
+    updatePhase(phase)
+    isLegalMove(piecePos,moveType)
+    convertMoveTypeToCoords(piecePos,moveType)
+    printBoard()
+    getPiecePos()
+    updateAvailableMoves()
+
+'''
 import constant
 
 
@@ -57,7 +81,7 @@ class Board(object):
 
         # get the new position from moveType
         oldCol,oldRow = piecePos;
-        newCol,newRow = self.convertMoveTypeToCoord(piecePos,moveType);
+        newCol,newRow = self.convertMoveTypeToCoord(piecePos,moveType)
 
         # check if the piecePos is actually a piece, if not return false
         if self.boardState[oldRow][oldCol] not in (constant.WHITE_PIECE,constant.BLACK_PIECE):
@@ -70,11 +94,27 @@ class Board(object):
 
         # now need to test whether the new position on board is an free space on the board
         # if not, it is an invalid position, therefore cannot move to it then return false ;
-        if self.boardState[newRow][newCol] == constant.FREE_SPACE:
-            return True
-        else:
 
-            return False
+        # first test one space moves
+        if moveType <4 and moveType >=0:
+            if self.boardState[newRow][newCol] == constant.FREE_SPACE:
+                return True
+            else:
+                return False
+        # test two step moves
+        elif moveType >=4 and moveType <8:
+            # need to test if the intermediate space is a player piece -- if true
+            # return true
+            # the relationship between one spaxe moveTypes and two space moveTypes is a difference of 4
+
+            # get the one space position based on the moveType entered
+            interPosCol,interPosRow = self.convertMoveTypeToCoord(piecePos,moveType-4)
+            if self.boardState[interPosRow][interPosCol] in (constant.WHITE_PIECE,constant.BLACK_PIECE):
+                return True
+            else:
+                return False
+
+
 
     def convertMoveTypeToCoord(self,piecePos,moveType):
         # piece pos is in the form of a tuple (col,row)
@@ -89,31 +129,34 @@ class Board(object):
         # 7 - top 2 spaces
 
         # convert the tuple to row, col variable
-        rowPiecePos,colPiecePos = piecePos;
+        colPiecePos,rowPiecePos = piecePos;
 
         # do the conversion -- this function does not handle
         if moveType == 0:
-            return rowPiecePos,colPiecePos + 1
+            return colPiecePos + 1, rowPiecePos
         elif moveType == 1:
-            return rowPiecePos + 1, colPiecePos
+            return colPiecePos, rowPiecePos + 1
         elif moveType == 2:
-            return rowPiecePos, colPiecePos - 1
+            return colPiecePos - 1, rowPiecePos
         elif moveType == 3:
-            return rowPiecePos - 1, colPiecePos
+            return colPiecePos, rowPiecePos - 1
         elif moveType == 4:
-            return rowPiecePos, colPiecePos + 2
+            return colPiecePos + 2, rowPiecePos
         elif moveType == 5:
-            return rowPiecePos + 2, colPiecePos
+            return colPiecePos, rowPiecePos + 2
         elif moveType == 6:
-            return rowPiecePos, colPiecePos - 2
+            return colPiecePos - 2, rowPiecePos
         elif moveType == 7:
-            return rowPiecePos - 2, colPiecePos
+            return colPiecePos, rowPiecePos - 2
 
     def printBoard(self):
+        # iterate through the array representing the boardState and
+        # print each element
         for row in range(constant.BOARD_SIZE):
             for col in range(constant.BOARD_SIZE):
                 print("{} ".format(self.boardState[row][col]),end = '')
             print('\n',end = '')
+        return
 
     # get the position of each piece on the board
     def getPiecePos(self):
@@ -125,3 +168,23 @@ class Board(object):
                 elif self.boardState[row][col] == constant.BLACK_PIECE:
                     self.blackPos.append((col,row))
         return
+
+    # update the available moves based on the current positions of pieces on the board
+    def updateAvailableMoves(self):
+        # update the white piece available positions
+        for piecePos in self.whitePos:
+            for moveType in range(constant.MAX_MOVETYPE):
+                if self.isLegalMove(piecePos,moveType):
+                    # append to available moves if moveType is legal -- this is in the form of
+                    # a tuple (piecePos,newPos)
+                    # both piecePos and newPos are tuples
+                    self.whiteAvailableMoves.append((piecePos,self.convertMoveTypeToCoord(piecePos,moveType)))
+
+        # update the black piece available positions
+        for piecePos in self.blackPos:
+            for moveType in range(constant.MAX_MOVETYPE):
+                if self.isLegalMove(piecePos,moveType):
+                    # append to available moves if moveType is legal -- this is in the form of
+                    # a tuple (piecePos,newPos)
+                    # both piecePos and newPos are tuples
+                    self.blackAvailableMoves.append((piecePos,self.convertMoveTypeToCoord(piecePos,moveType)))
