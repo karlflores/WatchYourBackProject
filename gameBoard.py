@@ -13,7 +13,7 @@ PARAMETERS:
 
 METHODS:
     readInitalBoardState()
-    updateBoardState(piecePos,moveType
+    updateBoardState(piecePos,moveType)
     updatePhase(phase)
     isLegalMove(piecePos,moveType)
     convertMoveTypeToCoords(piecePos,moveType)
@@ -49,7 +49,7 @@ class Board(object):
         # phase of the game
         # 0 - placing phase
         # 1 - moving phase
-        self.phase = 0
+        self.phase = constant.PLACEMENT_PHASE
 
         # move counter
         self.counter = 0
@@ -61,11 +61,32 @@ class Board(object):
         for i in range(constant.BOARD_SIZE):
             temp = input().strip('\n').split(' ')
             self.boardState.append(temp)
+
+        # update the position of the pieces and its available moves
+        self.getPiecePos()
+        self.updateAvailableMoves()
         return
 
     # update the board state
-    def updateBoardState(self,board,piecePosFrom,moveType):
-        self.boardState = board;
+    def updateBoardState(self,piecePos,moveType):
+        # update the position on the board and check whether a piece/pieces are to be eliminated
+
+        # move the piece -- get the piecetype, update to free space
+        fromPosCol,fromPosRow = piecePos
+        toPosCol,toPosRow = self.convertMoveTypeToCoord(piecePos,moveType)
+
+        pieceType = self.boardState[fromPosRow][fromPosCol]
+        self.boardState[fromPosRow][fromPosCol] = constant.FREE_SPACE
+
+        # update the 'to' location with the old piecetype, only if the move is valid
+        if self.isLegalMove(piecePos,moveType):
+            self.boardState[toPosRow][toPosCol] = pieceType
+        else:
+            # return False -- error value, if the move is not valid, i.e a move has not been made
+            return False
+
+        # check nearby locations if a black/black pieces exist -- then check if these pieces
+        # have been eliminated by the move that has been made
 
     # update the phase marker of the board
     def updatePhase(self,phase):
