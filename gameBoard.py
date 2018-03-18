@@ -109,18 +109,20 @@ class Board(object):
         self.piecePos[pieceType].remove(piecePos)
         self.piecePos[pieceType].append((toPosCol,toPosRow))
 
-        #check for eliminations at this new move
-        if self.checkElimination(piecePos,pieceType,oppPieceType) is not None:
-            # if a piece is found to be eliminated remove it from the dict
-            for piece in self.checkElimination(piecePos):
-                for key in self.piecePos:
-                    if piece in self.piecePos[pieceType]:
-                        # remove from dict
-                        self.piecePos[pieceType].remove(piece)
+        #check for eliminations at this new move - run twice on the same piece to simulate two piece elimination
+        # if only one piece elimination, the second time checkElimination runs, it should return None
+        for i in range(2):
+            if self.checkElimination(piecePos,pieceType,oppPieceType) is not None:
+                # if a piece is found to be eliminated remove it from the dict
+                for piece in self.checkElimination(piecePos):
+                    for key in self.piecePos:
+                        if piece in self.piecePos[pieceType]:
+                            # remove from dict
+                            self.piecePos[pieceType].remove(piece)
 
-                        # replace with free space on board
-                        removePosCol,removePosRow = piece
-                        self.boardState[removePosRow][removePosCol] = constant.FREE_SPACE
+                            # replace with free space on board
+                            removePosCol,removePosRow = piece
+                            self.boardState[removePosRow][removePosCol] = constant.FREE_SPACE
 
         # recalculate all the moves
         self.updateAvailableMoves()
@@ -271,7 +273,7 @@ class Board(object):
         # check through the two piece eliminations first then check through the one piece eliminations then self eliminations
         if self.checkTwoSpaceElmination(piecePos,pieceType,oppPieceType) is not None:
             return self.checkTwoSpaceElmination(piecePos,pieceType,oppPieceType)
-        elif self.checkOneSpaceElimination(piecePos,pieceType,oppPieceType) is not None:
+        if self.checkOneSpaceElimination(piecePos,pieceType,oppPieceType) is not None:
             return [self.checkOneSpaceElimination(piecePos,pieceType,oppPieceType)]
         elif self.checkSelfElimination(piecePos,pieceType,oppPieceType) is not None:
             return [self.checkSelfElimination(piecePos,pieceType,oppPieceType)]
@@ -460,6 +462,7 @@ class Board(object):
         if piecePos in ((0,0),(0,constant.BOARD_SIZE-1),(constant.BOARD_SIZE-1,0),(constant.BOARD_SIZE-1,constant.BOARD_SIZE-1)):
             return None
         # TODO - NEED TO COMPLETE THIS FUNCTION -- work out the boundaries of this checker
+        # FOR TWO PIECE ELIMINATION JUST NEED TO RUN ONE PIECE ELIMINATION TWICE< BUT NEED TO REMOVE THE FIRST INSTANCE SUCH THAT IT DOES NOT RETURN THE SAME THING
     def checkSelfElimination(self,piecePos,pieceType,oppPieceType):
         #update piecePos from tuple to posRow and posCol
         posCol,posRow = piecePos
