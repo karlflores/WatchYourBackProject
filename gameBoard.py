@@ -41,10 +41,15 @@ class Board(object):
         self.whitePos = []
         self.blackPos = []
 
+        #TODO -- need to change this later on, need to change all methods use this dict instead of two seperate lists
+        self.piecePos = {constant.BLACK_PIECE: [],constant.WHITE_PIECE: []}
         # list containing the different available moves for both white
         # and black pieces they have available on the board
         self.whiteAvailableMoves = []
         self.blackAvailableMoves = []
+
+        #TODO -- need to change this later on, need to change all methods use this dict instead of two seperate lists
+        self.availableMoves = {constant.BLACK_PIECE: [], constant.WHITE_PIECE: []}
 
         # phase of the game
         # 0 - placing phase
@@ -65,18 +70,25 @@ class Board(object):
         # update the position of the pieces and its available moves
         self.getPiecePos()
         self.updateAvailableMoves()
+
+
         return
 
     # update the board state
     def updateBoardState(self,piecePos,moveType):
         # update the position on the board and check whether a piece/pieces are to be eliminated
 
-        # move the piece -- get the piecetype, update to free space
+        # move the piece -- get the piecetype and the oppositePiecetype, update to free space
         fromPosCol,fromPosRow = piecePos
         toPosCol,toPosRow = self.convertMoveTypeToCoord(piecePos,moveType)
 
         pieceType = self.boardState[fromPosRow][fromPosCol]
         self.boardState[fromPosRow][fromPosCol] = constant.FREE_SPACE
+
+        if pieceType == constant.WHITE_PIECE:
+            oppPieceType = constant.BLACK_PIECE
+        else:
+            oppPieceType = constant.WHITE_PIECE
 
         # update the 'to' location with the old piecetype, only if the move is valid
         if self.isLegalMove(piecePos,moveType):
@@ -85,7 +97,35 @@ class Board(object):
             # return False -- error value, if the move is not valid, i.e a move has not been made
             return False
 
-        # check nearby locations if a black/black pieces exist -- then check if these pieces
+        # remove position from the list, and append its new position
+        if pieceType == constant.WHITE_PIECE:
+            self.whitePos.remove(piecePos)
+            self.whitePos.append((toPosCol,toPosRow))
+        elif:
+            self.blackPos.remove(piecePos)
+            self.blackPos.remove((toPosCol,toPosRow))
+
+        # update pos dict
+        self.piecePos[pieceType].remove(piecePos)
+        self.piecePos[pieceType].append((toPosCol,toPosRow))
+
+        #check for eliminations at this new move
+        if self.checkElimination(piecePos,pieceType,oppPieceType) is not None:
+            # if a piece is found to be eliminated remove it from the dict
+            for piece in self.checkElimination(piecePos):
+                for key in self.piecePos:
+                    if piece in self.piecePos[pieceType]:
+                        # remove from dict
+                        self.piecePos[pieceType].remove(piece)
+
+                        # replace with free space on board
+                        removePosCol,removePosRow = piece
+                        self.boardState[removePosRow][removePosCol] = constant.FREE_SPACE
+
+        # recalculate all the moves
+        self.updateAvailableMoves()
+
+        # check nearby locations if a white/black pieces exist -- then check if these pieces
         # have been eliminated by the move that has been made
 
     # update the phase marker of the board
@@ -184,6 +224,10 @@ class Board(object):
         # iterate through the boardState and check for pieces, then append to list
         for row in range(constant.BOARD_SIZE):
             for col in range(constant.BOARD_SIZE):
+                #update the dictionaries of the piece positions
+                self.piecePos[self.boardState[row][col]].append((col,row))
+
+                #update the position lists
                 if self.boardState[row][col] == constant.WHITE_PIECE:
                     self.whitePos.append((col,row))
                 elif self.boardState[row][col] == constant.BLACK_PIECE:
@@ -201,6 +245,7 @@ class Board(object):
                     # both piecePos and newPos are tuples
                     self.whiteAvailableMoves.append((piecePos,self.convertMoveTypeToCoord(piecePos,moveType)))
 
+
         # update the black piece available positions
         for piecePos in self.blackPos:
             for moveType in range(constant.MAX_MOVETYPE):
@@ -209,3 +254,245 @@ class Board(object):
                     # a tuple (piecePos,newPos)
                     # both piecePos and newPos are tuples
                     self.blackAvailableMoves.append((piecePos,self.convertMoveTypeToCoord(piecePos,moveType)))
+
+        # update the dict for piece positions
+        for key in self.piecePos.keys():
+            for piecePos in self.piecePos[key]:
+                for moveType in range(constant.MAX_MOVETYPE):
+                    if self.isLegalMove(piecePos,moveType):
+                        self.availableMoves[key].append(piecePos,self.convertMoveTypeToCoord(piecePos,moveType))
+
+
+    def checkElimination(self,piecePos,pieceType,oppPieceType):
+        # returns the piece to be eliminated from the board, if there is no piece that is going
+        # if there is no piece that is eliminated it returns NULL
+        # need to check if the current piece is placed in a position where itself is eliminated
+
+        # check through the two piece eliminations first then check through the one piece eliminations then self eliminations
+        if self.checkTwoSpaceElmination(piecePos,pieceType,oppPieceType) is not None:
+            return self.checkTwoSpaceElmination(piecePos,pieceType,oppPieceType)
+        elif self.checkOneSpaceElimination(piecePos,pieceType,oppPieceType) is not None:
+            return [self.checkOneSpaceElimination(piecePos,pieceType,oppPieceType)]
+        elif self.checkSelfElimination(piecePos,pieceType,oppPieceType) is not None:
+            return [self.checkSelfElimination(piecePos,pieceType,oppPieceType)]
+
+    # checkElimination helper methods
+
+    def checkOneSpaceElimination(self,piecePos,pieceType,oppPieceType):
+        # update piecePos from tuple to posRow and posCol
+        posCol, posRow = piecePos
+
+        #create a tuple containing the pieceType and also the corner piece, since the corner piece acts as pieceType
+        pieceType_tup =(pieceType,constant.CORNER_PIECE)
+        pieceType = pieceType_tup
+
+        # check if two spaces from the current position of the board are in the coordinate space of the board
+        if posCol -2 >=0 and posCol +2 <= constant.BOARD_SIZE-1 and posRow -2 >= 0 and posRow +2 <= constant.BOARD_SIZE-1:
+        # can check every configuration
+            if self.boardState[posRow+2][posCol] in pieceType and self.boardState[posRow+1][posCol] == oppPieceType:
+                return posCol,posRow+1
+            elif self.boardState[posRow-2][posCol] in pieceType and self.boardState[posRow-1][posCol] == oppPieceType:
+                return posCol,posRow-1
+            elif self.boardState[posRow][posCol-2] in pieceType and self.boardState[posRow][posCol-1] == oppPieceType:
+                return posCol-2,posRow
+            elif self.boardState[posRow][posCol+2] in pieceType and self.boardState[posRow][posCol+1] == oppPieceType:
+                return posCol+1,posRow
+            else:
+                return None
+
+        elif posRow == 1:
+            # if the two piece away position is outside the board coordinates can only check
+            if posCol == 1:
+                if self.boardState[posRow][posCol+2] in pieceType and self.boardState[posRow][posCol+1] == oppPieceType:
+                    return posCol+1,posRow
+                elif self.boardState[posRow+2][posCol] in pieceType and self.boardState[posRow+1][posCol] == oppPieceType:
+                    return posCol,posRow+1
+                else:
+                    return None
+            if posCol == constant.BOARD_SIZE -2:
+                if self.boardState[posRow][posCol-2] in pieceType and self.boardState[posRow][posCol-1] == oppPieceType:
+                    return posCol-1,posRow
+                elif self.boardState[posRow+2][posCol] in pieceType and self.boardState[posRow+1][posCol] == oppPieceType:
+                    return posCol,posRow+1
+                else:
+                    return None
+            # if the piece is placed in the top row and not at the corners -- can check both vertical and horizontal
+            else:
+                # can check every configuration except if there are two pieces above the current piece
+                if self.boardState[posRow+2][posCol] in pieceType and self.boardState[posRow+1][posCol] == oppPieceType:
+                    return posCol,posRow+1
+                elif self.boardState[posRow][posCol-2] in pieceType and self.boardState[posRow][posCol-1] == oppPieceType:
+                    return posCol-1,posRow
+                elif self.boardState[posRow][posCol+2] in pieceType and self.boardState[posRow][posCol+1] == oppPieceType:
+                    return posCol+1,posRow
+                else:
+                    return None
+
+
+        elif posRow == constant.BOARD_SIZE -2:
+            if posCol == 1:
+                if self.boardState[posRow][posCol+2] in pieceType and self.boardState[posRow][posCol+1] == oppPieceType:
+                    return posCol+1,posRow
+                elif self.boardState[posRow-2][posCol] in pieceType and self.boardState[posRow-1][posCol] == oppPieceType:
+                    return posCol,posRow-1
+                else:
+                    return None
+            if posCol == constant.BOARD_SIZE -2:
+                if self.boardState[posRow][posCol-2] in pieceType and self.boardState[posRow][posCol-1] == oppPieceType:
+                    return posCol-1,posRow
+                elif self.boardState[posRow-2][posCol] in pieceType and self.boardState[posRow-1][posCol] == oppPieceType:
+                    return posCol,posRow-1
+                else:
+                    return None
+            # if the piece is placed in the top row and not at the corners -- can check both vertical and horizontal
+            else:
+                # can check every configuration except if there are two pieces above the current piece
+                if self.boardState[posRow-2][posCol] in pieceType and self.boardState[posRow-1][posCol] == oppPieceType:
+                    return posCol,posRow-1
+                elif self.boardState[posRow][posCol-2] in pieceType and self.boardState[posRow][posCol-1] == oppPieceType:
+                    return posCol-1,posRow
+                elif self.boardState[posRow][posCol+2] in pieceType and self.boardState[posRow][posCol+1] == oppPieceType:
+                    return posCol+1,posRow
+                else:
+                    return None
+
+        elif posCol == 1:
+            # if the two piece away position is outside the board coordinates can only check
+            # can check every configuration except if there are two pieces above the current piece
+            if self.boardState[posRow + 2][posCol] in pieceType and self.boardState[posRow + 1][posCol] == oppPieceType:
+                return posCol,posRow+1
+            elif self.boardState[posRow - 2][posCol] in pieceType and self.boardState[posRow][posCol - 1] == oppPieceType:
+                return posCol-1,posRow
+            elif self.boardState[posRow][posCol + 2] in pieceType and self.boardState[posRow][posCol + 1] == oppPieceType:
+                return posCol+1,posRow
+            else:
+                return None
+        elif posCol == constant.BOARD_SIZE -2:
+            if self.boardState[posRow + 2][posCol] in pieceType and self.boardState[posRow + 1][posCol] == oppPieceType:
+                return posCol,posRow+1
+            elif self.boardState[posRow - 2][posCol] in pieceType and self.boardState[posRow - 1][posCol] == oppPieceType:
+                return posCol,posRow-1
+            elif self.boardState[posRow][posCol - 2] in pieceType and self.boardState[posRow][posCol - 1] == oppPieceType:
+                return posCol-1,posRow
+            else:
+                return None
+        elif posRow == 0:
+            # a piece can't be placed in the corner positions therefore do not need to check these positions -- therefore return none
+            if posCol == 0 or posCol == constant.BOARD_SIZE-1:
+                return None
+            elif posCol == 1:
+                # don't need to check to the right because if a opposition piece is here, this piece is eliminated
+                # just check down
+                if self.boardState[posRow+2][posCol] in pieceType and self.boardState[posRow+1][posCol] == oppPieceType:
+                    return posCol,posRow+1
+                else:
+                    return None
+
+            elif posCol == constant.BOARD_SIZE-1:
+                if self.boardState[posRow][posCol+2] in pieceType and self.boardState[posRow][posCol+1] == oppPieceType:
+                    return posCol+1, posRow
+                else:
+                    return None
+            else:
+                # can check down, left and right for eliminated pieces
+                if self.boardState[posRow+2][posCol] in pieceType and self.boardState[posRow+1][posCol] == oppPieceType:
+                    return posCol,posRow+1
+                elif self.boardState[posRow][posCol-2] in pieceType and self.boardState[posRow][posCol -1] == oppPieceType:
+                    return  posCol-1,posRow
+                elif self.boardState[posRow][posCol+2] in pieceType and self.boardState[posRow][posCol+1] == oppPieceType:
+                    return posCol+1,posRow
+                else:
+                    return None
+
+                # if the piece is placed in the top row and not at the corners -- can check both vertical and horizontal
+        elif posRow == constant.BOARD_SIZE -1:
+         # a piece can't be placed in the corner positions therefore do not need to check these positions -- therefore return none
+            if posCol == 0 or posCol == constant.BOARD_SIZE-1:
+                return None
+            # check if a piece is placed next to an opponent piece, but the next piece to that is the current player's piece
+            elif posCol == 1:
+                if self.boardState[posRow][posCol-2] in pieceType and self.boardState[posRow][posCol-1] == oppPieceType:
+                    return posCol-1,posRow
+                else:
+                    return None
+            elif posCol == constant.BOARD_SIZE-1:
+                if self.boardState[posRow - 2][posCol] in pieceType and self.boardState[posRow - 1][posCol] == oppPieceType:
+                    return posCol, posRow - 1
+                else:
+                    return None
+            else:
+                # can check up, left and right for eliminated pieces
+                if self.boardState[posRow-2][posCol] in pieceType and self.boardState[posRow-1][posCol] == oppPieceType:
+                    return posCol,posRow-1
+                elif self.boardState[posRow][posCol-2] in pieceType and self.boardState[posRow][posCol -1] == oppPieceType:
+                    return posCol-1,posRow
+                elif self.boardState[posRow][posCol+2] in pieceType and self.boardState[posRow][posCol+1] == oppPieceType:
+                    return posCol+1,posRow
+                else:
+                    return None
+        elif posCol == 0:
+            # no need to check corner pieces and next to corner piece since it has been handled by earlier cases
+            # just need to check right up and down
+            if self.boardState[posRow - 2][posCol] in pieceType and self.boardState[posRow - 1][posCol] == oppPieceType:
+                return posCol,posRow-1
+            elif self.boardState[posRow + 2][posCol] in pieceType and self.boardState[posRow + 1][posCol] == oppPieceType:
+                return posCol,posRow+1
+            elif self.boardState[posRow][posCol+2] in pieceType and self.boardState[posRow][posCol+1] == oppPieceType:
+                return posCol+1,posRow
+            else:
+                return None
+        elif posCol == constant.BOARD_SIZE -1:
+            # no need to check corner pieces and next to corner piece since it has been handled by earlier cases
+            # just need to check left up and down
+            if self.boardState[posRow - 2][posCol] in pieceType and self.boardState[posRow - 1][posCol] == oppPieceType:
+                return posCol,posRow-1
+            elif self.boardState[posRow + 2][posCol] in pieceType and self.boardState[posRow + 1][posCol] == oppPieceType:
+                return posCol,posRow+1
+            elif self.boardState[posRow][posCol - 2] in pieceType and self.boardState[posRow][posCol - 1] == oppPieceType:
+                return posCol-1,posRow;
+            else:
+                return None
+
+    def checkTwoSpaceElmination(self,piecePos,pieceType,oppPieceType):
+        # convert piecePos to row and col
+        posCol,posRow = piecePos
+
+        if piecePos in ((0,0),(0,constant.BOARD_SIZE-1),(constant.BOARD_SIZE-1,0),(constant.BOARD_SIZE-1,constant.BOARD_SIZE-1)):
+            return None
+        # TODO - NEED TO COMPLETE THIS FUNCTION -- work out the boundaries of this checker
+    def checkSelfElimination(self,piecePos,pieceType,oppPieceType):
+        #update piecePos from tuple to posRow and posCol
+        posCol,posRow = piecePos
+
+        #update the opponent piece to be either a tuple of corner piece or the actual opponent piece
+        oppPieceType_tup = (oppPieceType,constant.CORNER_PIECE)
+        oppPieceType = oppPieceType_tup
+
+        # FORM: X
+        #       O
+        #       X
+        # if the position of the pieces next to the current piece is between the bounds of the board:
+        if posCol -1 >=0 and posCol +1 <= constant.BOARD_SIZE-1 and posRow -1 >= 0 and posRow +1 <= constant.BOARD_SIZE-1:
+            if self.boardState[posRow - 1][posCol] in oppPieceType and self.boardState[posRow + 1][posCol] in oppPieceType:
+                return piecePos
+
+        # FORM: XOX
+            elif self.boardState[posRow][posCol-1] in oppPieceType and self.boardState[posRow][posCol+1] in oppPieceType:
+                return piecePos
+
+        elif posCol - 1 < 0 or posCol +1 > constant.BOARD_SIZE-1:
+            # can only check the vertical format
+            if self.boardState[posRow -1][posCol] in oppPieceType and self.boardState[posRow +1][posCol] in oppPieceType:
+                return piecePos
+
+        elif posRow -1 < 0 or posRow +1 > constant.BOARD_SIZE -1:
+            # can only check the horizontal format
+            if self.boardState[posRow][posCol-1] in oppPieceType and self.boardState[posRow][posCol+1] in oppPieceType:
+                return piecePos
+
+        #if the piece is not placed in such a way that it is not eliminated therefore return NOne
+        else:
+            return None
+
+
+
