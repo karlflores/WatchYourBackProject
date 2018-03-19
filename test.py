@@ -73,6 +73,8 @@ print(a.availableMoves)
 print(a.piecePos)
 a.printBoard()
 '''
-
+'''
+TEST CASE two piece elimination -- testBoard5.txt
 a.updateBoardState((3,2),1)
 a.printBoard()
+'''
