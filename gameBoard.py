@@ -41,14 +41,14 @@ class Board(object):
         self.whitePos = []
         self.blackPos = []
 
-        #TODO -- need to change this later on, need to change all methods use this dict instead of two seperate lists
+        #TODO -- need to change this later on, need to change all methods use this dict instead of two separate lists
         self.piecePos = {constant.BLACK_PIECE: [],constant.WHITE_PIECE: []}
         # list containing the different available moves for both white
         # and black pieces they have available on the board
         self.whiteAvailableMoves = []
         self.blackAvailableMoves = []
 
-        #TODO -- need to change this later on, need to change all methods use this dict instead of two seperate lists
+        #TODO -- need to change this later on, need to change all methods use this dict instead of two separate lists
         self.availableMoves = {constant.BLACK_PIECE: [], constant.WHITE_PIECE: []}
 
         # phase of the game
@@ -70,8 +70,6 @@ class Board(object):
         # update the position of the pieces and its available moves
         self.getPiecePos()
         self.updateAvailableMoves()
-
-
         return
 
     # update the board state
@@ -81,54 +79,54 @@ class Board(object):
         # move the piece -- get the piecetype and the oppositePiecetype, update to free space
         fromPosCol,fromPosRow = piecePos
         toPosCol,toPosRow = self.convertMoveTypeToCoord(piecePos,moveType)
-
+        print(toPosCol,toPosRow)
         pieceType = self.boardState[fromPosRow][fromPosCol]
-        self.boardState[fromPosRow][fromPosCol] = constant.FREE_SPACE
 
         if pieceType == constant.WHITE_PIECE:
+            print("white")
             oppPieceType = constant.BLACK_PIECE
         else:
+            print("black")
             oppPieceType = constant.WHITE_PIECE
 
         # update the 'to' location with the old piecetype, only if the move is valid
         if self.isLegalMove(piecePos,moveType):
+            print("legal",piecePos)
             self.boardState[toPosRow][toPosCol] = pieceType
+            self.boardState[fromPosRow][fromPosCol] = constant.FREE_SPACE
         else:
             # return False -- error value, if the move is not valid, i.e a move has not been made
+            print("not legal",piecePos)
             return False
-
-        # remove position from the list, and append its new position
-        if pieceType == constant.WHITE_PIECE:
-            self.whitePos.remove(piecePos)
-            self.whitePos.append((toPosCol,toPosRow))
-        elif:
-            self.blackPos.remove(piecePos)
-            self.blackPos.remove((toPosCol,toPosRow))
 
         # update pos dict
         self.piecePos[pieceType].remove(piecePos)
         self.piecePos[pieceType].append((toPosCol,toPosRow))
 
-        #check for eliminations at this new move - run three on the same piece to simulate three piece elimination
+        # update piecePos to be the new position for elimination checking
+        piecePos = toPosCol,toPosRow
+        # check for eliminations at this new move - run three on the same piece to simulate three piece elimination
         # if only a two piece elimination, it should sequentially eliminate the pieces around it
         # if
-        while self.checkOnePieceElimination(piece,pieceType,oppPieceType) is not None:
-            for piece in self.checkOnePieceElimination(piecePos,pieceType,oppPieceType):
-                for key in self.piecePos.keys():
-                    # want to eliminate the opposition's piece
-                    if piece in self.piecePos[oppPieceType]:
-                        # remove from dict
-                        self.piecePos[oppPieceType].remove(piece)
+        while self.checkOnePieceElimination(piecePos,pieceType,oppPieceType) is not None:
+            piece = self.checkOnePieceElimination(piecePos,pieceType,oppPieceType)
+            # want to eliminate the opposition's piece
+            if piece in self.piecePos[oppPieceType]:
+                # remove from dict
+                self.piecePos[oppPieceType].remove(piece)
 
-                        # replace with free space on board
-                        removePosCol,removePosRow = piece
-                        self.boardState[removePosRow][removePosCol] = constant.FREE_SPACE
+                # replace with free space on board
+                removePosCol,removePosRow = piece
+                self.boardState[removePosRow][removePosCol] = constant.FREE_SPACE
 
-        #check for self eliminations if there is no opponent piece to be eliminated
-        piece = self.checkElimination(piecePos,pieceType,oppPieceType);
+        # check for self eliminations if there is no opponent piece to be eliminated
+        piece = self.checkSelfElimination(piecePos,pieceType,oppPieceType);
+        print(piece)
         if piece is not None:
+            col,row = piece
             # remove if there a piece is self eliminated
             self.piecePos[pieceType].remove(piece);
+            self.boardState[row][col] = constant.FREE_SPACE
         # recalculate all the moves
         self.updateAvailableMoves()
 
@@ -176,10 +174,21 @@ class Board(object):
             # the relationship between one spaxe moveTypes and two space moveTypes is a difference of 4
 
             # get the one space position based on the moveType entered
+            # moveType is related with each other by a constant of 4
+            # one space movements are 4 less than the two space movements
+
             interPosCol,interPosRow = self.convertMoveTypeToCoord(piecePos,moveType-4)
+            # test whether the piece that it is jumping over is a board piece and is not free space
             if self.boardState[interPosRow][interPosCol] in (constant.WHITE_PIECE,constant.BLACK_PIECE):
-                return True
+                # test the place that the piece is moving to
+                if self.boardState[newCol][newRow] == constant.FREE_SPACE:
+                    return True
+                else:
+                    # if place that it is moving to is not free, then return false
+                    return False
             else:
+
+            # if this space is free then you can't jump, therefore return false
                 return False
 
 
@@ -231,61 +240,35 @@ class Board(object):
         # iterate through the boardState and check for pieces, then append to list
         for row in range(constant.BOARD_SIZE):
             for col in range(constant.BOARD_SIZE):
-                #update the dictionaries of the piece positions
-                self.piecePos[self.boardState[row][col]].append((col,row))
+                #get current pieceType
+                pieceType = self.boardState[row][col]
 
-                #update the position lists
-                if self.boardState[row][col] == constant.WHITE_PIECE:
-                    self.whitePos.append((col,row))
-                elif self.boardState[row][col] == constant.BLACK_PIECE:
-                    self.blackPos.append((col,row))
+                #update the dictionary based on the pieceType it finds
+                if pieceType in (constant.BLACK_PIECE,constant.WHITE_PIECE):
+                    self.piecePos[pieceType].append((col,row))
         return
 
     # update the available moves based on the current positions of pieces on the board
     def updateAvailableMoves(self):
-        # update the white piece available positions
-        for piecePos in self.whitePos:
-            for moveType in range(constant.MAX_MOVETYPE):
-                if self.isLegalMove(piecePos,moveType):
-                    # append to available moves if moveType is legal -- this is in the form of
-                    # a tuple (piecePos,newPos)
-                    # both piecePos and newPos are tuples
-                    self.whiteAvailableMoves.append((piecePos,self.convertMoveTypeToCoord(piecePos,moveType)))
-
-
-        # update the black piece available positions
-        for piecePos in self.blackPos:
-            for moveType in range(constant.MAX_MOVETYPE):
-                if self.isLegalMove(piecePos,moveType):
-                    # append to available moves if moveType is legal -- this is in the form of
-                    # a tuple (piecePos,newPos)
-                    # both piecePos and newPos are tuples
-                    self.blackAvailableMoves.append((piecePos,self.convertMoveTypeToCoord(piecePos,moveType)))
-
         # update the dict for piece positions
+        # get the keys of the dict
+
+        newDict = {constant.BLACK_PIECE: [],constant.WHITE_PIECE: []}
+
         for key in self.piecePos.keys():
+            # iterate through each piece position in each position list in the dict
             for piecePos in self.piecePos[key]:
+                # test all movetypes to see if they are legal or not
                 for moveType in range(constant.MAX_MOVETYPE):
                     if self.isLegalMove(piecePos,moveType):
-                        self.availableMoves[key].append(piecePos,self.convertMoveTypeToCoord(piecePos,moveType))
+                        # append all legal moves to the availableMoves dict
+                        newDict[key].append((piecePos,self.convertMoveTypeToCoord(piecePos,moveType)))
 
+        self.availableMoves = newDict
 
-    def checkElimination(self,piecePos,pieceType,oppPieceType):
-        # returns the piece to be eliminated from the board, if there is no piece that is going
-        # if there is no piece that is eliminated it returns NULL
-        # need to check if the current piece is placed in a position where itself is eliminated
-
-        # check through the two piece eliminations first then check through the one piece eliminations then self eliminations
-        if self.checkTwoPieceElmination(piecePos,pieceType,oppPieceType) is not None:
-            return self.checkTwoPieceElmination(piecePos,pieceType,oppPieceType)
-        if self.checkOnePieceElimination(piecePos,pieceType,oppPieceType) is not None:
-            return [self.checkOnePieceElimination(piecePos,pieceType,oppPieceType)]
-        elif self.checkSelfElimination(piecePos,pieceType,oppPieceType) is not None:
-            return [self.checkSelfElimination(piecePos,pieceType,oppPieceType)]
-
-    # checkElimination helper methods
-
+    #elimination checker helper functions  -- for updateBoard method
     def checkOnePieceElimination(self,piecePos,pieceType,oppPieceType):
+
         # update piecePos from tuple to posRow and posCol
         posCol, posRow = piecePos
 
@@ -321,12 +304,10 @@ class Board(object):
         #update piecePos from tuple to posRow and posCol
         posCol,posRow = piecePos
 
-        #update the opponent piece to be either a tuple of corner piece or the actual opponent piece
-        oppPieceType_tup = (oppPieceType,constant.CORNER_PIECE)
-        oppPieceType = oppPieceType_tup
-
         # add the location of the corners to the location list of the opponent piece
         oppPosList = deepcopy(self.piecePos[oppPieceType]);
+        print("oppPosList",oppPosList)
+        print("piecePos",piecePos)
         oppPosList.append((0,0))
         oppPosList.append((0,constant.BOARD_SIZE-1))
         oppPosList.append((constant.BOARD_SIZE-1,0))
@@ -334,10 +315,10 @@ class Board(object):
 
         # now just need to check horizontal and vertical positions to see if they are in the piecePos list
         # horizontal check
-        if (posCol+1,posRow) in oppPosList and (posCol-1,posRow) in oppPosList:
+        if ((posCol+1,posRow) in oppPosList) and ((posCol-1,posRow) in oppPosList):
             return posCol,posRow
         # vertical piece position check for self elimination
-        elif (posCol,posRow+1) in oppPosList and (posCol,posRow-1) in oppPosList:
+        elif ((posCol,posRow+1) in oppPosList) and ((posCol,posRow-1) in oppPosList):
             return posCol,posRow
         else:
             return None

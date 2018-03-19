@@ -1,5 +1,5 @@
 from gameBoard import Board
-
+import constant
 def main():
 
     # create board instance
@@ -15,9 +15,10 @@ def main():
     elif analysisType == 'Massacre':
         massacre()
 
+
 def moves(boardState):
-    print(len(boardState.whiteAvailableMoves))
-    print(len(boardState.blackAvailableMoves))
+    print(len(boardState.availableMoves[constant.WHITE_PIECE]))
+    print(len(boardState.availableMoves[constant.BLACK_PIECE]))
     return
 
 def massacre():
