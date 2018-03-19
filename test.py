@@ -46,7 +46,9 @@ print("test availableMoves and MOVES functionality")
 a.updateAvailableMoves()
 for key in a.availableMoves.keys():
     print(key,len(a.availableMoves[key]))
+'''
 
+THIS IS THE TEST ELIMINATION CASE FOR THE TESTBOARD.TXT 
 a.updateBoardState((5,5),1)
 print(a.piecePos)
 a.printBoard()
@@ -67,4 +69,10 @@ a.printBoard()
 a.updateBoardState((5,5),1)
 a.printBoard()
 a.updateBoardState((6,6),6)
+print(a.availableMoves)
+print(a.piecePos)
+a.printBoard()
+'''
+
+a.updateBoardState((3,2),1)
 a.printBoard()

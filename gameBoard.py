@@ -3,11 +3,8 @@ BOARD GAME CLASS -- INCLUDES ALL THE MECHANICS FOR THE GAME
 
 PARAMETERS:
     boardState
-    history
-    whitePos
-    blackPos
-    whiteAvailableMoves
-    blackAvailableMoves
+    piecePos
+    availableMoves
     phase
     counter
 
@@ -20,6 +17,10 @@ METHODS:
     printBoard()
     getPiecePos()
     updateAvailableMoves()
+
+    # helper methods
+    checkOnePieceEliminations()
+    checkSelfEliminations()
 
 '''
 import constant
@@ -37,18 +38,10 @@ class Board(object):
         # list to hold what previous moves have been made on the board so far
         self.history = []
 
-        # list containing the current positions on the board
-        self.whitePos = []
-        self.blackPos = []
-
-        #TODO -- need to change this later on, need to change all methods use this dict instead of two separate lists
+        # create dictionaries to hold all the available moves and piece positions
+        # on the board
+        # map the board symbol types to the list for easy access
         self.piecePos = {constant.BLACK_PIECE: [],constant.WHITE_PIECE: []}
-        # list containing the different available moves for both white
-        # and black pieces they have available on the board
-        self.whiteAvailableMoves = []
-        self.blackAvailableMoves = []
-
-        #TODO -- need to change this later on, need to change all methods use this dict instead of two separate lists
         self.availableMoves = {constant.BLACK_PIECE: [], constant.WHITE_PIECE: []}
 
         # phase of the game
@@ -79,24 +72,24 @@ class Board(object):
         # move the piece -- get the piecetype and the oppositePiecetype, update to free space
         fromPosCol,fromPosRow = piecePos
         toPosCol,toPosRow = self.convertMoveTypeToCoord(piecePos,moveType)
-        print(toPosCol,toPosRow)
+        # print(toPosCol,toPosRow)
         pieceType = self.boardState[fromPosRow][fromPosCol]
 
         if pieceType == constant.WHITE_PIECE:
-            print("white")
+            # print("white")
             oppPieceType = constant.BLACK_PIECE
         else:
-            print("black")
+            # print("black")
             oppPieceType = constant.WHITE_PIECE
 
         # update the 'to' location with the old piecetype, only if the move is valid
         if self.isLegalMove(piecePos,moveType):
-            print("legal",piecePos)
+            # print("legal",piecePos)
             self.boardState[toPosRow][toPosCol] = pieceType
             self.boardState[fromPosRow][fromPosCol] = constant.FREE_SPACE
         else:
             # return False -- error value, if the move is not valid, i.e a move has not been made
-            print("not legal",piecePos)
+            # print("not legal",piecePos)
             return False
 
         # update pos dict
@@ -121,7 +114,7 @@ class Board(object):
 
         # check for self eliminations if there is no opponent piece to be eliminated
         piece = self.checkSelfElimination(piecePos,pieceType,oppPieceType);
-        print(piece)
+        # print(piece)
         if piece is not None:
             col,row = piece
             # remove if there a piece is self eliminated
@@ -187,8 +180,7 @@ class Board(object):
                     # if place that it is moving to is not free, then return false
                     return False
             else:
-
-            # if this space is free then you can't jump, therefore return false
+                # if this space is free then you can't jump, therefore return false
                 return False
 
 
@@ -199,11 +191,11 @@ class Board(object):
         # 0 - left 1 space
         # 1 - down 1 space
         # 2 - right 1 space
-        # 3 - top 1 spaces
+        # 3 - up 1 spaces
         # 4 - left 2 spaces
         # 5 - down 2 spaces
         # 6 - right 2 spaces
-        # 7 - top 2 spaces
+        # 7 - up 2 spaces
 
         # convert the tuple to row, col variable
         colPiecePos,rowPiecePos = piecePos;
@@ -240,10 +232,10 @@ class Board(object):
         # iterate through the boardState and check for pieces, then append to list
         for row in range(constant.BOARD_SIZE):
             for col in range(constant.BOARD_SIZE):
-                #get current pieceType
+                # get current pieceType
                 pieceType = self.boardState[row][col]
 
-                #update the dictionary based on the pieceType it finds
+                # update the dictionary based on the pieceType it finds
                 if pieceType in (constant.BLACK_PIECE,constant.WHITE_PIECE):
                     self.piecePos[pieceType].append((col,row))
         return
@@ -266,7 +258,10 @@ class Board(object):
 
         self.availableMoves = newDict
 
-    #elimination checker helper functions  -- for updateBoard method
+    # elimination checker helper functions  -- for updateBoard method
+    # checks if a move results in a one piece elimination
+    # can use this method multiple times to check whether a multiple pieces are eliminated
+    # with one move
     def checkOnePieceElimination(self,piecePos,pieceType,oppPieceType):
 
         # update piecePos from tuple to posRow and posCol
@@ -297,17 +292,18 @@ class Board(object):
         elif (posCol,posRow+1) in self.piecePos[oppPieceType] and (posCol,posRow+2) in piecePosList:
             return posCol, posRow+1
         else:
-        # if it does not exist therefore there is no piece to be eliminated
+            # if it does not exist therefore there is no piece to be eliminated
             return None
 
+    # helper method to calculate if a piece is to be self eliminated by its own move
     def checkSelfElimination(self,piecePos,pieceType,oppPieceType):
-        #update piecePos from tuple to posRow and posCol
+        # update piecePos from tuple to posRow and posCol
         posCol,posRow = piecePos
 
         # add the location of the corners to the location list of the opponent piece
         oppPosList = deepcopy(self.piecePos[oppPieceType]);
-        print("oppPosList",oppPosList)
-        print("piecePos",piecePos)
+        # print("oppPosList",oppPosList)
+        # print("piecePos",piecePos)
         oppPosList.append((0,0))
         oppPosList.append((0,constant.BOARD_SIZE-1))
         oppPosList.append((constant.BOARD_SIZE-1,0))
@@ -322,8 +318,3 @@ class Board(object):
             return posCol,posRow
         else:
             return None
-
-
-        # TODO -- NEED TO CREATE A LIST OF CORNER PIECES, then need to check if the input is a corner piece if it
-        # is a corner piece then you need to return None, because you can't eliminate a corner piece/ place a piece on
-        # the corner piece -- this is a failsafe
