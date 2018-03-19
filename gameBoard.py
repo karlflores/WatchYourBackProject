@@ -23,7 +23,7 @@ METHODS:
 
 '''
 import constant
-
+from copy import deepcopy
 
 class Board(object):
 
@@ -271,23 +271,25 @@ class Board(object):
         # need to check if the current piece is placed in a position where itself is eliminated
 
         # check through the two piece eliminations first then check through the one piece eliminations then self eliminations
-        if self.checkTwoSpaceElmination(piecePos,pieceType,oppPieceType) is not None:
-            return self.checkTwoSpaceElmination(piecePos,pieceType,oppPieceType)
-        if self.checkOneSpaceElimination(piecePos,pieceType,oppPieceType) is not None:
-            return [self.checkOneSpaceElimination(piecePos,pieceType,oppPieceType)]
+        if self.checkTwoPieceElmination(piecePos,pieceType,oppPieceType) is not None:
+            return self.checkTwoPieceElmination(piecePos,pieceType,oppPieceType)
+        if self.checkOnePieceElimination(piecePos,pieceType,oppPieceType) is not None:
+            return [self.checkOnePieceElimination(piecePos,pieceType,oppPieceType)]
         elif self.checkSelfElimination(piecePos,pieceType,oppPieceType) is not None:
             return [self.checkSelfElimination(piecePos,pieceType,oppPieceType)]
 
     # checkElimination helper methods
 
-    def checkOneSpaceElimination(self,piecePos,pieceType,oppPieceType):
+    def checkOnePieceElimination(self,piecePos,pieceType,oppPieceType):
         # update piecePos from tuple to posRow and posCol
         posCol, posRow = piecePos
 
+        '''
         #create a tuple containing the pieceType and also the corner piece, since the corner piece acts as pieceType
         pieceType_tup =(pieceType,constant.CORNER_PIECE)
         pieceType = pieceType_tup
-
+        
+        
         # check if two spaces from the current position of the board are in the coordinate space of the board
         if posCol -2 >=0 and posCol +2 <= constant.BOARD_SIZE-1 and posRow -2 >= 0 and posRow +2 <= constant.BOARD_SIZE-1:
         # can check every configuration
@@ -454,15 +456,35 @@ class Board(object):
                 return posCol-1,posRow;
             else:
                 return None
+        '''
 
-    def checkTwoSpaceElmination(self,piecePos,pieceType,oppPieceType):
-        # convert piecePos to row and col
-        posCol,posRow = piecePos
+        # add the location of the corners to the location list of the current players piece position list
+        # create a deep copy of the positions such that you don't alter the original
+        piecePosList = deepcopy(self.piecePos[pieceType]);
+        piecePosList.append((0,0))
+        piecePosList.append((0,constant.BOARD_SIZE-1))
+        piecePosList.append((constant.BOARD_SIZE-1,0))
+        piecePosList.append((constant.BOARD_SIZE-1,constant.BOARD_SIZE-1))
 
-        if piecePos in ((0,0),(0,constant.BOARD_SIZE-1),(constant.BOARD_SIZE-1,0),(constant.BOARD_SIZE-1,constant.BOARD_SIZE-1)):
+        # test all the 4 cases for this type of elimination
+        # don't need to test for negative indicies and positions outside the boundary of the board because there should
+        # be no pieces that are placed in these positions and therefore do not exist in these lists
+
+        # check left
+        if (posCol-1,posRow) in self.piecePos[oppPieceType] and (posCol-2,posRow) in piecePosList:
+            return posCol-1,posRow
+        # check right
+        elif (posCol+1,posRow) in self.piecePos[oppPieceType] and (posCol+2,posRow) in piecePosList:
+            return posCol+1,posRow
+        # check up
+        elif (posCol,posRow-1) in self.piecePos[oppPieceType] and (posCol,posRow-2) in piecePosList:
+            return posCol,posRow-1
+        # check down
+        elif (posCol,posRow+1) in self.piecePos[oppPieceType] and (posCol,posRow+2) in piecePosList:
+            return posCol, posRow+1
+        else:
             return None
-        # TODO - NEED TO COMPLETE THIS FUNCTION -- work out the boundaries of this checker
-        # FOR TWO PIECE ELIMINATION JUST NEED TO RUN ONE PIECE ELIMINATION TWICE< BUT NEED TO REMOVE THE FIRST INSTANCE SUCH THAT IT DOES NOT RETURN THE SAME THING
+
     def checkSelfElimination(self,piecePos,pieceType,oppPieceType):
         #update piecePos from tuple to posRow and posCol
         posCol,posRow = piecePos
@@ -474,6 +496,8 @@ class Board(object):
         # FORM: X
         #       O
         #       X
+
+        '''
         # if the position of the pieces next to the current piece is between the bounds of the board:
         if posCol -1 >=0 and posCol +1 <= constant.BOARD_SIZE-1 and posRow -1 >= 0 and posRow +1 <= constant.BOARD_SIZE-1:
             if self.boardState[posRow - 1][posCol] in oppPieceType and self.boardState[posRow + 1][posCol] in oppPieceType:
@@ -496,6 +520,40 @@ class Board(object):
         #if the piece is not placed in such a way that it is not eliminated therefore return NOne
         else:
             return None
+        
+        try:
+            # test if either the row or column index is < 0 , if it is raise a ValueError
+            if posRow -1 < 0 or powCol -1 <0:
+                raise ValueError
+            # if it tries to index something greater than boardsize-1, it will automatically raise an index error
+            # test horizontal pieces
+            if self.boardState[posRow - 1][posCol] in oppPieceType and self.boardState[posRow + 1][posCol] in oppPieceType:
+                return piecePos
 
+            # test vertical pieces
+            elif self.boardState[posRow][posCol-1] in oppPieceType and self.boardState[posRow][posCol+1] in oppPieceType:
+                return piecePos
+            return None
+        except (ValueError,IndexError):
+            return None
+        '''
+
+        # add the location of the corners to the location list of the opponent piece
+        oppPosList = deepcopy(self.piecePos[oppPieceType]);
+        oppPosList.append((0,0))
+        oppPosList.append((0,constant.BOARD_SIZE-1))
+        oppPosList.append((constant.BOARD_SIZE-1,0))
+        oppPosList.append((constant.BOARD_SIZE-1,constant.BOARD_SIZE-1))
+
+        #
+        # now just need to check horizontal and vertical positions to see if they are in the piecePos list
+        # horizontal check
+        if (posCol+1,posRow) in oppPosList and (posCol-1,posRow) in oppPosList:
+            return posCol,posRow
+        # vertical piece position check for self elimination
+        elif (posCol,posRow+1) in oppPosList and (posCol,posRow-1) in oppPosList:
+            return posCol,posRow
+        else:
+            return None
 
 
