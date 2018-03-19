@@ -254,7 +254,9 @@ class Board(object):
                 for moveType in range(constant.MAX_MOVETYPE):
                     if self.isLegalMove(piecePos,moveType):
                         # append all legal moves to the availableMoves dict
-                        newDict[key].append((piecePos,self.convertMoveTypeToCoord(piecePos,moveType)))
+                        # store in a tup (tup1,moveType) where tup1 is the original piece position before the movetype
+                        # is applied
+                        newDict[key].append((piecePos,moveType))
 
         self.availableMoves = newDict
 

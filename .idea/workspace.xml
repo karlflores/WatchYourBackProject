@@ -3,7 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="634497d3-b076-4d05-8e45-eb7b730f24fb" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change beforePath="$PROJECT_DIR$/test.py" afterPath="$PROJECT_DIR$/test.py" />
+      <change beforePath="$PROJECT_DIR$/gameBoard.py" afterPath="$PROJECT_DIR$/gameBoard.py" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -28,10 +28,10 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="test.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="test.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/test.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="473">
+            <state relative-caret-position="1140">
               <caret line="76" column="49" lean-forward="false" selection-start-line="76" selection-start-column="49" selection-end-line="76" selection-end-column="49" />
               <folding>
                 <element signature="e#0#27#0" expanded="true" />
@@ -40,11 +40,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="gameBoard.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="gameBoard.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/gameBoard.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="4800">
-              <caret line="320" column="0" lean-forward="true" selection-start-line="320" selection-start-column="0" selection-end-line="320" selection-end-column="0" />
+            <state relative-caret-position="163">
+              <caret line="257" column="36" lean-forward="false" selection-start-line="257" selection-start-column="36" selection-end-line="257" selection-end-column="36" />
               <folding>
                 <element signature="e#477#492#0" expanded="true" />
               </folding>
@@ -118,6 +118,7 @@
       <find>checkOneSpace</find>
       <find>checkTwoSpace</find>
       <find>print</find>
+      <find>.availableMoves</find>
     </findStrings>
     <replaceStrings>
       <replace>checkTwoPiece</replace>
@@ -147,8 +148,8 @@
         <option value="$PROJECT_DIR$/node.py" />
         <option value="$PROJECT_DIR$/projectA.py" />
         <option value="$PROJECT_DIR$/testBoard5.txt" />
-        <option value="$PROJECT_DIR$/gameBoard.py" />
         <option value="$PROJECT_DIR$/test.py" />
+        <option value="$PROJECT_DIR$/gameBoard.py" />
       </list>
     </option>
   </component>
@@ -298,7 +299,14 @@
       <option name="project" value="LOCAL" />
       <updated>1521467163409</updated>
     </task>
-    <option name="localTasksCounter" value="11" />
+    <task id="LOCAL-00011" summary="commented test.py file &#10;--need to develop a script to test all possible configurations of the&#10;initial board. Randomise the locations of the pieces in the board and &#10;test both the moves function and the massacre function with it">
+      <created>1521471135603</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1521471135604</updated>
+    </task>
+    <option name="localTasksCounter" value="12" />
     <servers />
   </component>
   <component name="TodoView" selected-index="4">
@@ -350,7 +358,8 @@
     <MESSAGE value="updated the updateBoard function to deal with eliminations&#10;TODO -- still need to do tests on each of the functions to see if it is working correctly" />
     <MESSAGE value="completed all TODO&#10;game mechanics work -- all methods seem to be functioning &#10;added massacre node and node classes for searching &#10;&#10;TODO -- need to test further cases" />
     <MESSAGE value="got rid of redundant lists in the __init__ method of Board() &#10;&#10;still need to test further cases and edge cases" />
-    <option name="LAST_COMMIT_MESSAGE" value="got rid of redundant lists in the __init__ method of Board() &#10;&#10;still need to test further cases and edge cases" />
+    <MESSAGE value="commented test.py file &#10;--need to develop a script to test all possible configurations of the&#10;initial board. Randomise the locations of the pieces in the board and &#10;test both the moves function and the massacre function with it" />
+    <option name="LAST_COMMIT_MESSAGE" value="commented test.py file &#10;--need to develop a script to test all possible configurations of the&#10;initial board. Randomise the locations of the pieces in the board and &#10;test both the moves function and the massacre function with it" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -613,11 +622,13 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/constant.py">
+    <entry file="file://$PROJECT_DIR$/test.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="285">
-          <caret line="19" column="0" lean-forward="true" selection-start-line="19" selection-start-column="0" selection-end-line="19" selection-end-column="0" />
-          <folding />
+        <state relative-caret-position="1140">
+          <caret line="76" column="49" lean-forward="false" selection-start-line="76" selection-start-column="49" selection-end-line="76" selection-end-column="49" />
+          <folding>
+            <element signature="e#0#27#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -625,6 +636,14 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="26" lean-forward="false" selection-start-line="0" selection-start-column="26" selection-end-line="0" selection-end-column="26" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/constant.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="285">
+          <caret line="19" column="0" lean-forward="true" selection-start-line="19" selection-start-column="0" selection-end-line="19" selection-end-column="0" />
           <folding />
         </state>
       </provider>
@@ -639,20 +658,10 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/gameBoard.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="4800">
-          <caret line="320" column="0" lean-forward="true" selection-start-line="320" selection-start-column="0" selection-end-line="320" selection-end-column="0" />
+        <state relative-caret-position="163">
+          <caret line="257" column="36" lean-forward="false" selection-start-line="257" selection-start-column="36" selection-end-line="257" selection-end-column="36" />
           <folding>
             <element signature="e#477#492#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/test.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="473">
-          <caret line="76" column="49" lean-forward="false" selection-start-line="76" selection-start-column="49" selection-end-line="76" selection-end-column="49" />
-          <folding>
-            <element signature="e#0#27#0" expanded="true" />
           </folding>
         </state>
       </provider>
