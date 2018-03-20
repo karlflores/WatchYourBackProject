@@ -23,6 +23,7 @@ METHODS:
     checkSelfEliminations()
 
 '''
+
 import constant
 from copy import deepcopy
 

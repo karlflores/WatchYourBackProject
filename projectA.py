@@ -1,5 +1,6 @@
 from gameBoard import Board
 import constant
+
 def main():
 
     # create board instance
