@@ -1,6 +1,8 @@
 from gameBoard import Board
 import constant
 from Massacre import Massacre
+from Node import Node
+
 a = Board()
 a.readInitialBoardState();
 print("test print board")
@@ -49,7 +51,7 @@ for key in a.availableMoves.keys():
     print(key,len(a.availableMoves[key]))
 '''
 
-THIS IS THE TEST ELIMINATION CASE FOR THE TESTBOARD.TXT 
+THIS IS THE TEST ELIMINATION CASE FOR THE TESTBOARD.TXT
 a.updateBoardState((5,5),1)
 print(a.piecePos)
 a.printBoard()
@@ -76,8 +78,22 @@ a.printBoard()
 '''
 
 # TEST CASE two piece elimination -- testBoard5.txt
-a.updateBoardState((3,2),1)
 a.printBoard()
+print()
 
-# create massacre instance
-mass = Massacre()
+# a.updateBoardState((5,2),7)
+#a.printBoard()
+
+root = Node(a, None)
+massacre = Massacre(root)
+solution = massacre.BFS(root)
+
+node = solution
+solution.board.printBoard()
+
+
+while(node is not None and node.moveApplied is not None):
+    move = node.moveApplied
+    coordinates = node.board.convertMoveTypeToCoord(move[0], move[1])
+    print(str(move[0]) + " -> " + str(coordinates))
+    node = node.parent
