@@ -15,6 +15,8 @@ class Node(object):
         # location where the piece has moved to
         self.moveApplied = move
 
+        self.priority = None
+
     def updateCounter(self):
         self.counter+=1
         return
@@ -26,7 +28,10 @@ class Node(object):
     def isGoalState(self):
         # checks if the node is at the goal state, for this to occur test whether the
         # there are less than 2 black pieces on the board
-        if len(self.board.piecePos[constant.BLACK_PIECE]) < 2:
+        if len(self.board.piecePos[constant.BLACK_PIECE]) == 0:
             return True
         else:
             return False
+
+    def countNum(self):
+        return len(self.board.piecePos[constant.BLACK_PIECE])

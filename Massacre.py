@@ -20,7 +20,7 @@ class Massacre(object):
 
         # create a visited set to mark all visited board configurations/nodes such that we don't expand
         # previously expanded nodes -- stops infinite loops from occuring
-        self.visitedSet = []
+        self.visitedSet = set()
 
         # create a list to store all moves
         self.reconstructPath = []
@@ -53,40 +53,42 @@ class Massacre(object):
 
                 # add new node to the queue
                 self.queue.append(newNode)
-                newNode.board.printBoard()
-                print()
+                # newNode.board.printBoard()
+                # print()
 
         # add the board configuration of that node to the visited set list
-        if startNode.board.boardState not in self.visitedSet:
-            self.visitedSet.append(newNode.board.boardState)
+        # if startNode.board.boardState not in self.visitedSet:
+        #    self.visitedSet.append(newNode.board.boardState)
 
-        if startNode.board.boardState not in self.visitedSet:
-            self.visitedSet.append(newNode.board.boardState)
-
+        # we convert the boardState to a string such that it becomds hashable
+        # then we add this to the list
+        # therefore when we test for memebership, need to remember to test the string version
+        # of the boardState
+        self.visitedSet.add(self.listToString(startNode))
         # dequeue an element from the node
         while len(self.queue) > 0:
             node = self.queue.pop(0)
             # add the node to the explored state
-            if node.board.boardState not in self.visitedSet:
-                self.visitedSet.append(node.board.boardState)
+            if self.listToString(node.board.boardState) not in self.visitedSet:
+                self.visitedSet.add(self.listToString(node.board.boardState))
 
             # test each of that nodes available actions
             for moves in node.board.availableMoves[constant.WHITE_PIECE]:
                 # create a child node for this move
                 child = self.createNode(node.board, moves, node.depth+1, node, node.counter+1)
-                child.board.printBoard()
-                print()
+                # child.board.printBoard()
+                # print()
 
                 # if a child node was not created, return no solution
                 if child is None:
                     return None
 
                 # if the child node is not in the visited set or in the frontier
-                if child not in self.visitedSet or child not in self.queue:
+                if self.listToString(child.board.boardState) not in self.visitedSet or child not in self.queue:
 
                     # test if the child node is the goal state
                     if child.isGoalState():
-                        print ("arb")
+                        # print ("arb")
                         return child
 
                     # if it is not the goal state then append the child to the frontier queue
@@ -114,6 +116,8 @@ class Massacre(object):
         # apply the move to the node
         node.board.updateBoardState(move[0],move[1])
 
+        # update the priorty of the node based on the heuristic
+
         return node
 
     def reconstruct(self,node):
@@ -128,3 +132,7 @@ class Massacre(object):
             newNode = newNode.parent
             # add comment
         return self.reconstructPath
+
+    # set helper methods
+    def listToString(self,list):
+        return str(list)
