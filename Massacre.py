@@ -1,6 +1,6 @@
 from gameBoard import Board
 import heapq
-from Node import Node
+from node import Node
 from copy import deepcopy
 import constant
 
@@ -57,13 +57,11 @@ class Massacre(object):
                 print()
 
         # add the board configuration of that node to the visited set list
-<<<<<<< HEAD
-        if newNode.board.
-        self.visitedSet.append(newNode.board.boardState)
-=======
         if startNode.board.boardState not in self.visitedSet:
             self.visitedSet.append(newNode.board.boardState)
->>>>>>> ed9a65fd78509f461f196f7003de901bf647c7b5
+
+        if startNode.board.boardState not in self.visitedSet:
+            self.visitedSet.append(newNode.board.boardState)
 
         # dequeue an element from the node
         while len(self.queue) > 0:
