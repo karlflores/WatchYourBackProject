@@ -96,7 +96,7 @@ class Massacre(object):
 
         # update the parent, depth and counter of the node
         node.depth = depth
-        node.parent = deepcopy(parent)
+        node.parent = parent
         node.counter = counter
 
         # apply the move to the node
@@ -114,5 +114,5 @@ class Massacre(object):
 
             # set the newNode to be the parent of the previous node
             newNode = newNode.parent
-
+            # add comment
         return self.reconstructPath
