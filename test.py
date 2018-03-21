@@ -1,7 +1,7 @@
 from gameBoard import Board
 import constant
 from Massacre import Massacre
-from Node import Node
+from node import Node
 
 a = Board()
 a.readInitialBoardState();
