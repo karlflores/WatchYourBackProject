@@ -104,8 +104,10 @@ class Massacre(object):
         # copy the root to the starting node
         startNode = deepcopy(root)
         if startNode.isGoalState():
-            print("wtf2")
             return startNode
+        # check if the root is actually solvable - ie. more than 2 white pieces on the board else return None
+        if startNode.isSolveable() is False:
+            return None
 
         # populate the queue with the successors of the starting node:
         for moves in root.board.availableMoves[constant.WHITE_PIECE]:
@@ -114,13 +116,13 @@ class Massacre(object):
                 newNode = self.createNode(startNode.board,moves,startNode.depth+1,startNode,startNode.counter+1)
 
                 if newNode.isGoalState():
-                    print("wtf")
                     return newNode
 
                 # add new node to the queue
                 # newNodeTuple = (newNode.countNum(),newNode)
                 # print(newNodeTuple)
-                heapq.heappush(self.heapq,newNode)
+                if newNode.isSolveable():
+                    heapq.heappush(self.heapq,newNode)
                 # newNode.board.printBoard()
                 # print()
 
@@ -128,12 +130,11 @@ class Massacre(object):
         # if startNode.board.boardState not in self.visitedSet:
         #    self.visitedSet.append(newNode.board.boardState)
 
-        # we convert the boardState to a string such that it becomds hashable
+        # we convert the boardState to a string such that it becomes hashable
         # then we add this to the list
         # therefore when we test for memebership, need to remember to test the string version
         # of the boardState
         self.visitedSet.add(self.listToString(startNode))
-        print("asdfasdfasf")
         # dequeue an element from the node
         while len(self.heapq) > 0:
             node = heapq.heappop(self.heapq)
@@ -146,12 +147,11 @@ class Massacre(object):
             for moves in node.board.availableMoves[constant.WHITE_PIECE]:
                 # create a child node for this move
                 child = self.createNode(node.board, moves, node.depth+1, node, node.counter+1)
-                child.board.printBoard()
-                print()
+                # child.board.printBoard()
+                # print()
 
                 # if a child node was not created, return no solution
                 if child is None:
-                    print("wtf3")
                     return None
 
                 # if the child node is not in the visited set or in the frontier
@@ -159,12 +159,12 @@ class Massacre(object):
 
                     # test if the child node is the goal state
                     if child.isGoalState():
-                        # print("arb")
                         return child
 
                     # if it is not the goal state then append the child to the frontier queue
-                    heapq.heappush(self.heapq,child)
-                    print(child.priority)
+                    # only append the node if it is solveable
+                    if child.isSolveable():
+                        heapq.heappush(self.heapq,child)
 
     def createNode(self,board,move,depth,parent,counter):
 
@@ -183,7 +183,7 @@ class Massacre(object):
         node.board.updateBoardState(move[0],move[1])
 
         # update the priority of the node based on the heuristic
-        node.priority = node.totalManhattanDist()
+        node.priority = node.returnDepth()*node.returnDepth() + node.countNum()*2 + node.totalManhattanDist()*3
         return node
 
     def reconstruct(self,node):
@@ -203,5 +203,3 @@ class Massacre(object):
     def listToString(self,list):
         return str(list)
 
-    def __lt__(self, other):
-        return self.priority < other.priority

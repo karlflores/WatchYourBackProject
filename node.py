@@ -33,10 +33,12 @@ class Node(object):
         else:
             return False
 
+    # evaluation function - counts the number of black pieces on the board
     def countNum(self):
         # print(len(self.board.piecePos[constant.BLACK_PIECE]))
         return len(self.board.piecePos[constant.BLACK_PIECE])
 
+    # evaluation function -- returns the combined manhattan distance of the node
     def totalManhattanDist(self):
         dist = 0
         for white in self.board.piecePos[constant.WHITE_PIECE]:
@@ -51,9 +53,16 @@ class Node(object):
 
         return dist
 
+    # evaluation function -- returns the depth of the node
     def returnDepth(self):
         return self.depth
 
     def __lt__(self,other):
         return self.priority < other.priority
 
+    # checks if the board is in a solvable state -- checks if there are more than 2 white pieces on the board
+    def isSolveable(self):
+        if len(self.board.piecePos[constant.WHITE_PIECE]) >= 2:
+            return True
+        else:
+            return False

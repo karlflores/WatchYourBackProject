@@ -80,18 +80,17 @@ a.printBoard()
 # TEST CASE two piece elimination -- testBoard5.txt
 a.printBoard()
 print("-"*20)
+print()
 
 # a.updateBoardState((5,2),7)
 #a.printBoard()
 
 root = Node(a, None)
-print(root)
 massacre = Massacre(root)
 solution = massacre.BFS_WITH_HEAPPQ(root)
-print(solution)
 node = solution
 solution.board.printBoard()
-
+print()
 
 while node is not None and node.moveApplied is not None:
     move = node.moveApplied
