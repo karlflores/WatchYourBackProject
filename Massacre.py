@@ -1,6 +1,6 @@
 from gameBoard import Board
 import heapq
-from node import Node
+from Node import Node
 from copy import deepcopy
 import constant
 
@@ -18,7 +18,7 @@ class Massacre(object):
 
         # create a visited set to mark all visited board configurations/nodes such that we don't expand
         # previously expanded nodes -- stops infinite loops from occuring
-        self.visitedSet = set()
+        self.visitedSet = []
 
         # create a list to store all moves
         self.reconstructPath = []
@@ -37,30 +37,40 @@ class Massacre(object):
     def BFS(self,root):
         # copy the root to the starting node
         startNode = deepcopy(root)
-        if node.isGoalState():
+        if startNode.isGoalState():
             return node
 
         # populate the queue with the successors of the starting node:
         for moves in root.board.availableMoves[constant.WHITE_PIECE]:
             if root.board.isLegalMove(moves[0],moves[1]):
                 # create a new node
-                newNode = createNode(startNode.board,moves,startNode.depth+1,startNode,startNode.counter+1)
+                newNode = self.createNode(startNode.board,moves,startNode.depth+1,startNode,startNode.counter+1)
+
+                if newNode.isGoalState():
+                    return newNode
+
                 # add new node to the queue
                 self.queue.append(newNode)
+                newNode.board.printBoard()
+                print()
 
         # add the board configuration of that node to the visited set list
-        self.visitedSet.add(newNode.board.boardState)
+        if startNode.board.boardState not in self.visitedSet:
+            self.visitedSet.append(newNode.board.boardState)
 
         # dequeue an element from the node
         while len(self.queue) > 0:
             node = self.queue.pop(0)
             # add the node to the explored state
-            self.visitedSet.add(node.board.boardState)
+            if node.board.boardState not in self.visitedSet:
+                self.visitedSet.append(node.board.boardState)
 
             # test each of that nodes available actions
             for moves in node.board.availableMoves[constant.WHITE_PIECE]:
                 # create a child node for this move
-                child = createNode(node.board, moves, node.depth+1, node, node.counter+1)
+                child = self.createNode(node.board, moves, node.depth+1, node, node.counter+1)
+                child.board.printBoard()
+                print()
 
                 # if a child node was not created, return no solution
                 if child is None:
@@ -71,6 +81,7 @@ class Massacre(object):
 
                     # test if the child node is the goal state
                     if child.isGoalState():
+                        print ("arb")
                         return child
 
                     # if it is not the goal state then append the child to the frontier queue
@@ -82,7 +93,6 @@ class Massacre(object):
     def recursiveDLS(self,node,limit):
         pass
 
-    @staticmethod
     def createNode(self,board,move,depth,parent,counter):
 
         # instantiate a new node
