@@ -36,9 +36,6 @@ class Board(object):
         # list to hold the representation of the current board state
         self.boardState = []
 
-        # list to hold what previous moves have been made on the board so far
-        self.history = []
-
         # create dictionaries to hold all the available moves and piece positions
         # on the board
         # map the board symbol types to the list for easy access
@@ -121,6 +118,7 @@ class Board(object):
             # remove if there a piece is self eliminated
             self.piecePos[pieceType].remove(piece);
             self.boardState[row][col] = constant.FREE_SPACE
+
         # recalculate all the moves
         self.updateAvailableMoves()
 

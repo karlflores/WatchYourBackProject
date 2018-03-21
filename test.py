@@ -1,5 +1,6 @@
 from gameBoard import Board
 import constant
+from Massacre import Massacre
 a = Board()
 a.readInitialBoardState();
 print("test print board")
@@ -73,8 +74,10 @@ print(a.availableMoves)
 print(a.piecePos)
 a.printBoard()
 '''
-'''
-TEST CASE two piece elimination -- testBoard5.txt
+
+# TEST CASE two piece elimination -- testBoard5.txt
 a.updateBoardState((3,2),1)
 a.printBoard()
-'''
+
+# create massacre instance
+mass = Massacre()

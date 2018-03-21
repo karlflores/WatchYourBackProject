@@ -4,7 +4,9 @@ from node import Node
 from copy import deepcopy
 import constant
 
+
 class Massacre(object):
+
     def __init__(self,node):
         # create an empty min heap priority queue for A*, dijkstra, greedy search algorithm implementation
         self.heapq = []
@@ -48,8 +50,8 @@ class Massacre(object):
                 # add new node to the queue
                 self.queue.append(newNode)
 
-                # add the board configuration of that node to the visited set list
-                self.visitedSet.add(newNode.board.boardState)
+        # add the board configuration of that node to the visited set list
+        self.visitedSet.add(newNode.board.boardState)
 
         # dequeue an element from the node
         while len(self.queue) > 0:
@@ -76,12 +78,6 @@ class Massacre(object):
                     # if it is not the goal state then append the child to the frontier queue
                     self.queue.append(child)
 
-            # test if that node is the goal state
-            if node.isGoalState():
-                return node
-
-
-        pass
 
     def DFS(self,node):
         pass
