@@ -8,7 +8,7 @@ class Node(object):
         self.board = deepcopy(board)
         self.depth = 0
         self.parent = None
-        self.counter = counter
+        self.counter = 0
 
         # this stores the move applied to a certain node to bring it to the state that it is in
         # move should be in the form (tup1,tup2) where tup1 is the original location and tup2 is the
@@ -30,4 +30,3 @@ class Node(object):
             return True
         else:
             return False
-

@@ -88,6 +88,7 @@ class Board(object):
         else:
             # return False -- error value, if the move is not valid, i.e a move has not been made
             # print("not legal",piecePos)
+            # TODO -- should we have an error message?
             return False
 
         # update pos dict
@@ -187,13 +188,13 @@ class Board(object):
     def convertMoveTypeToCoord(self,piecePos,moveType):
         # piece pos is in the form of a tuple (col,row)
         # moves types
-        # 0 - left 1 space
+        # 0 - right 1 space
         # 1 - down 1 space
-        # 2 - right 1 space
+        # 2 - left 1 space
         # 3 - up 1 spaces
-        # 4 - left 2 spaces
+        # 4 - right 2 spaces
         # 5 - down 2 spaces
-        # 6 - right 2 spaces
+        # 6 - left 2 spaces
         # 7 - up 2 spaces
 
         # convert the tuple to row, col variable
