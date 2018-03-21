@@ -4,7 +4,9 @@ from node import Node
 from copy import deepcopy
 import constant
 
+
 class Massacre(object):
+
     def __init__(self,node):
         # create an empty min heap priority queue for A*, dijkstra, greedy search algorithm implementation
         self.heapq = []
