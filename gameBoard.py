@@ -174,7 +174,7 @@ class Board(object):
             # test whether the piece that it is jumping over is a board piece and is not free space
             if self.boardState[interPosRow][interPosCol] in (constant.WHITE_PIECE,constant.BLACK_PIECE):
                 # test the place that the piece is moving to
-                if self.boardState[newCol][newRow] == constant.FREE_SPACE:
+                if self.boardState[newRow][newCol] == constant.FREE_SPACE:
                     return True
                 else:
                     # if place that it is moving to is not free, then return false
