@@ -20,7 +20,7 @@ class Massacre(object):
 
         # create a visited set to mark all visited board configurations/nodes such that we don't expand
         # previously expanded nodes -- stops infinite loops from occuring
-        self.visitedSet = set()
+        self.visitedSet = []
 
         # create a list to store all moves
         self.reconstructPath = []
@@ -51,7 +51,8 @@ class Massacre(object):
                 self.queue.append(newNode)
 
         # add the board configuration of that node to the visited set list
-        self.visitedSet.add(newNode.board.boardState)
+        if newNode.board.
+        self.visitedSet.append(newNode.board.boardState)
 
         # dequeue an element from the node
         while len(self.queue) > 0:
