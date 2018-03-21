@@ -53,8 +53,8 @@ class Massacre(object):
 
                 # add new node to the queue
                 self.queue.append(newNode)
-                newNode.board.printBoard()
-                print()
+                # newNode.board.printBoard()
+                # print()
 
         # add the board configuration of that node to the visited set list
         if startNode.board.boardState not in self.visitedSet:
@@ -74,8 +74,8 @@ class Massacre(object):
             for moves in node.board.availableMoves[constant.WHITE_PIECE]:
                 # create a child node for this move
                 child = self.createNode(node.board, moves, node.depth+1, node, node.counter+1)
-                child.board.printBoard()
-                print()
+                # child.board.printBoard()
+                # print()
 
                 # if a child node was not created, return no solution
                 if child is None:
@@ -86,7 +86,7 @@ class Massacre(object):
 
                     # test if the child node is the goal state
                     if child.isGoalState():
-                        print ("arb")
+                        # print ("arb")
                         return child
 
                     # if it is not the goal state then append the child to the frontier queue
@@ -108,7 +108,7 @@ class Massacre(object):
 
         # update the parent, depth and counter of the node
         node.depth = depth
-        node.parent = parent
+        node.parent = deepcopy(parent)
         node.counter = counter
 
         # apply the move to the node

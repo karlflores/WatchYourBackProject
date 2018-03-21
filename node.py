@@ -26,7 +26,7 @@ class Node(object):
     def isGoalState(self):
         # checks if the node is at the goal state, for this to occur test whether the
         # there are less than 2 black pieces on the board
-        if len(self.board.piecePos[constant.BLACK_PIECE]) < 2:
+        if len(self.board.piecePos[constant.BLACK_PIECE]) == 0:
             return True
         else:
             return False
