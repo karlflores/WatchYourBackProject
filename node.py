@@ -15,6 +15,8 @@ class Node(object):
         # location where the piece has moved to
         self.moveApplied = move
 
+        self.priority = None
+
     def updateCounter(self):
         self.counter+=1
         return
@@ -30,3 +32,6 @@ class Node(object):
             return True
         else:
             return False
+
+    def countNum(self):
+        return len(self.board.piecePos[constant.BLACK_PIECE])
