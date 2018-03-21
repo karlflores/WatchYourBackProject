@@ -79,21 +79,56 @@ a.printBoard()
 
 # TEST CASE two piece elimination -- testBoard5.txt
 a.printBoard()
-print()
+print("-"*20)
 
 # a.updateBoardState((5,2),7)
 #a.printBoard()
 
 root = Node(a, None)
+print(root)
 massacre = Massacre(root)
-solution = massacre.BFS(root)
-
+solution = massacre.BFS_WITH_HEAPPQ(root)
+print(solution)
 node = solution
 solution.board.printBoard()
 
 
-while(node is not None and node.moveApplied is not None):
+while node is not None and node.moveApplied is not None:
     move = node.moveApplied
     coordinates = node.board.convertMoveTypeToCoord(move[0], move[1])
-    print(str(move[0]) + " -> " + str(coordinates))
+    print(str(move[0]) + " -> " + str(coordinates) + "   |   " + str(move[1]))
     node = node.parent
+
+
+'''
+# THIS IS THE TEST ELIMINATION CASE FOR THE TESTBOARD2.TXT
+a.printBoard()
+a.updateBoardState((5,5),4)
+print("-"*20)
+a.printBoard()
+a.updateBoardState((5,2),5)
+print("-"*20)
+a.printBoard()
+a.updateBoardState((5,4),1)
+print("-"*20)
+a.printBoard()
+print("WEIRD MOVE",a.isLegalMove((5,5),7))
+print(a.boardState[3][5])
+a.updateBoardState((6,4),2)
+print(a.piecePos[constant.BLACK_PIECE])
+print(a.piecePos[constant.WHITE_PIECE])
+print("-"*20)
+a.printBoard()
+print("WEIRD MOVE",a.isLegalMove((5,5),7))
+print(a.boardState[3][5])
+a.updateBoardState((5,5),7)
+print(a.piecePos[constant.BLACK_PIECE])
+print(a.piecePos[constant.WHITE_PIECE])
+print("-"*20)
+a.printBoard()
+a.updateBoardState((5,3),6)
+print(a.piecePos[constant.BLACK_PIECE])
+print(a.piecePos[constant.WHITE_PIECE])
+print("-"*20)
+a.printBoard()
+'''

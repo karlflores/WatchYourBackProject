@@ -1,6 +1,6 @@
 import constant
 from copy import deepcopy
-
+import math
 class Node(object):
     def __init__(self,board,move):
         # deep copy the board such that any changes that are made
@@ -15,7 +15,7 @@ class Node(object):
         # location where the piece has moved to
         self.moveApplied = move
 
-        self.priority = None
+        self.priority = 0
 
     def updateCounter(self):
         self.counter+=1
@@ -34,4 +34,26 @@ class Node(object):
             return False
 
     def countNum(self):
+        # print(len(self.board.piecePos[constant.BLACK_PIECE]))
         return len(self.board.piecePos[constant.BLACK_PIECE])
+
+    def totalManhattanDist(self):
+        dist = 0
+        for white in self.board.piecePos[constant.WHITE_PIECE]:
+            for black in self.board.piecePos[constant.BLACK_PIECE]:
+                x = white[0] - black[0]
+                y = white[1] - black[1]
+                if x < 0:
+                    x = -x
+                if y < 0:
+                    y = -y
+                dist += x+y
+
+        return dist
+
+    def returnDepth(self):
+        return self.depth
+
+    def __lt__(self,other):
+        return self.priority < other.priority
+
