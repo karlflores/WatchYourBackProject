@@ -183,7 +183,7 @@ class Massacre(object):
         node.board.updateBoardState(move[0],move[1])
 
         # update the priority of the node based on the heuristic
-        node.priority = node.returnDepth()*node.returnDepth() + node.countNum()*2 + node.totalManhattanDist()*3
+        node.priority = node.totalManhattanDist()
         return node
 
     def reconstruct(self,node):

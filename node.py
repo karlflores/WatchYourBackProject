@@ -53,6 +53,9 @@ class Node(object):
 
         return dist
 
+    def averageManhattanDist(self):
+        return self.totalManhattanDist()/len(self.board.piecePos[constant.BLACK_PIECE])
+
     # evaluation function -- returns the depth of the node
     def returnDepth(self):
         return self.depth

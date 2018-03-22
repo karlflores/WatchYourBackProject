@@ -1,5 +1,7 @@
 from gameBoard import Board
 import constant
+from Massacre import Massacre
+from node import Node
 
 def main():
 
@@ -14,7 +16,7 @@ def main():
     if analysisType == 'Moves':
         moves(root)
     elif analysisType == 'Massacre':
-        massacre()
+        massacre(root)
 
 
 def moves(boardState):
@@ -22,8 +24,42 @@ def moves(boardState):
     print(len(boardState.availableMoves[constant.BLACK_PIECE]))
     return
 
-def massacre():
-    pass
+def massacre(board):
+
+    # create the root of the search
+    root = Node(board, None)
+
+    # create the massacre instance
+    search = Massacre(root)
+
+    # do the search
+    solution = search.BFS_WITH_HEAPPQ(root)
+
+    # if the solution is None, therefore no solution exists and we print no Solution
+    print("NO SOLUTION")
+    # create a list called moves applied
+    movesApplied = []
+
+    node = solution
+
+    while node is not None and node.moveApplied is not None:
+        move = node.moveApplied
+        moveCoordinates = node.board.convertMoveTypeToCoord(move[0],move[1])
+        movesApplied.append(str(move[0]) + " -> " + str(moveCoordinates))
+
+        # update the node to be the parent
+        node = node.parent
+
+    # reverse the move list such that the first element is the first move to be made
+    movesApplied.reverse()
+
+    # print the solution
+
+    for move in movesApplied:
+        print(move)
+
+    return
+
 
 
 if __name__ == "__main__":
