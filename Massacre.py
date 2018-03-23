@@ -30,17 +30,21 @@ class Massacre(object):
         pass
 
     # iterative deepening search
-    def ITDS(self,node):
+    def IDDFS(self,node):
+        # copy the node to the start node of the search
         startNode = deepcopy(node)
-        for depth in range(10):
-            result = self.recursiveDLS(startNode,problem)
 
+        # iterate through the depths
+        for depth in range(constant.MAX_DEPTH):
+            result = self.recursiveDLS(startNode,depth)
+            if result is not constant.CUTOFF:
+                return result
 
     def BFS(self,root):
         # copy the root to the starting node
         startNode = deepcopy(root)
         if startNode.isGoalState():
-            return node
+            return startNode
 
         # populate the queue with the successors of the starting node:
         for moves in root.board.availableMoves[constant.WHITE_PIECE]:
@@ -97,8 +101,44 @@ class Massacre(object):
     def DFS(self,node):
         pass
 
-    def recursiveDLS(self,node,limit):
-        pass
+    def recursiveDLS(self,node,depth):
+        # BASE CASE
+        # if the node is the goal state, we return the node
+        if node.isGoalState():
+            return node
+
+        # if the depth of the call is 0 this is the cutoff values where we stop searching
+        # so we return the cutoff value
+        elif depth == 0:
+            return constant.CUTOFF
+
+        # else we just do the search
+        else:
+            cutoffOccured = False
+
+        # else we run DFS for depth -1 levels
+            # iterate through the successor nodes of the current node and run DFS on this node
+            for move in node.board.availableMoves[constant.WHITE_PIECE]:
+                # create a child node
+                child = self.createNode(node.board, move, node.depth+1, node, node.counter+1)
+
+                resultDLS = self.recursiveDLS(child, depth-1)
+                if resultDLS == constant.CUTOFF:
+                    cutoffOccured = True
+                elif resultDLS is not constant.FAILURE:
+                    return resultDLS
+        # if we have reached the depth and not have found the solution, return the cut off
+        # value
+        if cutoffOccured:
+            return constant.CUTOFF
+        else:
+
+            # else return no solution/failure of the search
+            return constant.FAILURE
+
+
+
+
 
     def BFS_WITH_HEAPPQ(self,root):
         # copy the root to the starting node
@@ -185,7 +225,7 @@ class Massacre(object):
         node.board.updateBoardState(move[0],move[1])
 
         # update the priority of the node based on the heuristic
-        node.priority = 3*node.countNum()
+        node.priority = node.countNum()
         return node
 
     def reconstruct(self,node):
@@ -201,7 +241,7 @@ class Massacre(object):
             # add comment
         return self.reconstructPath
 
-    # set helper methods
+    # set helper methods for hashing array to a set
     def listToString(self,list):
         return str(list)
 

@@ -18,3 +18,9 @@ INVALID_SPACE = '.';
 PLACEMENT_PHASE = 0
 MOVING_PHASE = 1
 
+# search constants
+
+# IDDFS and DLS
+FAILURE = None
+CUTOFF = -2
+MAX_DEPTH = 100

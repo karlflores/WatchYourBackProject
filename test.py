@@ -87,9 +87,10 @@ print()
 
 root = Node(a, None)
 massacre = Massacre(root)
-solution = massacre.BFS_WITH_HEAPPQ(root)
+solution = massacre.IDDFS(root)
 node = solution
-solution.board.printBoard()
+if type(solution) is not int:
+    solution.board.printBoard()
 print()
 
 while node is not None and node.moveApplied is not None:
