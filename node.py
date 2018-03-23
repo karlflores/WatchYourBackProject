@@ -56,7 +56,8 @@ class Node(object):
     def averageManhattanDist(self):
         return self.totalManhattanDist()/len(self.board.piecePos[constant.BLACK_PIECE])
 
-    def eucledianDist(self,a,b):
+    @staticmethod
+    def eucledianDist(a,b):
         return math.sqrt((a[0]-b[0])*(a[0]-b[0])+(a[1]-b[1])*(a[1]-b[1]))
 
     def averageEucledDist(self):

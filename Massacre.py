@@ -1,9 +1,7 @@
-from gameBoard import Board
 import heapq
 from node import Node
 from copy import deepcopy
 import constant
-from queue import PriorityQueue
 
 class Massacre(object):
 
@@ -15,19 +13,14 @@ class Massacre(object):
         self.queue = []
 
         # create an empty stack for DFS
-
         self.stack = []
 
         # create a visited set to mark all visited board configurations/nodes such that we don't expand
-        # previously expanded nodes -- stops infinite loops from occuring
+        # previously expanded nodes -- stops infinite loops from occurring
         self.visitedSet = set()
 
         # create a list to store all moves
         self.reconstructPath = []
-
-    # define a heuristic for A*
-    def heuristic(self):
-        pass
 
     # iterative deepening search
     def IDDFS(self,node):
@@ -64,9 +57,9 @@ class Massacre(object):
         # if startNode.board.boardState not in self.visitedSet:
         #    self.visitedSet.append(newNode.board.boardState)
 
-        # we convert the boardState to a string such that it becomds hashable
+        # we convert the boardState to a string such that it becomes hashable
         # then we add this to the list
-        # therefore when we test for memebership, need to remember to test the string version
+        # therefore when we test for membership, need to remember to test the string version
         # of the boardState
         self.visitedSet.add(self.listToString(startNode))
         # dequeue an element from the node
@@ -121,10 +114,12 @@ class Massacre(object):
             for move in node.board.availableMoves[constant.WHITE_PIECE]:
                 # create a child node
                 child = self.createNode(node.board, move, node.depth+1, node, node.counter+1)
-
+                # recursively call recursiveDLS to search the subtree of this child node
                 resultDLS = self.recursiveDLS(child, depth-1)
+
                 if resultDLS == constant.CUTOFF:
                     cutoffOccured = True
+                # return the result if it is not a failed search
                 elif resultDLS is not constant.FAILURE:
                     return resultDLS
         # if we have reached the depth and not have found the solution, return the cut off
@@ -132,12 +127,8 @@ class Massacre(object):
         if cutoffOccured:
             return constant.CUTOFF
         else:
-
             # else return no solution/failure of the search
             return constant.FAILURE
-
-
-
 
 
     def BFS_WITH_HEAPPQ(self,root):
@@ -157,7 +148,6 @@ class Massacre(object):
 
                 if newNode.isGoalState():
                     return newNode
-
                 # add new node to the queue
                 # newNodeTuple = (newNode.countNum(),newNode)
                 # print(newNodeTuple)
@@ -208,7 +198,9 @@ class Massacre(object):
                     if child.isSolveable():
                         heapq.heappush(self.heapq,child)
 
-    def createNode(self,board,move,depth,parent,counter):
+    # creates a new node for search expansion
+    @staticmethod
+    def createNode(board,move,depth,parent,counter):
 
         # instantiate a new node
         node = Node(board,move)
@@ -242,6 +234,7 @@ class Massacre(object):
         return self.reconstructPath
 
     # set helper methods for hashing array to a set
-    def listToString(self,list):
+    @staticmethod
+    def listToString(list):
         return str(list)
 
