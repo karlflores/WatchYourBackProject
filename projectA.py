@@ -36,7 +36,8 @@ def massacre(board):
     solution = search.BFS_WITH_HEAPPQ(root)
 
     # if the solution is None, therefore no solution exists and we print no Solution
-    print("NO SOLUTION")
+    if solution is None:
+        print("NO SOLUTION")
     # create a list called moves applied
     movesApplied = []
 

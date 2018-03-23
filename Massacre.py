@@ -139,6 +139,8 @@ class Massacre(object):
         while len(self.heapq) > 0:
             node = heapq.heappop(self.heapq)
             # print(node)
+            node.board.printBoard()
+            print("-"*20)
             # add the node to the explored state
             if self.listToString(node.board.boardState) not in self.visitedSet:
                 self.visitedSet.add(self.listToString(node.board.boardState))
@@ -176,14 +178,14 @@ class Massacre(object):
 
         # update the parent, depth and counter of the node
         node.depth = depth
-        node.parent = deepcopy(parent)
+        node.parent = parent
         node.counter = counter
 
         # apply the move to the node
         node.board.updateBoardState(move[0],move[1])
 
         # update the priority of the node based on the heuristic
-        node.priority = node.totalManhattanDist()
+        node.priority = 3*node.countNum()
         return node
 
     def reconstruct(self,node):

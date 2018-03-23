@@ -56,6 +56,18 @@ class Node(object):
     def averageManhattanDist(self):
         return self.totalManhattanDist()/len(self.board.piecePos[constant.BLACK_PIECE])
 
+    def eucledianDist(self,a,b):
+        return math.sqrt((a[0]-b[0])*(a[0]-b[0])+(a[1]-b[1])*(a[1]-b[1]))
+
+    def averageEucledDist(self):
+        total = 0
+
+        for white in self.board.piecePos[constant.WHITE_PIECE]:
+            for black in self.board.piecePos[constant.BLACK_PIECE]:
+                total += self.eucledianDist(white,black)
+
+        return total/len(self.board.piecePos[constant.BLACK_PIECE])
+
     # evaluation function -- returns the depth of the node
     def returnDepth(self):
         return self.depth
