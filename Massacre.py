@@ -91,8 +91,47 @@ class Massacre(object):
                     # if it is not the goal state then append the child to the frontier queue
                     self.queue.append(child)
 
-    def DFS(self,node):
-        pass
+    def DFS(self,root):
+        startNode = deepcopy(root)
+        if startNode.isGoalState():
+            return startNode
+
+        # populate the stack with the successors of the starting node:
+        for moves in root.board.availableMoves[constant.WHITE_PIECE]:
+            if root.board.isLegalMove(moves[0],moves[1]):
+                # create a new node
+                newNode = self.createNode(startNode.board,moves,startNode.depth+1,startNode,startNode.counter+1)
+
+                if newNode.isGoalState():
+                    return newNode
+
+                # add new node to the queue
+                self.stack.append(newNode)
+                # newNode.board.printBoard()
+                # print()
+
+        # pop an element from the stack
+        while len(self.stack) > 0:
+            node = self.stack.pop(0)
+
+            # test each of that nodes available actions
+            for moves in node.board.availableMoves[constant.WHITE_PIECE]:
+                # create a child node for this move
+                child = self.createNode(node.board, moves, node.depth+1, node, node.counter+1)
+                # child.board.printBoard()
+                # print()
+
+                # if a child node was not created, return no solution
+                if child is None:
+                    return None
+
+                # test if the child node is the goal state
+                if child.isGoalState():
+                    # print ("arb")
+                    return child
+
+                # if it is not the goal state then append the child to the frontier queue
+                self.stack.append(child)
 
     def recursiveDLS(self,node,depth):
         # BASE CASE
@@ -237,4 +276,3 @@ class Massacre(object):
     @staticmethod
     def listToString(list):
         return str(list)
-

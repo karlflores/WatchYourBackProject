@@ -87,7 +87,7 @@ print()
 
 root = Node(a, None)
 massacre = Massacre(root)
-solution = massacre.IDDFS(root)
+solution = massacre.DFS(root)
 node = solution
 if type(solution) is not int:
     solution.board.printBoard()
