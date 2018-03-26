@@ -13,7 +13,7 @@ How we modelled the problem as a search problem:
 We create new board representations depending on possible moves and place
 these in a tree structure, where the nth layer is n moves away. We then search
 this tree to find a board representation that matches the desired outcome
-(less than two black pieces). 
+(less than two black pieces).
 
 Search algorithm used:
 Depends which search we use
