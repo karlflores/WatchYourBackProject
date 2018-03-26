@@ -1,0 +1,25 @@
+A program written and designed by Karl Flores & Kristian Bjarnason
+for the University of Melbourne subject COMP30024, Artificial Intelligence.
+
+***Calculating number of moves***
+Time Complexity:
+Can we use deepcopy? brief says standard library/textbook stuff
+
+Space Complexity:
+
+
+***Calculating sequence of moves***
+How we modelled the problem as a search problem:
+We create new board representations depending on possible moves and place
+these in a tree structure, where the nth layer is n moves away. We then search
+this tree to find a board representation that matches the desired outcome
+(less than two black pieces). 
+
+Search algorithm used:
+Depends which search we use
+
+Branching factor of our search tree (if applicable):
+Depends which search we use
+
+Algorithm optimality:
+Depends which search we use
