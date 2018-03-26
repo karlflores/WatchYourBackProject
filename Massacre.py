@@ -110,9 +110,21 @@ class Massacre(object):
                 # newNode.board.printBoard()
                 # print()
 
+        # add the board configuration of that node to the visited set list
+        # if startNode.board.boardState not in self.visitedSet:
+        #    self.visitedSet.append(newNode.board.boardState)
+
+        # we convert the boardState to a string such that it becomes hashable
+        # then we add this to the list
+        # therefore when we test for membership, need to remember to test the string version
+        # of the boardState
+        self.visitedSet.add(self.listToString(startNode))
         # pop an element from the stack
         while len(self.stack) > 0:
-            node = self.stack.pop(0)
+            node = self.stack.pop()
+            # add the node to the explored state
+            if self.listToString(node.board.boardState) not in self.visitedSet:
+                self.visitedSet.add(self.listToString(node.board.boardState))
 
             # test each of that nodes available actions
             for moves in node.board.availableMoves[constant.WHITE_PIECE]:
@@ -125,13 +137,17 @@ class Massacre(object):
                 if child is None:
                     return None
 
-                # test if the child node is the goal state
-                if child.isGoalState():
-                    # print ("arb")
-                    return child
+                # if the child node is not in the visited set or in the frontier
+                if self.listToString(child.board.boardState) not in self.visitedSet or child not in self.stack:
 
-                # if it is not the goal state then append the child to the frontier queue
-                self.stack.append(child)
+                    # test if the child node is the goal state
+                    if child.isGoalState():
+                        # print ("arb")
+                        return child
+
+                    # if it is not the goal state then append the child to the frontier queue
+                    self.stack.append(child)
+
 
     def recursiveDLS(self,node,depth):
         # BASE CASE
