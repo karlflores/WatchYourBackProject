@@ -43,7 +43,8 @@ class Massacre(object):
         for moves in root.board.availableMoves[constant.WHITE_PIECE]:
             if root.board.isLegalMove(moves[0],moves[1]):
                 # create a new node
-                newNode = self.createNode(startNode.board,moves,startNode.depth+1,startNode,startNode.counter+1)
+                newNode = self.createNode(startNode.board,moves,startNode.depth+1,
+                startNode,startNode.counter+1)
 
                 if newNode.isGoalState():
                     return newNode
@@ -95,7 +96,8 @@ class Massacre(object):
         for moves in root.board.availableMoves[constant.WHITE_PIECE]:
             if root.board.isLegalMove(moves[0],moves[1]):
                 # create a new node
-                newNode = self.createNode(startNode.board,moves,startNode.depth+1,startNode,startNode.counter+1)
+                newNode = self.createNode(startNode.board,moves,startNode.depth+1,
+                startNode,startNode.counter+1)
 
                 if newNode.isGoalState():
                     return newNode
@@ -189,7 +191,8 @@ class Massacre(object):
         for moves in root.board.availableMoves[constant.WHITE_PIECE]:
             if root.board.isLegalMove(moves[0],moves[1]):
                 # create a new node
-                newNode = self.createNode(startNode.board,moves,startNode.depth+1,startNode,startNode.counter+1)
+                newNode = self.createNode(startNode.board,moves,startNode.depth+1,
+                startNode,startNode.counter+1)
                 # check if it is the goal state
                 if newNode.isGoalState():
                     return newNode
