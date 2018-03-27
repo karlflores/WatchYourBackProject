@@ -34,7 +34,7 @@ class Node(object):
             return False
 
     # evaluation function - counts the number of black pieces on the board
-    def countNum(self):
+    def countBlackPieces(self):
         # print(len(self.board.piecePos[constant.BLACK_PIECE]))
         return len(self.board.piecePos[constant.BLACK_PIECE])
 

@@ -2,15 +2,13 @@ from gameBoard import Board
 import constant
 from Massacre import Massacre
 from node import Node
-
+import time
 a = Board()
 a.readInitialBoardState();
 print("test print board")
 a.printBoard();
-# a.getPiecePos();
 
 print("\ntest get position fucntion")
-
 
 # test the movePos cases:
 print("\ntest moveType function")
@@ -84,10 +82,10 @@ print()
 
 # a.updateBoardState((5,2),7)
 #a.printBoard()
-
+startTime = time.time();
 root = Node(a, None)
 massacre = Massacre(root)
-solution = massacre.DFS(root)
+solution = massacre.BFS_WITH_HEAPPQ(root)
 node = solution
 if type(solution) is not int:
     solution.board.printBoard()
@@ -98,7 +96,7 @@ while node is not None and node.moveApplied is not None:
     coordinates = node.board.convertMoveTypeToCoord(move[0], move[1])
     print(str(move[0]) + " -> " + str(coordinates) + "   |   " + str(move[1]))
     node = node.parent
-
+print("TIME ELAPSED: "+ str(time.time()-startTime))
 
 '''
 # THIS IS THE TEST ELIMINATION CASE FOR THE TESTBOARD2.TXT
