@@ -19,6 +19,9 @@ Search algorithm used:
 Iterative Deepening Depth First Search.
 
 Branching factor of our search tree (if applicable):
+For each node, the branching factor is the number of available moves. Theoretically
+this means it could be as low as 0 or as high as 96, or any value in between. If we
+were to take the middle case this would mean there would be a branching factor of 48.
 
 
 Algorithm optimality:
