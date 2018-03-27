@@ -275,3 +275,4 @@ class Massacre(object):
     @staticmethod
     def listToString(list):
         return str(list)
+        

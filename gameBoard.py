@@ -315,3 +315,4 @@ class Board(object):
             return posCol,posRow
         else:
             return None
+            
