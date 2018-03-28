@@ -53,26 +53,15 @@ class Node(object):
 
         return dist
 
-    def averageManhattanDist(self):
-        return self.totalManhattanDist()/len(self.board.piecePos[constant.BLACK_PIECE])
-
     @staticmethod
     def eucledianDist(a,b):
         return math.sqrt((a[0]-b[0])*(a[0]-b[0])+(a[1]-b[1])*(a[1]-b[1]))
-
-    def averageEucledDist(self):
-        total = 0
-
-        for white in self.board.piecePos[constant.WHITE_PIECE]:
-            for black in self.board.piecePos[constant.BLACK_PIECE]:
-                total += self.eucledianDist(white,black)
-
-        return total/len(self.board.piecePos[constant.BLACK_PIECE])
 
     # evaluation function -- returns the depth of the node
     def returnDepth(self):
         return self.depth
 
+    # comparision method for nodes -- used in heapq ordering
     def __lt__(self,other):
         return self.priority < other.priority
 

@@ -3,8 +3,9 @@ from node import Node
 from copy import deepcopy
 import constant
 
-class Massacre(object):
 
+class Massacre(object):
+    # constructor
     def __init__(self,node):
         # create an empty min heap priority queue for A*, dijkstra, greedy search algorithm implementation
         self.heapq = []
@@ -22,12 +23,12 @@ class Massacre(object):
         # create a list to store all moves
         self.reconstructPath = []
 
-    # iterative deepening search
+    # iterative deepening search algorithm
     def IDDFS(self,node):
         # copy the node to the start node of the search
         startNode = deepcopy(node)
 
-        # iterate through the depths
+        # iterate through the depths until max_depth
         for depth in range(constant.MAX_DEPTH):
             result = self.recursiveDLS(startNode,depth)
             if result is not constant.CUTOFF:
@@ -53,9 +54,6 @@ class Massacre(object):
                 self.queue.append(newNode)
 
         # add the board configuration of that node to the visited set list
-        # if startNode.board.boardState not in self.visitedSet:
-        #    self.visitedSet.append(newNode.board.boardState)
-
         # we convert the boardState to a string such that it becomes hashable
         # then we add this to the list
         # therefore when we test for membership, need to remember to test the string version
@@ -87,6 +85,7 @@ class Massacre(object):
                     # if it is not the goal state then append the child to the frontier queue
                     self.queue.append(child)
 
+    # depth first search algorithm to search all possilble moves
     def DFS(self,root):
         startNode = deepcopy(root)
         if startNode.isGoalState():
@@ -106,13 +105,6 @@ class Massacre(object):
                 self.stack.append(newNode)
 
         # add the board configuration of that node to the visited set list
-        # if startNode.board.boardState not in self.visitedSet:
-        #    self.visitedSet.append(newNode.board.boardState)
-
-        # we convert the boardState to a string such that it becomes hashable
-        # then we add this to the list
-        # therefore when we test for membership, need to remember to test the string version
-        # of the boardState
         self.visitedSet.add(self.listToString(startNode))
         # pop an element from the stack
         while len(self.stack) > 0:
@@ -142,18 +134,27 @@ class Massacre(object):
 
 
     def recursiveDLS(self,node,depth):
+        # create a visited set to track all visited nodes in the current search
+        visitedSet = set()
         # BASE CASE
         # if the node is the goal state, we return the node
         if node.isGoalState():
             return node
 
         # if the depth of the call is 0 this is the cutoff values where we stop searching
-        # so we return the cutoff value
+        # so we return that the search has terminated at cutoff
         elif depth == 0:
             return constant.CUTOFF
 
-        # else we just do the search
+        # if the depth is not at zero, we do the search
         else:
+            # add the current node to the visited set
+            # we need to add a string representation of the boardState of that node for it
+            # to be added to the set
+            visitedSet.add(self.listToString(node.board.boardState))
+
+            # set the cutoff flag to false -- if the search returns the cut off value we
+            # return this value
             cutoffOccured = False
 
         # else we run DFS for depth -1 levels
@@ -161,9 +162,15 @@ class Massacre(object):
             for move in node.board.availableMoves[constant.WHITE_PIECE]:
                 # create a child node
                 child = self.createNode(node.board, move, node.depth+1, node, node.counter+1)
-                # recursively call recursiveDLS to search the subtree of this child node
-                resultDLS = self.recursiveDLS(child, depth-1)
+                # if the child node has been visited before, recursively call recursiveDLS to
+                # search the subtree of this child node
+                if self.listToString(child.board.boardState) not in visitedSet:
+                    resultDLS = self.recursiveDLS(child, depth-1)
+                else:
+                    # if visited, we move to the next child node
+                    continue
 
+                # change the cut off flag
                 if resultDLS == constant.CUTOFF:
                     cutoffOccured = True
                 # return the result if it is not a failed search
@@ -177,8 +184,8 @@ class Massacre(object):
             # else return no solution/failure of the search
             return constant.FAILURE
 
-
-    def BFS_WITH_HEAPPQ(self,root):
+    # Greedy Search implementation using a priority queue (BFS framework)
+    def greedySearch(self,root):
         # copy the root to the starting node
         startNode = deepcopy(root)
         if startNode.isGoalState():
@@ -202,12 +209,8 @@ class Massacre(object):
                     heapq.heappush(self.heapq,newNode)
 
         # add the board configuration of that node to the visited set list
-        # we convert the boardState to a string such that it becomes hashable
-        # then we add this to the list
-        # therefore when we test for membership, need to remember to test the string version
-        # of the boardState
         self.visitedSet.add(self.listToString(startNode))
-        # dequeue an element from the node
+        # pop an element from the queue
         while len(self.heapq) > 0:
             node = heapq.heappop(self.heapq)
 
@@ -232,7 +235,7 @@ class Massacre(object):
                         return child
 
                     # if it is not the goal state then append the child to the frontier queue
-                    # only append the node if it is solveable
+                    # only append the node if it is solvable
                     if child.isSolveable():
                         heapq.heappush(self.heapq,child)
 
