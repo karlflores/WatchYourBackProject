@@ -33,17 +33,25 @@ def massacre(board):
     # create the massacre instance
     search = Massacre(root)
 
-    # do the search
+    # do the search using IDDFS
+    # IDDFS ensures an optimal solution since it will terminate the the least moves
+    # possible
     solution = search.IDDFS(root)
 
     # if the solution is None, therefore no solution exists and we print no Solution
     if solution is None:
         print("NO SOLUTION")
+
+    # get the sequence of modes from the terminal node
+    reconstructPath(solution)
+    return
+
+# helper method for massacre to reconstruct the path from the solution node
+def reconstructPath(node):
     # create a list called moves applied
     movesApplied = []
 
     # trace through the parent nodes to print the solution
-    node = solution
     while node is not None and node.moveApplied is not None:
         move = node.moveApplied
         moveCoordinates = node.board.convertMoveTypeToCoord(move[0],move[1])
