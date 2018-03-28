@@ -5,13 +5,11 @@ PARAMETERS:
     boardState
     piecePos
     availableMoves
-    phase
     counter
 
 METHODS:
     readInitalBoardState()
     updateBoardState(myPiecePos,moveType)
-    updatePhase(phase)
     isLegalMove(myPiecePos,moveType)
     convertMoveTypeToCoords(myPiecePos,moveType)
     my_piece_pos
@@ -28,13 +26,13 @@ METHODS:
 import constant
 from copy import deepcopy
 
-class Board(object):
 
+class Board(object):
     # initialise the class
     def __init__(self):
         # define the board state
 
-        # list to hold the representation of the current board state
+        # 2D list to hold the representation of the current board state
         self.boardState = []
 
         # create dictionaries to hold all the available moves and piece positions
@@ -43,18 +41,13 @@ class Board(object):
         self.piecePos = {constant.BLACK_PIECE: [],constant.WHITE_PIECE: []}
         self.availableMoves = {constant.BLACK_PIECE: [], constant.WHITE_PIECE: []}
 
-        # phase of the game
-        # 0 - placing phase
-        # 1 - moving phase
-        self.phase = constant.PLACEMENT_PHASE
-
         # move counter
         self.counter = 0
 
+    # reads in stdin and converts it to boardState, gets the piece positions and available
+    # moves
     def readInitialBoardState(self):
-
         # read 8 lines of std in to fulfill the board
-
         for i in range(constant.BOARD_SIZE):
             temp = input().strip('\n').split(' ')
             self.boardState.append(temp)
@@ -64,7 +57,7 @@ class Board(object):
         self.updateAvailableMoves()
         return
 
-    # update the board state
+    # update the board state based on a move applied to a particular piece
     def updateBoardState(self,myPiecePos,moveType):
         # update the position on the board and check whether a piece/pieces are to be eliminated
         # move the piece -- get the piecetype and the oppositePiecetype, update to free space
@@ -93,7 +86,6 @@ class Board(object):
         myPiecePos = toPosCol,toPosRow
         # check for eliminations at this new move - run three on the same piece to simulate three piece elimination
         # if only a two piece elimination, it should sequentially eliminate the pieces around it
-        # if
         while self.checkOnePieceElimination(myPiecePos,myPieceType,oppPieceType) is not None:
             piece = self.checkOnePieceElimination(myPiecePos,myPieceType,oppPieceType)
             # want to eliminate the opposition's piece
@@ -119,18 +111,7 @@ class Board(object):
         # check nearby locations if a white/black pieces exist -- then check if these pieces
         # have been eliminated by the move that has been made
 
-    # update the phase marker of the board
-    def updatePhase(self,phase):
-        if phase>=1:
-            # return error value
-            return 1
-
-        self.phase = phase;
-        # return success value
-        return 0
-
     def isLegalMove(self,myPiecePos,moveType):
-
         # get the new position from moveType
         oldCol,oldRow = myPiecePos;
         newCol,newRow = self.convertMoveTypeToCoord(myPiecePos,moveType)
@@ -157,10 +138,8 @@ class Board(object):
         elif moveType >=4 and moveType <8:
             # need to test if the intermediate space is a player piece -- if true
             # return true
-            # the relationship between one spaxe moveTypes and two space moveTypes is a difference of 4
-
+            # the relationship between one space moveTypes and two space moveTypes is a difference of 4
             # get the one space position based on the moveType entered
-            # moveType is related with each other by a constant of 4
             # one space movements are 4 less than the two space movements
 
             interPosCol,interPosRow = self.convertMoveTypeToCoord(myPiecePos,moveType-4)

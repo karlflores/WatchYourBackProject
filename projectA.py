@@ -3,6 +3,7 @@ import constant
 from Massacre import Massacre
 from node import Node
 
+
 def main():
 
     # create board instance
@@ -24,8 +25,8 @@ def moves(boardState):
     print(len(boardState.availableMoves[constant.BLACK_PIECE]))
     return
 
-def massacre(board):
 
+def massacre(board):
     # create the root of the search
     root = Node(board, None)
 
@@ -33,7 +34,7 @@ def massacre(board):
     search = Massacre(root)
 
     # do the search
-    solution = search.BFS_WITH_HEAPPQ(root)
+    solution = search.IDDFS(root)
 
     # if the solution is None, therefore no solution exists and we print no Solution
     if solution is None:
@@ -41,8 +42,8 @@ def massacre(board):
     # create a list called moves applied
     movesApplied = []
 
+    # trace through the parent nodes to print the solution
     node = solution
-
     while node is not None and node.moveApplied is not None:
         move = node.moveApplied
         moveCoordinates = node.board.convertMoveTypeToCoord(move[0],move[1])
@@ -55,12 +56,9 @@ def massacre(board):
     movesApplied.reverse()
 
     # print the solution
-
     for move in movesApplied:
         print(move)
-
     return
-
 
 
 if __name__ == "__main__":
