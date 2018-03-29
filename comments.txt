@@ -1,6 +1,7 @@
 A program written and designed by Karl Flores & Kristian Bjarnason
 for the University of Melbourne subject COMP30024, Artificial Intelligence.
 
+PROGRAM ANALYSIS
 
 *** Calculating number of moves ***
 
@@ -76,9 +77,9 @@ explore. We then explore these successor nodes recursively. And in each call we 
 Therefore we do not store the whole tree structure from the start of the search, but instead we
 generate it as we execute the search.
 
-The tree structure that stores the board representations is structured such that the nth layer is n moves away.
-Once a board representation is generated that matches the desired outcome (no black pieces
-remain) we return that solution and the search is complete.
+The tree structure that stores the board representations is structured such that the nth layer
+is n moves away. Once a board representation is generated that matches the desired outcome
+(no black pieces remain) we return that solution and the search is complete.
 
 Search algorithm used:
 
