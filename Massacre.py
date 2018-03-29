@@ -143,8 +143,8 @@ class Massacre(object):
             return constant.CUTOFF
 
         # if the depth is not at zero, we do the search
-        else:
         # else we run DFS for depth -1 levels
+        else:
             # set the cutoff flag to false -- if the search returns the cut off value we
             # return this value
             cutoffOccured = False
