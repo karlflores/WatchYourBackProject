@@ -1,29 +1,72 @@
 A program written and designed by Karl Flores & Kristian Bjarnason
 for the University of Melbourne subject COMP30024, Artificial Intelligence.
 
-***Calculating number of moves***
-Time Complexity:
 
+*** Calculating number of moves ***
+
+Time Complexity:
+getPiecePos runs in O(n^2)
+  - iterates through the columns (n) and rows (n) of the board
+  - therefore O(n^2)
+
+updateAvailableMoves runs in O(n)
+  - there are two colours (fixed constant)
+  - there can be n pieces per colour (n)
+  - each piece has 8 available options for moves to evaluate (fixed constant)
+  - Therefore to check the available moves for a colour it can take at most
+  O(8n) = O(n).
+
+Overall runs in O(n^2 + n) = O(n^2)
 
 Space Complexity:
+getPiecePos takes up O(1) space
+  - stores values in a fixed 8*8 2D array (fixed constant)
 
+updateAvailableMoves takes up O(n) space
+  - newDict has 2 key-value pairs, one for each colour
+  - for each piece check each potential move, add tuples of pice and moves
+  available to it, up to O(8n) = O(n) space for each colour.
+  - Therefore O(n) space overall.
 
-***Calculating sequence of moves***
+Overall takes up O(n) + O(1) = O(n) space.
+
+*** Calculating sequence of moves ***
+
 How we modelled the problem as a search problem:
-We create new board representations depending on possible moves and place
-these in a tree structure, where the nth layer is n moves away. We then search
-this tree to find a board representation that matches the desired outcome
-(no black pieces remain).
+Our program reads in the initial board representation, which becomes our root
+node for a search tree. Using both the availableMoves dictionary for the two
+players and he updateBoardState methods in the gameBoard class, we then can
+generate a child node to this parent representing board configurations that are
+one move from the parent's state. This allows us to create a searchable
+structure.
+
+Using the Iterative Deepening Depth First Search algorithm, we explore all the
+possible move combinations from the root node until we get to a node which has
+a board representation that matches our solution definition. The tree it self
+is generated as the search progresses.
+
+We create new board representations depending on possible moves and generate a
+tree structure, where the nth layer is n moves away. Once a board
+representation is generated that matches the desired outcome (no black pieces
+remain) we return that solution and the search is complete.
 
 Search algorithm used:
 Iterative Deepening Depth First Search.
 
 Branching factor of our search tree (if applicable):
-For each node, the branching factor is the number of available moves. Theoretically
-this means it could be as low as 0 or as high as 96, or any value in between. If we
-were to take the middle case this would mean there would be a branching factor of 48.
+For each node, the branching factor is the number of available moves.
+Theoretically this means it could be as low as 0 or as high as 96, or any value
+in between. If we were to take the middle case this would mean there would
+be a branching factor of 48.
 
+What is the maximum search depth:
+Theoretically the maximum search depth of such an algorithm is infinite.
+However, we have imposed a maximum search depth of 100 moves to limit the
+program from running infinitely.
 
 Algorithm optimality:
-Yes algorithm explores level by level (which represent number of moves),
-meaning it will return the optimal/shortest set of moves to make.
+Assuming the cost of each move is uniform, the algorithm is indeed optimal. The
+first solution that the algorithm returns will be the optimal path.
+This is because the algorithm explores level by level (which represent number
+of moves), meaning it will return the optimal/shortest set of moves to make
+because it will reach this before any state that takes more moves.
