@@ -2,7 +2,6 @@ from gameBoard import Board
 import constant
 from Massacre import Massacre
 from node import Node
-from time import time
 
 def main():
 
@@ -17,9 +16,7 @@ def main():
     if analysisType == 'Moves':
         moves(root)
     elif analysisType == 'Massacre':
-        startTime = time()
         massacre(root)
-        print("TIME ELAPSED: " + str(time()-startTime))
 
 
 def moves(boardState):
@@ -29,7 +26,8 @@ def moves(boardState):
 
 
 def massacre(board):
-    # create the root of the search
+    # create the root of the search. Indicate that this is the parent by assigning that
+    # there was no move applied to get this nodes board configuration.
     root = Node(board, None)
 
     # create the massacre instance
@@ -56,6 +54,7 @@ def massacre(board):
     return
 
 # helper method for massacre to reconstruct the path from the solution node
+# this prints the path as well
 def reconstructPath(node):
     # create a list called moves applied
     movesApplied = []
