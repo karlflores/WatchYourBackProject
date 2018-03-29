@@ -7,7 +7,8 @@ import constant
 class Massacre(object):
     # constructor
     def __init__(self,node):
-        # create an empty min heap priority queue for A*, dijkstra, greedy search algorithm implementation
+        # create an empty min heap priority queue for A*, greedy search algoriths if they were
+        # to be implemented
         self.heapq = []
 
         # create an empty queue for BFS
@@ -44,7 +45,7 @@ class Massacre(object):
         for moves in root.board.availableMoves[constant.WHITE_PIECE]:
             if root.board.isLegalMove(moves[0],moves[1]):
                 # create a new node
-                newNode = self.createNode(startNode.board,moves,startNode.depth+1,startNode,startNode.counter+1)
+                newNode = self.createNode(startNode.board,moves,startNode.depth+1,startNode)
 
                 if newNode.isGoalState():
                     return newNode
@@ -68,7 +69,7 @@ class Massacre(object):
             # test each of that nodes available actions
             for moves in node.board.availableMoves[constant.WHITE_PIECE]:
                 # create a child node for this move
-                child = self.createNode(node.board, moves, node.depth+1, node, node.counter+1)
+                child = self.createNode(node.board, moves, node.depth+1, node)
 
                 # if a child node was not created, return no solution
                 if child is None:
@@ -84,7 +85,7 @@ class Massacre(object):
                     # if it is not the goal state then append the child to the frontier queue
                     self.queue.append(child)
 
-    # depth first search algorithm to search all possilble moves
+    # depth first search algorithm to search all possible moves
     def DFS(self,root):
         startNode = deepcopy(root)
         if startNode.isGoalState():
@@ -94,7 +95,7 @@ class Massacre(object):
         for moves in root.board.availableMoves[constant.WHITE_PIECE]:
             if root.board.isLegalMove(moves[0],moves[1]):
                 # create a new node
-                newNode = self.createNode(startNode.board,moves,startNode.depth+1,startNode,startNode.counter+1)
+                newNode = self.createNode(startNode.board,moves,startNode.depth+1,startNode)
 
                 if newNode.isGoalState():
                     return newNode
@@ -114,7 +115,7 @@ class Massacre(object):
             # test each of that nodes available actions
             for moves in node.board.availableMoves[constant.WHITE_PIECE]:
                 # create a child node for this move
-                child = self.createNode(node.board, moves, node.depth+1, node, node.counter+1)
+                child = self.createNode(node.board, moves, node.depth+1, node)
 
                 # if a child node was not created, return no solution
                 if child is None:
@@ -130,7 +131,7 @@ class Massacre(object):
                     # if it is not the goal state then append the child to the frontier queue
                     self.stack.append(child)
 
-
+    # For the IDDFS algorithm
     def recursiveDLS(self,node,depth):
         # BASE CASE
         # if the node is the goal state, we return the node
@@ -154,10 +155,11 @@ class Massacre(object):
             if node.isSolveable() is False:
                 return constant.NO_SOLUTION
 
-            # iterate through the successor nodes of the current node and run DFS on this node
+            # iterate through the successor nodes of the current node and run DFS on these
+            # child nodes
             for move in node.board.availableMoves[constant.WHITE_PIECE]:
                 # create a child node
-                child = self.createNode(node.board, move, node.depth+1, node, node.counter+1)
+                child = self.createNode(node.board, move, node.depth+1, node)
                 # if the child node has not been visited before, recursively call recursiveDLS to
                 # search the subtree of this child node
 
@@ -191,7 +193,7 @@ class Massacre(object):
         for moves in root.board.availableMoves[constant.WHITE_PIECE]:
             if root.board.isLegalMove(moves[0],moves[1]):
                 # create a new node
-                newNode = self.createNode(startNode.board,moves,startNode.depth+1,startNode,startNode.counter+1)
+                newNode = self.createNode(startNode.board,moves,startNode.depth+1,startNode)
                 # check if it is the goal state
                 if newNode.isGoalState():
                     return newNode
@@ -213,7 +215,7 @@ class Massacre(object):
             # test each of that nodes available actions
             for moves in node.board.availableMoves[constant.WHITE_PIECE]:
                 # create a child node for this move
-                child = self.createNode(node.board, moves, node.depth+1, node, node.counter+1)
+                child = self.createNode(node.board, moves, node.depth+1, node)
 
                 # if a child node was not created, return no solution
                 if child is None:
@@ -233,7 +235,7 @@ class Massacre(object):
 
     # creates a new node for search expansion
     @staticmethod
-    def createNode(board,move,depth,parent,counter):
+    def createNode(board,move,depth,parent):
 
         # instantiate a new node
         node = Node(board,move)
@@ -241,10 +243,9 @@ class Massacre(object):
         if node is None:
             return None
 
-        # update the parent, depth and counter of the node
+        # update the parent, depth of the node
         node.depth = depth
         node.parent = parent
-        node.counter = counter
 
         # apply the move to the node
         node.board.updateBoardState(move[0],move[1])
@@ -252,19 +253,6 @@ class Massacre(object):
         # update the priority of the node based on the heuristic
         node.priority = node.countBlackPieces()
         return node
-
-    def reconstruct(self,node):
-        # create a variable representing the start node
-        newNode = node
-        # whilst the parent of a node exists we can reconstruct the path of
-        # that gets to that specific node
-        while newNode.parent is not None:
-            self.reconstructPath.append(newNode.moveApplied)
-
-            # set the newNode to be the parent of the previous node
-            newNode = newNode.parent
-            # add comment
-        return self.reconstructPath
 
     # set helper methods for hashing array to a set
     @staticmethod

@@ -8,11 +8,10 @@ PARAMETERS:
     counter
 
 METHODS:
-    readInitalBoardState()
+    readInitialBoardState()
     updateBoardState(myPiecePos,moveType)
     isLegalMove(myPiecePos,moveType)
     convertMoveTypeToCoords(myPiecePos,moveType)
-    my_piece_pos
     printBoard()
     getPiecePos()
     updateAvailableMoves()
@@ -60,11 +59,12 @@ class Board(object):
     # update the board state based on a move applied to a particular piece
     def updateBoardState(self,myPiecePos,moveType):
         # update the position on the board and check whether a piece/pieces are to be eliminated
-        # move the piece -- get the piecetype and the oppositePiecetype, update to free space
+        # move the piece -- get the myPieceType and the oppPieceType, update to free space
         fromPosCol,fromPosRow = myPiecePos
         toPosCol,toPosRow = self.convertMoveTypeToCoord(myPiecePos,moveType)
         myPieceType = self.boardState[fromPosRow][fromPosCol]
 
+        # find out the colour of myPieceType and oppPieceType
         if myPieceType == constant.WHITE_PIECE:
             oppPieceType = constant.BLACK_PIECE
         else:
@@ -78,7 +78,7 @@ class Board(object):
             # return False -- error value, if the move is not valid, i.e a move has not been made
             return False
 
-        # update pos dict
+        # update pos dict with new position, remove the old position
         self.piecePos[myPieceType].remove(myPiecePos)
         self.piecePos[myPieceType].append((toPosCol,toPosRow))
 
@@ -98,11 +98,11 @@ class Board(object):
                 self.boardState[removePosRow][removePosCol] = constant.FREE_SPACE
 
         # check for self eliminations if there is no opponent piece to be eliminated
-        piece = self.checkSelfElimination(myPiecePos,myPieceType,oppPieceType);
+        piece = self.checkSelfElimination(myPiecePos,myPieceType,oppPieceType)
         if piece is not None:
             col,row = piece
             # remove if there a piece is self eliminated
-            self.piecePos[myPieceType].remove(piece);
+            self.piecePos[myPieceType].remove(piece)
             self.boardState[row][col] = constant.FREE_SPACE
 
         # recalculate all the moves
