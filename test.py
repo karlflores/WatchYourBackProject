@@ -85,7 +85,7 @@ print()
 startTime = time.time();
 root = Node(a, None)
 massacre = Massacre(root)
-solution = massacre.BFS_WITH_HEAPPQ(root)
+solution = massacre.greedySearch(root)
 node = solution
 if type(solution) is not int:
     solution.board.printBoard()

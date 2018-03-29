@@ -132,8 +132,6 @@ class Massacre(object):
 
 
     def recursiveDLS(self,node,depth):
-        # create a visited set to track all visited nodes in the current search
-        visitedSet = set()
         # BASE CASE
         # if the node is the goal state, we return the node
         if node.isGoalState():
@@ -146,33 +144,30 @@ class Massacre(object):
 
         # if the depth is not at zero, we do the search
         else:
-            # add the current node to the visited set
-            # we need to add a string representation of the boardState of that node for it
-            # to be added to the set
-            visitedSet.add(self.listToString(node.board.boardState))
-
+        # else we run DFS for depth -1 levels
             # set the cutoff flag to false -- if the search returns the cut off value we
             # return this value
             cutoffOccured = False
 
-        # else we run DFS for depth -1 levels
+            # checks if the current node is a solvable node, if it is not, we return
+            # a constant saying there is no solution at this node
+            if node.isSolveable() is False:
+                return constant.NO_SOLUTION
+
             # iterate through the successor nodes of the current node and run DFS on this node
             for move in node.board.availableMoves[constant.WHITE_PIECE]:
                 # create a child node
                 child = self.createNode(node.board, move, node.depth+1, node, node.counter+1)
-                # if the child node has been visited before, recursively call recursiveDLS to
+                # if the child node has not been visited before, recursively call recursiveDLS to
                 # search the subtree of this child node
-                if self.listToString(child.board.boardState) not in visitedSet:
-                    resultDLS = self.recursiveDLS(child, depth-1)
-                else:
-                    # if visited, we move to the next child node
-                    continue
+
+                resultDLS = self.recursiveDLS(child, depth-1)
 
                 # change the cut off flag
                 if resultDLS == constant.CUTOFF:
                     cutoffOccured = True
                 # return the result if it is not a failed search
-                elif resultDLS is not constant.FAILURE:
+                elif resultDLS is not constant.FAILURE or resultDLS is not constant.NO_SOLUTION:
                     return resultDLS
         # if we have reached the depth and not have found the solution, return the cut off
         # value

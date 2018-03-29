@@ -67,7 +67,21 @@ class Node(object):
 
     # checks if the board is in a solvable state -- checks if there are more than 2 white pieces on the board
     def isSolveable(self):
-        if len(self.board.piecePos[constant.WHITE_PIECE]) >= 2:
-            return True
-        else:
+        # next to corner pieces
+        if len(self.board.piecePos[constant.WHITE_PIECE]) == 0:
             return False
+        elif len(self.board.piecePos[constant.WHITE_PIECE]) == 1:
+            nextToCornerPos = [(0, 1), (1, 0), (7, 1), (6, 0), (0, 6), (1, 7), (6, 7), (7, 6)]
+            numNextToCornerPos = 0
+            for piece in self.board.piecePos[constant.BLACK_PIECE]:
+                if piece in nextToCornerPos:
+                    numNextToCornerPos += 1
+                    print(numNextToCornerPos)
+
+            # if there are no pieces next to the corner pieces
+            if numNextToCornerPos == 0:
+                return False
+            else:
+                return True
+        else:
+            return True

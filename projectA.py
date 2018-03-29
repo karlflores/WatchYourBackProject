@@ -2,7 +2,7 @@ from gameBoard import Board
 import constant
 from Massacre import Massacre
 from node import Node
-
+from time import time
 
 def main():
 
@@ -17,7 +17,9 @@ def main():
     if analysisType == 'Moves':
         moves(root)
     elif analysisType == 'Massacre':
+        startTime = time()
         massacre(root)
+        print("TIME ELAPSED: " + str(time()-startTime))
 
 
 def moves(boardState):
@@ -40,7 +42,14 @@ def massacre(board):
 
     # if the solution is None, therefore no solution exists and we print no Solution
     if solution is None:
-        print("NO SOLUTION")
+        print("NO SOLUTION: CUTOFF REACHED")
+        return
+    elif solution is constant.FAILURE:
+        print("SEARCH FAILED")
+        return
+    elif solution is constant.NO_SOLUTION:
+        print("NO SOLUTION FOR INPUT BOARD STATE")
+        return
 
     # get the sequence of modes from the terminal node
     reconstructPath(solution)
