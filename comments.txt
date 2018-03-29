@@ -1,26 +1,114 @@
 A program written and designed by Karl Flores & Kristian Bjarnason
 for the University of Melbourne subject COMP30024, Artificial Intelligence.
 
-***Calculating number of moves***
+
+*** Calculating number of moves ***
+
 Time Complexity:
 
+getPiecePos runs in O(1)
+  - iterates through the columns (n) and rows (n) of the board
+  - therefore for an arbitrary board size of n x n, the time complexity
+    of this method is O(n^2).
+  - But, because the board is fixed at a size of 8 x 8 for each input,
+    it takes a total of 64 steps to iterate through the board. In terms
+    of Big-O notation, it runs in O(1) time.
+
+updateAvailableMoves runs in O(n)
+  - In this method, we iterate through the piece positions of each colour.
+    There are two colours (fixed constant) and there can be n pieces per colour
+    (n), each piece has 8 available options for moves to evaluate (fixed
+    constant). Therefore to check the available moves for a colour it can take
+    at most O(8n) time. But, O(8n) = O(n).
+  - Therefore in order to check each colour, it takes O(n) + O(n) = O(n) time.
+
+At the end of updateAvailableMoves we have a dictionary has two populated
+lists contains the position of each respective piece on the board and its
+moveType that is able to be applied to that piece. Hence, to find the number
+of moves for each piece, we just need to find the length of each list. To do so
+we call len() from the standard python library, of which has a running cost of O(1).
+
+Overall, in order to get the Moves for each piece runs in O(1) + O(n) + O(1) = O(n)
 
 Space Complexity:
+getPiecePos takes up O(n) space
+  - getPiecePos stores the board state in  in a fixed 8 x 8 2D list
+    (fixed constant).
+  - This function also stores the positions of the each of the colours pieces in two
+    separate lists. These lists can be takes up O(n) space.
+  - Therefore in total, getPiecePos() takes O(n) + O(1) = O(n) space
 
+updateAvailableMoves takes up O(n) space
+  - newDict has 2 key-value pairs, one for each colour
+  - For each piece in the piecePos list, we check each potential move. We then add
+    tuples of piece and moves to the corresponding list in the dictionary.
+    This means that for n pieces, we check 8 moves. At most we can add all 8 moves
+    to the dictionary. Therefore in total we add up to O(8n) = O(n) space for each
+    colour.
+  - Therefore this method takes an extra O(n) space overall.
 
-***Calculating sequence of moves***
+ To get moves we need to just calculate the lengths of the list in the dictionary.
+ We just need to call len() to work this out so this does not add any extra space.
+
+Overall takes up O(n) + O(n) = O(n) space.
+
+*** Calculating sequence of moves ***
+
 How we modelled the problem as a search problem:
-We create new board representations depending on possible moves and place
-these in a tree structure, where the nth layer is n moves away. We then search
-this tree to find a board representation that matches the desired outcome
-(no black pieces remain).
+
+Our program reads in the initial board representation from standard in. From this
+information it then updates all the board instance attributes to represent that
+state of the board. In this board instance it tracks the available moves that can be
+made for that specific board representation. This means that we can apply each of
+these available moves to this board state to generate successor board states which are
+one move away from the current board state. In order to make this a searchable structure
+we store each board instance in a node object which deep-copies the board instance and tracks
+a reference to the parent node and the move applied to get that node so that we can back
+trace the path back up to the root node.
+
+In this problem our initial board representation is our root node for a search tree. Using both
+the availableMoves dictionary which contains the available moves for the two players and
+the updateBoardState methods in the gameBoard class, we then can generate a child/successor node
+to this parent node. This represents the board configuration that is one move from the parent's state.
+This allows us to create a searchable structure dynamically as we execute the search algorithm. As we
+run the search algorithm we start from the root node, and then create the successor nodes which we
+explore. We then explore these successor nodes recursively. And in each call we generate new nodes.
+Therefore we do not store the whole tree structure from the start of the search, but instead we
+generate it as we execute the search.
+
+The tree structure that stores the board representations is structured such that the nth layer is n moves away.
+Once a board representation is generated that matches the desired outcome (no black pieces
+remain) we return that solution and the search is complete.
 
 Search algorithm used:
+
 Iterative Deepening Depth First Search.
+(Time complexity -- O(b^m) : Space complexity O(bm))
 
 Branching factor of our search tree (if applicable):
+For each node, the branching factor is the number of available moves.
+Theoretically this means it could be as low as 0 or as high as 96, or any value
+in between. If we were to take the middle case this would mean there would
+be a branching factor of 48.
+
+What is the maximum search depth:
+Theoretically the maximum search depth of such an algorithm is infinite.
+However, we have imposed a maximum search depth of 100 moves to limit the program
+from running infinitely.
+
+It must be noted that due to the project specifications our algorithm must produce
+an output that corresponds to a sequence of moves that is 5 moves or less in length,
+so therefore theoretically we can reduce our search space such that we only iterate
+to the 5th layer.
 
 
 Algorithm optimality:
-Yes algorithm explores level by level (which represent number of moves),
-meaning it will return the optimal/shortest set of moves to make.
+
+Assuming the cost of each move is uniform, the algorithm is indeed optimal. The way
+that Iterative Deepening Depth First Search works is that we explore the tree structure
+layer by layer in a depth first wise manner. This means that starting from layer 0 through to
+layer n we test each node in the layer to see if it is a solution to the problem. The first
+solution that the algorithm returns will be the optimal path. This is because the cost of going
+from one node to another is just a uniform cost and hence the search will always terminate at
+the least cost solution. Furthermore, this means it will return the optimal set of moves to make
+because it will reach this before any state that takes more moves.
