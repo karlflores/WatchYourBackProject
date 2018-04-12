@@ -1,1 +1,9 @@
-
+LMS_TEST
+.idea
+sample_files
+testBoards
+venv
+.DS_Store
+gitGraph.log
+testClassDeepCopy.py
+test.py
