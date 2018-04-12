@@ -7,3 +7,4 @@ venv
 gitGraph.log
 testClassDeepCopy.py
 test.py
+__pycache__
