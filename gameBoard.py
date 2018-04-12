@@ -7,6 +7,7 @@ PARAMETERS:
     availableMoves
     counter
 
+
 METHODS:
     readInitialBoardState()
     updateBoardState(myPiecePos,moveType)
