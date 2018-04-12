@@ -3,3 +3,5 @@ LMS_TEST
 sample_files
 testBoards
 gitGraph.log
+__pycache__
+.DS_Store
