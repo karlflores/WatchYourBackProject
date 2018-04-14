@@ -7,3 +7,6 @@ board.set_board(1,1,constant.BLACK_PIECE)
 board.set_board(3,3,constant.INVALID_SPACE)
 print()
 board.print_board()
+
+print(board.available_moves)
+print(list(board.available_moves.keys()))
