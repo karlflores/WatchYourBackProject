@@ -277,9 +277,8 @@ class Board(object):
 
     # elimination checkers
 
-    # TODO -- NEED TO MAKE THIS WORK WITH UPDATING THE AVAILABLE MOVES FOR THE PLACEMENT
-    # TODO -- PHASE, AS CURRENTLY THIS FUNCTION ONLY WORKS FOR THE MOVING PHASE AS IT
-    # TODO -- UPDATES THE DICTIONARY BASED ON THE MOVING PHASE DICTIONARY STRUCTURE
+    # TODO -- NEED TO TEST IF THE CHANGES TO MAKE IT HANDLE BOTH PLACEMENT AND MOVING
+    # TODO -- WILL WORK CORRECTLY
     def perform_elimination(self,my_piece_pos,my_piece_type):
         # get the opponent piece type
         opp_piece_type = self.get_opp_piece_type(my_piece_type)
@@ -289,11 +288,18 @@ class Board(object):
 
             # want to eliminate about the opposition's piece
             if piece in self.available_moves[opp_piece_type] and piece is not None:
-                # remove this entry from the dictionary
-                self.available_moves[opp_piece_type].pop(piece)
-
-                # recalculate all available moves for pieces around the new free space
-                self.update_near_by_free_space(piece)
+                # remove this entry from the dictionary if in the moving phase
+                # add the free space in to the avaiable moves list we are in the placement
+                # phase
+                if self.phase == constant.PLACEMENT_PHASE:
+                    # add this free space to both the opponent piece and the current player
+                    # available player list
+                    self.available_moves[opp_piece_type][constant.PLACEMENT_PHASE].append(piece)
+                    self.available_moves[my_piece_type][constant.PLACEMENT_PHASE].append(piece)
+                else:
+                    self.available_moves[opp_piece_type].pop(piece)
+                    # recalculate all available moves for pieces around the new free space
+                    self.update_near_by_free_space(piece)
 
                 # update the string board representation
                 remove_col,remove_row = piece
@@ -305,7 +311,13 @@ class Board(object):
         piece = self.check_self_elimination(my_piece_pos,my_piece_type)
         if piece is not None:
             # removes item from the board
-            self.available_moves[my_piece_type].pop(piece)
+            if self.phase == constant.PLACEMENT_PHASE:
+                # add this free space to both the opponent piece and the current player
+                # available player list
+                self.available_moves[opp_piece_type][constant.PLACEMENT_PHASE].append(piece)
+                self.available_moves[my_piece_type][constant.PLACEMENT_PHASE].append(piece)
+            else:
+                self.available_moves[my_piece_type].pop(piece)
 
             # when we remove a piece, it creates a free space on the board --
             # this free space needs to be updated to be an available move to those pieces
