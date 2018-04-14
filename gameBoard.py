@@ -41,9 +41,19 @@ class Board(object):
         self.piecePos = {constant.BLACK_PIECE: [],constant.WHITE_PIECE: []}
         self.availableMoves = {constant.BLACK_PIECE: [], constant.WHITE_PIECE: []}
 
-        # move counter
-        self.counter = 0
+        # track the position of the corner pieces in the game
+        self.cornerPos = [(0, 0), (7, 0), (0, 7), (7, 7)]
 
+        # track the current dimensions of the board
+        self.rowIndexMin = 0
+        self.rowIndexMax = constant.BOARD_SIZE-1
+        self.colIndexMin = 0
+        self.colIndexMax = constant.BOARD_SIZE-1
+        # move counter
+        self.moveCounter = 0
+        self.phase;
+        # number of shrinks made so far
+        self.numShrink = 0
     # reads in stdin and converts it to boardState, gets the piece positions and available
     # moves
     def readInitialBoardState(self):
@@ -156,7 +166,21 @@ class Board(object):
                 # if this space is free then you can't jump, therefore return false
                 return False
 
+    # checks whether placing a piece is legal or not based on the rules of the game
+    def isLegalPlace(self,position):
+        posCol,posRow = position
 
+        # check if the position is out bounds of the board
+        if posCol < self.colIndexMin or posCol > self.colIndexMax:
+            return False
+        if posRow < self.rowIndexMin or posRow > self.rowIndexMax:
+            return False
+
+        # check if the piece is on free spot on the board
+        if self.boardState[posRow][posCol] == constant.FREE_SPACE:
+            return True
+        else:
+            return False
 
     def convertMoveTypeToCoord(self,myPiecePos,moveType):
         # piece pos is in the form of a tuple (col,row)
@@ -233,6 +257,9 @@ class Board(object):
 
         self.availableMoves = newDict
 
+        # when an update has been made we increment the move counter of the board
+        self.moveCounter = self.moveCounter+1
+
     # elimination checker helper functions  -- for updateBoard method
     # checks if a move results in a one piece elimination
     # can use this method multiple times to check whether a multiple pieces are eliminated
@@ -295,3 +322,14 @@ class Board(object):
             return posCol,posRow
         else:
             return None
+
+    def shrinkBoard(self):
+        #we can shrink the board upto 2 times per game -- one at 64 moves in total and one at 96 moves
+        pass
+
+    def checkWin(self):
+        # check if an opponent has won or drew -- an opponent has won if the other opponent has no
+
+
+
+
