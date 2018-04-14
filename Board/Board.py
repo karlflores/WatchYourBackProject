@@ -463,6 +463,9 @@ class Board(object):
         self.available_moves[my_piece_type][constant.PLACEMENT_PHASE].remove(pos)
         self.available_moves[opp_piece_type][constant.PLACEMENT_PHASE].remove(pos)
 
+        # also need to add an entry into the dictionary which stores the piece on the board
+        new_entry = {pos: []}
+        self.available_moves[my_piece_type].update(new_entry)
         # increment the move counter
 
         # perform the elimination around the piece that has been placed
@@ -472,7 +475,37 @@ class Board(object):
     # went we want to update the board we call this function
     # move has to be in the form ((row,col),move_type)
     def update_board(self,move,my_piece_type):
-        pass
+        # test if we need to switch from placement to moving
+        if self.move_counter == 24:
+            # change the phase
+            self.phase = constant.MOVING_PHASE
+            # all 24 pieces have been placed on the board
+            # remove the entries relating to the placement phase in the dict
+            self.available_moves[constant.BLACK_PIECE].pop(constant.PLACEMENT_PHASE)
+            self.available_moves[constant.WHITE_PIECE].pop(constant.PLACEMENT_PHASE)
+            # need to update the available moves for each of piece on the board
+
+            for player in self.available_moves.keys():
+                for piece in self.available_moves[player].keys():
+                    # we now have the key
+                    temp = self.update_available_moves(piece)
+                    self.available_moves[player].update(temp)
+
+        if self.move_counter in (64,128):
+            # need to shrink the board
+            pass
+
+
+        if self.phase == constant.PLACEMENT_PHASE:
+            # make the placement -- this should take care of the update to the available moves
+            # as well as the move counter
+            self.make_placement(move,my_piece_type)
+
+        else:
+            pos = move[0]
+            move_type = move[1]
+            self.make_move(pos,move_type,my_piece_type)
+
 
     # string_array helper methods
     @staticmethod
