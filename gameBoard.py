@@ -44,14 +44,9 @@ class Board(object):
         # track the position of the corner pieces in the game
         self.cornerPos = [(0, 0), (7, 0), (0, 7), (7, 7)]
 
-        # track the current dimensions of the board
-        self.rowIndexMin = 0
-        self.rowIndexMax = constant.BOARD_SIZE-1
-        self.colIndexMin = 0
-        self.colIndexMax = constant.BOARD_SIZE-1
         # move counter
         self.moveCounter = 0
-        self.phase;
+        self.phase = 0
         # number of shrinks made so far
         self.numShrink = 0
     # reads in stdin and converts it to boardState, gets the piece positions and available
@@ -75,12 +70,6 @@ class Board(object):
         toPosCol,toPosRow = self.convertMoveTypeToCoord(myPiecePos,moveType)
         myPieceType = self.boardState[fromPosRow][fromPosCol]
 
-        # find out the colour of myPieceType and oppPieceType
-        if myPieceType == constant.WHITE_PIECE:
-            oppPieceType = constant.BLACK_PIECE
-        else:
-            oppPieceType = constant.WHITE_PIECE
-
         # update the 'to' location with the old piecetype, only if the move is valid
         if self.isLegalMove(myPiecePos,moveType):
             self.boardState[toPosRow][toPosCol] = myPieceType
@@ -95,45 +84,28 @@ class Board(object):
 
         # update piecePos to be the new position for elimination checking
         myPiecePos = toPosCol,toPosRow
-        # check for eliminations at this new move - run three on the same piece to simulate three piece elimination
-        # if only a two piece elimination, it should sequentially eliminate the pieces around it
-        while self.checkOnePieceElimination(myPiecePos,myPieceType,oppPieceType) is not None:
-            piece = self.checkOnePieceElimination(myPiecePos,myPieceType,oppPieceType)
-            # want to eliminate the opposition's piece
-            if piece in self.piecePos[oppPieceType]:
-                # remove from dict
-                self.piecePos[oppPieceType].remove(piece)
-
-                # replace with free space on board
-                removePosCol,removePosRow = piece
-                self.boardState[removePosRow][removePosCol] = constant.FREE_SPACE
-
-        # check for self eliminations if there is no opponent piece to be eliminated
-        piece = self.checkSelfElimination(myPiecePos,myPieceType,oppPieceType)
-        if piece is not None:
-            col,row = piece
-            # remove if there a piece is self eliminated
-            self.piecePos[myPieceType].remove(piece)
-            self.boardState[row][col] = constant.FREE_SPACE
-
+        self.performPieceElimination(myPiecePos, myPieceType)
         # recalculate all the moves
         self.updateAvailableMoves()
-
-        # check nearby locations if a white/black pieces exist -- then check if these pieces
-        # have been eliminated by the move that has been made
 
     def isLegalMove(self,myPiecePos,moveType):
         # get the new position from moveType
         oldCol,oldRow = myPiecePos;
         newCol,newRow = self.convertMoveTypeToCoord(myPiecePos,moveType)
 
+        # get the board dimensions based on the current corner positions (LT, RT, LB, RR)
+        colIndexMin = self.cornerPos[0][0]
+        colIndexMax = self.cornerPos[1][0]
+        rowIndexMin = self.cornerPos[0][1]
+        rowIndexMax = self.cornerPos[3][1]
         # check if the piecePos is actually a piece, if not return false
         if self.boardState[oldRow][oldCol] not in (constant.WHITE_PIECE,constant.BLACK_PIECE):
             return False
-        # need to test if the newCol, newRow are in the boundaries of the board
-        if newCol < 0 or newCol > constant.BOARD_SIZE - 1:
+        # need to test if the newCol, newRow are in the boundaries of the board based on
+        # the corner locations
+        if newCol < colIndexMin or newCol > colIndexMax:
             return False
-        if newRow < 0 or newRow > constant.BOARD_SIZE - 1:
+        if newRow < rowIndexMin or newRow > rowIndexMax:
             return False
 
         # now need to test whether the new position on board is an free space on the board
@@ -170,10 +142,15 @@ class Board(object):
     def isLegalPlace(self,position):
         posCol,posRow = position
 
+        # get the board dimensions based on the current corner positions (LT, RT, LB, RB)
+        colIndexMin = self.cornerPos[0][0]
+        colIndexMax = self.cornerPos[1][0]
+        rowIndexMin = self.cornerPos[0][1]
+        rowIndexMax = self.cornerPos[3][1]
         # check if the position is out bounds of the board
-        if posCol < self.colIndexMin or posCol > self.colIndexMax:
+        if posCol < colIndexMin or posCol > colIndexMax:
             return False
-        if posRow < self.rowIndexMin or posRow > self.rowIndexMax:
+        if posRow < rowIndexMin or posRow > rowIndexMax:
             return False
 
         # check if the piece is on free spot on the board
@@ -324,12 +301,46 @@ class Board(object):
             return None
 
     def shrinkBoard(self):
-        #we can shrink the board upto 2 times per game -- one at 64 moves in total and one at 96 moves
+        # we can shrink the board upto 2 times per game -- one at 64 moves in total and one at 128 moves
         pass
+        # first we need to remove the edges of the board
+
+        # after we remove the edges we remove the pieces at the corner of the board
 
     def checkWin(self):
         # check if an opponent has won or drew -- an opponent has won if the other opponent has no
+        pass
 
+    @staticmethod
+    def returnOppPieceType(myPieceType):
+        if myPieceType not in (constant.BLACK_PIECE, constant.WHITE_PIECE):
+            return None
 
+        if myPieceType == constant.WHITE_PIECE:
+            return constant.BLACK_PIECE
+        else:
+            return constant.WHITE_PIECE
 
+    def performPieceElimination(self,myPiecePos,myPieceType):
 
+        oppPieceType = self.returnOppPieceType(myPieceType)
+        # check for eliminations at this new move - run three on the same piece to simulate three piece elimination
+        # if only a two piece elimination, it should sequentially eliminate the pieces around it
+        while self.checkOnePieceElimination(myPiecePos, myPieceType, oppPieceType) is not None:
+            piece = self.checkOnePieceElimination(myPiecePos, myPieceType, oppPieceType)
+            # want to eliminate the opposition's piece
+            if piece in self.piecePos[oppPieceType]:
+                # remove from dict
+                self.piecePos[oppPieceType].remove(piece)
+
+                # replace with free space on board
+                removePosCol, removePosRow = piece
+                self.boardState[removePosRow][removePosCol] = constant.FREE_SPACE
+
+        # check for self eliminations if there is no opponent piece to be eliminated
+        piece = self.checkSelfElimination(myPiecePos, myPieceType, oppPieceType)
+        if piece is not None:
+            col, row = piece
+            # remove if there a piece is self eliminated
+            self.piecePos[myPieceType].remove(piece)
+            self.boardState[row][col] = constant.FREE_SPACE
