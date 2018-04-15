@@ -15,18 +15,10 @@ class Board(object):
         self.board_state = self.init_board_rep()
 
         # self.piece_pos = {constant.BLACK_PIECE: {-1:}, constant.WHITE_PIECE: []}
+        # store the current position of pieces on the board
+        self.piece_pos = {constant.WHITE_PIECE: [],
+                          constant.BLACK_PIECE: []}
 
-        self.piece_counter = {constant.BLACK_PIECE: constant.MAX_NUM_PIECES,
-                              constant.WHITE_PIECE: constant.MAX_NUM_PIECES}
-
-        # dictionary storing the available moves of each player
-        # in the placement phase the key is just constant.PLACEMENT_PHASE
-        # indicating there is no pieces on the board at the moment
-        # when we switch from placement to moving phase we get rid of this entry
-        # and the keys are the tuples representing the position of the pieces that
-        # are the position of pieces on the board so far
-        self.available_moves = {constant.BLACK_PIECE: {constant.PLACEMENT_PHASE: []},
-                                constant.WHITE_PIECE: {constant.PLACEMENT_PHASE: []}}
         # initialise the board representation
         # LT RT LB RB
         self.corner_pos = [(0, 0), (7, 0), (0, 7), (7, 7)]
@@ -35,8 +27,12 @@ class Board(object):
         self.phase = constant.PLACEMENT_PHASE
         self.num_shrink = 0
 
+        # initially no one wins
+        self.winner = None
+        self.terminal = False
+
         # initialise the start of the game
-        self.init_start_moves()
+        #self.init_start_moves()
 
     def init_board_rep(self):
         # store the board representation as a byte_array length 64 (64bytes)
@@ -52,30 +48,6 @@ class Board(object):
             self.set_array_char(temp,row,col,constant.CORNER_PIECE)
 
         return temp
-
-    # set up the board for the first time
-    def init_start_moves(self):
-        # set the initial board parameters
-        # no pieces on the board
-        # available moves is the entire starting zone for each player
-
-        # set the white pieces available moves
-        for row in range(0,constant.BOARD_SIZE-2):
-            for col in range(constant.BOARD_SIZE):
-                if (row, col) not in self.corner_pos:
-                    # append the available move in the list in the form col, row
-                    # get the dictionary associated with the white piece
-                    white_move_dict = self.available_moves[constant.WHITE_PIECE]
-
-                    white_move_dict[constant.PLACEMENT_PHASE].append((col,row))
-
-        # set the black piece available moves
-        for row in range(2, constant.BOARD_SIZE):
-            for col in range(constant.BOARD_SIZE):
-                if (row, col) not in self.corner_pos:
-                    # append the available move in the list in the form col, row
-                    black_move_dict = self.available_moves[constant.BLACK_PIECE]
-                    black_move_dict[constant.PLACEMENT_PHASE].append((col,row))
 
     def is_valid_placement(self,piece_place,piece_type):
         # set the valid zones for placement
@@ -106,27 +78,24 @@ class Board(object):
 
     # returns the type of the cell at a given position
     def return_cell_type(self,my_piece_pos):
+        # based on the corner positions we know the current
+        # dimensions of the board
         col_min = self.corner_pos[0][1]
         col_max = self.corner_pos[2][1]
         row_min = self.corner_pos[0][0]
         row_max = self.corner_pos[1][0]
 
         # if the position is outside of the playable bounds
-        pos_col, pos_row = my_piece_pos
-        if pos_col < col_min or pos_col > col_max:
+        col, row = my_piece_pos
+        if col < col_min or col > col_max:
             return constant.INVALID_SPACE
-        if pos_row < row_min or pos_row > row_max:
+        if row < row_min or row > row_max:
             return constant.INVALID_SPACE
 
         # piece is in the playable bounds of the game
-        if my_piece_pos in self.available_moves[constant.BLACK_PIECE]:
-            return constant.BLACK_PIECE
-        elif my_piece_pos in self.available_moves[constant.WHITE_PIECE]:
-            return constant.WHITE_PIECE
-        elif my_piece_pos in self.corner_pos:
-            return constant.CORNER_PIECE
-        else:
-            return constant.FREE_SPACE
+        # we can return this piece
+        return self.get_board_piece(row,col)
+
     # helper method for the moving phase of the game
     @staticmethod
     def convert_move_type_to_coord(my_piece_pos, move_type):
@@ -145,21 +114,21 @@ class Board(object):
         pos_col, pos_row = my_piece_pos
 
         # do the conversion -- this function does not handle
-        if move_type == 0:
+        if move_type == constant.RIGHT_1:
             return pos_col + 1, pos_row
-        elif move_type == 1:
+        elif move_type == constant.DOWN_1:
             return pos_col, pos_row + 1
-        elif move_type == 2:
+        elif move_type == constant.RIGHT_1:
             return pos_col - 1, pos_row
-        elif move_type == 3:
+        elif move_type == constant.UP_1:
             return pos_col, pos_row - 1
-        elif move_type == 4:
+        elif move_type == constant.RIGHT_2:
             return pos_col + 2, pos_row
-        elif move_type == 5:
+        elif move_type == constant.DOWN_2:
             return pos_col, pos_row + 2
-        elif move_type == 6:
+        elif move_type == constant.LEFT_2:
             return pos_col - 2, pos_row
-        elif move_type == 7:
+        elif move_type == constant.UP_2:
             return pos_col, pos_row - 2
 
     @ staticmethod
@@ -172,24 +141,26 @@ class Board(object):
         diff_col = coord_2_col-coord_1_col
         diff_row = coord_2_row - coord_1_row
 
+        # check left and right first
         if diff_col == 0:
             if diff_row == 1:
-                return 0
+                return constant.RIGHT_1
             elif diff_row == -1:
-                return 2
+                return constant.LEFT_1
             elif diff_row == 2:
-                return 4
+                return constant.RIGHT_2
             elif diff_row == -2:
-                return 6
+                return constant.LEFT_2
+        # check up and down
         elif diff_row == 0:
             if diff_col == 1:
-                return 1
+                return constant.DOWN_1
             elif diff_col == -1:
-                return 3
+                return constant.UP_1
             elif diff_col == 2:
-                return 5
+                return constant.DOWN_2
             elif diff_col == -2:
-                return 7
+                return constant.UP_2
 
     # check if a move is legal
     def is_legal_move(self,my_piece_pos,move_type):
@@ -209,7 +180,7 @@ class Board(object):
         new_my_piece_type = self.return_cell_type(new_pos)
         # check if the piece is within the current dimensions of the board
         if new_my_piece_type == constant.INVALID_SPACE or \
-                    new_my_piece_type == constant.SPACE_NOT_EXIST:
+                new_my_piece_type == constant.SPACE_NOT_EXIST:
             return False
 
         # if there is not another piece occupying that space and if it is inside the board
@@ -222,8 +193,9 @@ class Board(object):
             else:
                 # there is a piece that is occupying this space
                 return False
+        # check the two space move
         elif move_type >= 4 and move_type < 8:
-            # get the intermediate position
+            # get the intermediate position piece_type
             inter_pos = self.convert_move_type_to_coord(my_piece_pos,move_type-4)
             inter_pos_piece_type = self.return_cell_type(inter_pos)
 
@@ -287,53 +259,27 @@ class Board(object):
             piece = self.check_one_piece_elimination(my_piece_pos,my_piece_type)
 
             # want to eliminate about the opposition's piece
-            if piece in self.available_moves[opp_piece_type] and piece is not None:
-                # remove this entry from the dictionary if in the moving phase
-                # add the free space in to the avaiable moves list we are in the placement
-                # phase
-                if self.phase == constant.PLACEMENT_PHASE:
-                    # add this free space to both the opponent piece and the current player
-                    # available player list
-                    self.available_moves[opp_piece_type][constant.PLACEMENT_PHASE].append(piece)
-                    self.available_moves[my_piece_type][constant.PLACEMENT_PHASE].append(piece)
-                else:
-                    self.available_moves[opp_piece_type].pop(piece)
-                    # recalculate all available moves for pieces around the new free space
-                    self.update_near_by_free_space(piece)
+            if piece in self.piece_pos[opp_piece_type]:
+                # update the opponents piece_pos_list
+                self.piece_pos[opp_piece_type].remove(piece)
 
                 # update the string board representation
                 remove_col,remove_row = piece
                 self.set_board(remove_row,remove_col,constant.FREE_SPACE)
-                # there is now one less piece on the board
-                self.piece_counter[opp_piece_type] -= 1
 
         # check for self elimination if there is not opponent piece to be eliminated
         piece = self.check_self_elimination(my_piece_pos,my_piece_type)
         if piece is not None:
-            # removes item from the board
-            if self.phase == constant.PLACEMENT_PHASE:
-                # add this free space to both the opponent piece and the current player
-                # available player list
-                self.available_moves[opp_piece_type][constant.PLACEMENT_PHASE].append(piece)
-                self.available_moves[my_piece_type][constant.PLACEMENT_PHASE].append(piece)
-            else:
-                self.available_moves[my_piece_type].pop(piece)
-
-            # when we remove a piece, it creates a free space on the board --
-            # this free space needs to be updated to be an available move to those pieces
-            # that can move into it -- TODO: NEED TO TEST THIS FUNCTION WELL
-            self.update_near_by_free_space(piece)
+            # removes item from the board and list
+            self.piece_pos[my_piece_type].remove(piece)
 
             remove_col, remove_row = piece
-            self.set_board(remove_row,remove_col,constant.FREE_SPACE)
-
-            # there is now one less piece on the board
-            self.piece_counter[my_piece_type] -= 1
+            self.set_board(remove_row, remove_col, constant.FREE_SPACE)
 
     # elimination helper function
     def check_one_piece_elimination(self,my_piece_pos,my_piece_type):
         pos_col, pos_row = my_piece_pos
-        my_piece_pos_list = list(self.available_moves[my_piece_type].keys())
+        my_piece_pos_list = deepcopy(self.piece_pos[my_piece_type])
         opp_piece_type = self.get_opp_piece_type(my_piece_type)
         # append the corner pieces to the list as these act as your own piece
         for corner in self.corner_pos:
@@ -344,16 +290,20 @@ class Board(object):
         # be no pieces that are placed in these positions and therefore do not exist in these lists
 
         # check left
-        if (pos_col-1,pos_row) in self.available_moves[opp_piece_type] and (pos_col-2,pos_row) in my_piece_pos_list:
+        if (pos_col-1,pos_row) in self.piece_pos[opp_piece_type] and\
+                (pos_col-2,pos_row) in my_piece_pos_list:
             return pos_col-1,pos_row
         # check right
-        elif (pos_col+1,pos_row) in self.available_moves[opp_piece_type] and (pos_col+2,pos_row) in my_piece_pos_list:
+        elif (pos_col+1,pos_row) in self.piece_pos[opp_piece_type] and\
+                (pos_col+2,pos_row) in my_piece_pos_list:
             return pos_col+1,pos_row
         # check up
-        elif (pos_col,pos_row-1) in self.available_moves[opp_piece_type] and (pos_col,pos_row-2) in my_piece_pos_list:
+        elif (pos_col,pos_row-1) in self.piece_pos[opp_piece_type] and\
+                (pos_col,pos_row-2) in my_piece_pos_list:
             return pos_col,pos_row-1
         # check down
-        elif (pos_col,pos_row+1) in self.available_moves[opp_piece_type] and (pos_col,pos_row+2) in my_piece_pos_list:
+        elif (pos_col,pos_row+1) in self.piece_pos[opp_piece_type] and\
+                (pos_col,pos_row+2) in my_piece_pos_list:
             return pos_col, pos_row+1
         else:
             # if it does not exist therefore there is no piece to be eliminated
@@ -364,19 +314,24 @@ class Board(object):
         pos_col,pos_row = my_piece_pos
         
         # if the current piece pos is not the expected piece type then return None
-        if self.return_cell_type(my_piece_pos) != my_piece_type:
-            return None
+        #if self.return_cell_type(my_piece_pos) != my_piece_type:
+        #    return None
 
         opp_piece_type = self.get_opp_piece_type(my_piece_type)
+
+        opp_piece_pos_list = deepcopy(self.piece_pos[opp_piece_type])
         # add the location of the corners to the location list of the opponent piece
-        opp_piece_pos_list = list(self.available_moves[opp_piece_type].keys())
+        for corner in self.corner_pos:
+            opp_piece_pos_list.append(corner)
         
         # now just need to check horizontal and vertical positions to see if they are in the piecePos list
         # horizontal check
-        if ((pos_col+1,pos_row) in opp_piece_pos_list) and ((pos_col-1,pos_row) in opp_piece_pos_list):
+        if ((pos_col+1,pos_row) in opp_piece_pos_list) and \
+                ((pos_col-1,pos_row) in opp_piece_pos_list):
             return pos_col,pos_row
         # vertical piece position check for self elimination
-        elif ((pos_col,pos_row+1) in opp_piece_pos_list) and ((pos_col,pos_row-1) in opp_piece_pos_list):
+        elif ((pos_col,pos_row+1) in opp_piece_pos_list) and \
+                ((pos_col,pos_row-1) in opp_piece_pos_list):
             return pos_col,pos_row
         else:
             return None
@@ -384,13 +339,13 @@ class Board(object):
     # call this when we want to make a move -- change the dict and change the board
 
     # when we want to apply a move to the board -- update the board and the dict associated
-    def make_move(self,old_pos,move_type,my_piece_type):
+    def make_move(self, old_pos, move_type, my_piece_type):
         # check if the move is legal first
-        if self.is_legal_move(old_pos,move_type) is False:
+        if self.is_legal_move(old_pos, move_type) is False:
             return False
 
         # we know we can make the move now
-        new_pos = self.convert_move_type_to_coord(old_pos,move_type)
+        new_pos = self.convert_move_type_to_coord(old_pos, move_type)
         new_col, new_row = new_pos
         old_col, old_row = old_pos
 
@@ -413,40 +368,12 @@ class Board(object):
         # success
         return True
 
-    # updates the available moves a piece can make after it has been moved
-    # this way we don;t need to calculate all the available moves on the board
-    # as pieces that have been eliminated also get rid of those associated available moves
-    def update_available_moves(self, piece):
-        # calculate the moves a piece can make
-        new_dict = {piece: []}
-
-        for move_type in range(constant.MAX_MOVETYPE):
-            if self.is_legal_move(piece,move_type):
-                new_dict[piece].append(move_type)
-
-        return new_dict
-
-    def update_near_by_free_space(self,free_space_pos):
-        # enum all the possible locations
-        possible = []
-        for move in range(constant.MAX_MOVETYPE):
-            possible.append(self.convert_move_type_to_coord(free_space_pos,move))
-
-        for move in possible:
-            type = self.return_cell_type(move)
-            if type == constant.BLACK_PIECE:
-                # if this possible piece is a black piece, we add this new free
-                # space to its available move list
-                move_type = self.convert_move_type_to_coord(move,free_space_pos)
-                self.available_moves[constant.BLACK_PIECE][move].append(move_type)
-            elif type == constant.WHITE_PIECE:
-                self.available_moves[constant.WHITE_PIECE][move].append(move_type)
-
     def make_placement(self,pos, my_piece_type):
-        opp_piece_type = self.get_opp_piece_type(my_piece_type)
+
         col,row = pos
+
         # check if that placement is legal
-        if self.is_valid_placement(pos)is False:
+        if self.is_valid_placement(pos, my_piece_type) is False:
             return False
 
         # else we know that this piece can be placed on the board
@@ -454,57 +381,134 @@ class Board(object):
         # first we update the board representation
         self.set_board(row,col,my_piece_type)
 
-        # then we update the counters of the board
-        self.piece_counter[my_piece_type]+=1
+        # then we update the position list of that player on the board
+        self.piece_pos[my_piece_type].append(pos)
 
-        # update the board dictionaries -- this space is now occupied
-        # therefore remove these entries from both available move dictionaries
-        # for each piece
-        self.available_moves[my_piece_type][constant.PLACEMENT_PHASE].remove(pos)
-        self.available_moves[opp_piece_type][constant.PLACEMENT_PHASE].remove(pos)
-
-        # also need to add an entry into the dictionary which stores the piece on the board
-        new_entry = {pos: []}
-        self.available_moves[my_piece_type].update(new_entry)
         # increment the move counter
+        self.move_counter += 1
 
         # perform the elimination around the piece that has been placed
-        self.perform_elimination(pos,my_piece_type)
-        self.move_counter += 1
+        self.perform_elimination(pos, my_piece_type)
+        # success if we reach here
+        return True
 
     # went we want to update the board we call this function
     # move has to be in the form ((row,col),move_type)
     def update_board(self,move,my_piece_type):
-        # test if we need to switch from placement to moving
-        if self.move_counter == 24:
-            # change the phase
-            self.phase = constant.MOVING_PHASE
-            # all 24 pieces have been placed on the board
-            # remove the entries relating to the placement phase in the dict
-            self.available_moves[constant.BLACK_PIECE].pop(constant.PLACEMENT_PHASE)
-            self.available_moves[constant.WHITE_PIECE].pop(constant.PLACEMENT_PHASE)
-            # need to update the available moves for each of piece on the board
-
-            for player in self.available_moves.keys():
-                for piece in self.available_moves[player].keys():
-                    # we now have the key
-                    temp = self.update_available_moves(piece)
-                    self.available_moves[player].update(temp)
-
-        if self.move_counter in (64,128):
-            # need to shrink the board
-            pass
-
-
+        # make the action
         if self.phase == constant.PLACEMENT_PHASE:
-            # make the placement -- this should take care of the update to the available moves
+            # make the placement -- this should take care of the update to the piece position list
             # as well as the move counter
-            self.make_placement(move,my_piece_type)
-
-        else:
+            self.make_placement(move, my_piece_type)
+        elif self.phase == constant.MOVING_PHASE:
+            # move is in the form (pos, move_type)
             pos = move[0]
             move_type = move[1]
-            self.make_move(pos,move_type,my_piece_type)
+            print(pos)
+            # make the move
+            self.make_move(pos,move_type, my_piece_type)
+
+        # test if we need to switch from placement to moving
+        if self.phase == constant.PLACEMENT_PHASE:
+            if self.move_counter == 24:
+                # change the phase from placement to moving
+                self.phase = constant.MOVING_PHASE
+                # all 24 pieces have been placed on the board
+        elif self.phase == constant.MOVING_PHASE:
+            # do we need to shrink the board
+            if self.move_counter in (64,128):
+                self.shrink_board()
+
+            # check if the move passed in was a forfiet move
+            if move is None:
+                self.move_counter += 1
+                return
+
+            # check if the board is a terminal state / a win/ loose/ draw
+            self.is_terminal()
+
+    # shrink the board
+    def shrink_board(self):
+        # use the referee code for the shrinking of the board
+        offset = self.num_shrink
+        for i in range(offset,constant.BOARD_SIZE-offset):
+            # list storing the row and column we need to shrink
+            shrink = [(i,offset), (offset,i), (i,7-offset), (7-offset,i)]
+            for (col,row) in shrink:
+                # update the board representation
+                # set the row to invalid spaces
+                self.set_board(row,col,constant.INVALID_SPACE)
+
+                # remove any piece that is eliminated from the position lists
+                if (col, row) in self.piece_pos[constant.BLACK_PIECE]:
+                    self.piece_pos[constant.BLACK_PIECE].remove((col,row))
+                elif (col,row) in self.piece_pos[constant.WHITE_PIECE]:
+                    self.piece_pos[constant.WHITE_PIECE].remove((col,row))
+
+                # set the column to invalid spaces
+                self.set_board(col,row,constant.INVALID_SPACE)
+
+        self.num_shrink += 1
+        offset += 1
+        # set the new corner
+        self.corner_pos[0] = (offset,offset)
+        self.corner_pos[1] = (7-offset,offset)
+        self.corner_pos[2] = (offset,7-offset)
+        self.corner_pos[3] = (7-offset,7-offset)
+
+        # update the board representations
+        for corner_col,corner_row in self.corner_pos:
+            self.set_board(corner_row,corner_col,constant.CORNER_PIECE)
+
+        # check for one space eliminations about the corner pieces
+
+        for i in (0,2,3,1):
+            corner = self.corner_pos[i]
+            self.corner_elimination(corner)
+
+    # helper function for elimination of pieces at a corner -- for board shrinks
+
+    def corner_elimination(self,corner):
+
+        player_types = (constant.WHITE_PIECE,constant.BLACK_PIECE)
+
+        # the corner piece can act as the player piece -- therefore we can eliminate
+        # the white pieces around the corner first, then the black pieces
+        for player in player_types:
+            # there can be more than one elimination or there can be None
+            while self.check_self_elimination(corner,player) is not None:
+                eliminated_piece = self.check_self_elimination(corner,player)
+
+                # remove from the players piece pos list
+                self.piece_pos[player].remove(eliminated_piece)
+                col, row = eliminated_piece
+                # update the board representation
+                self.set_board(row,col,constant.FREE_SPACE)
+
+    # check if there is a winner
+    def is_terminal(self):
+
+        # use the referee code for this
+        white_num = len(self.piece_pos[constant.WHITE_PIECE])
+        black_num = len(self.piece_pos[constant.BLACK_PIECE])
+
+        if black_num >= 2 and white_num >= 2:
+            return False
+        elif black_num >= 2 and white_num < 2:
+            self.winner = constant.BLACK_PIECE
+            #self.phase = constant.TERMINAL
+            self.terminal = True
+            return True
+        elif black_num < 2 and white_num >=2:
+            self.winner = constant.WHITE_PIECE
+            #self.phase = constant.TERMINAL
+            self.terminal = True
+            return True
+        elif black_num <2 and white_num < 2:
+            self.winner = None
+            #s#elf.phase = constant.TERMINAL
+            self.terminal = True
+            return True
 
 
     # string_array helper methods
