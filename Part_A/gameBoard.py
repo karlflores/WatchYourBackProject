@@ -23,7 +23,7 @@ METHODS:
 
 '''
 
-import constant
+from Part_A import constant
 from copy import deepcopy
 
 
@@ -38,7 +38,7 @@ class Board(object):
         # create dictionaries to hold all the available moves and piece positions
         # on the board
         # map the board symbol types to the list for easy access
-        self.piecePos = {constant.BLACK_PIECE: [],constant.WHITE_PIECE: []}
+        self.piecePos = {constant.BLACK_PIECE: [], constant.WHITE_PIECE: []}
         self.availableMoves = {constant.BLACK_PIECE: [], constant.WHITE_PIECE: []}
 
         # track the position of the corner pieces in the game
@@ -99,7 +99,7 @@ class Board(object):
         rowIndexMin = self.cornerPos[0][1]
         rowIndexMax = self.cornerPos[3][1]
         # check if the piecePos is actually a piece, if not return false
-        if self.boardState[oldRow][oldCol] not in (constant.WHITE_PIECE,constant.BLACK_PIECE):
+        if self.boardState[oldRow][oldCol] not in (constant.WHITE_PIECE, constant.BLACK_PIECE):
             return False
         # need to test if the newCol, newRow are in the boundaries of the board based on
         # the corner locations
@@ -127,7 +127,7 @@ class Board(object):
 
             interPosCol,interPosRow = self.convertMoveTypeToCoord(myPiecePos,moveType-4)
             # test whether the piece that it is jumping over is a board piece and is not free space
-            if self.boardState[interPosRow][interPosCol] in (constant.WHITE_PIECE,constant.BLACK_PIECE):
+            if self.boardState[interPosRow][interPosCol] in (constant.WHITE_PIECE, constant.BLACK_PIECE):
                 # test the place that the piece is moving to
                 if self.boardState[newRow][newCol] == constant.FREE_SPACE:
                     return True
@@ -210,7 +210,7 @@ class Board(object):
                 myPieceType = self.boardState[row][col]
 
                 # update the dictionary based on the myPieceType it finds
-                if myPieceType in (constant.BLACK_PIECE,constant.WHITE_PIECE):
+                if myPieceType in (constant.BLACK_PIECE, constant.WHITE_PIECE):
                     self.piecePos[myPieceType].append((col,row))
         return
 
@@ -219,7 +219,7 @@ class Board(object):
         # update the dict for piece positions
         # get the keys of the dict
 
-        newDict = {constant.BLACK_PIECE: [],constant.WHITE_PIECE: []}
+        newDict = {constant.BLACK_PIECE: [], constant.WHITE_PIECE: []}
 
         for key in self.piecePos.keys():
             # iterate through each piece position in each position list in the dict
@@ -250,9 +250,9 @@ class Board(object):
         # create a deep copy of the positions such that you don't alter the original
         myPiecePosList = deepcopy(self.piecePos[myPieceType]);
         myPiecePosList.append((0,0))
-        myPiecePosList.append((0,constant.BOARD_SIZE-1))
-        myPiecePosList.append((constant.BOARD_SIZE-1,0))
-        myPiecePosList.append((constant.BOARD_SIZE-1,constant.BOARD_SIZE-1))
+        myPiecePosList.append((0, constant.BOARD_SIZE - 1))
+        myPiecePosList.append((constant.BOARD_SIZE - 1, 0))
+        myPiecePosList.append((constant.BOARD_SIZE - 1, constant.BOARD_SIZE - 1))
 
         # test all the 4 cases for this type of elimination
         # don't need to test for negative indices and positions outside the boundary of the board because there should
@@ -286,9 +286,9 @@ class Board(object):
         # add the location of the corners to the location list of the opponent piece
         oppPiecePosList = deepcopy(self.piecePos[oppPieceType]);
         oppPiecePosList.append((0,0))
-        oppPiecePosList.append((0,constant.BOARD_SIZE-1))
-        oppPiecePosList.append((constant.BOARD_SIZE-1,0))
-        oppPiecePosList.append((constant.BOARD_SIZE-1,constant.BOARD_SIZE-1))
+        oppPiecePosList.append((0, constant.BOARD_SIZE - 1))
+        oppPiecePosList.append((constant.BOARD_SIZE - 1, 0))
+        oppPiecePosList.append((constant.BOARD_SIZE - 1, constant.BOARD_SIZE - 1))
 
         # now just need to check horizontal and vertical positions to see if they are in the piecePos list
         # horizontal check

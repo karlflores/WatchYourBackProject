@@ -1,6 +1,7 @@
-import constant
+from Part_A import constant
 from copy import deepcopy
-import math
+
+
 class Node(object):
     def __init__(self,board,move):
         # deep copy the board such that any changes that are made

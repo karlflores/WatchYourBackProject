@@ -4,7 +4,7 @@
 
 '''
 
-import constant
+from Part_A import constant
 from copy import deepcopy
 import math
 
@@ -37,7 +37,7 @@ class Board(object):
     def init_board_rep(self):
         # store the board representation as a byte_array length 64 (64bytes)
         temp = ''
-        for index in range(constant.BOARD_SIZE*constant.BOARD_SIZE):
+        for index in range(constant.BOARD_SIZE * constant.BOARD_SIZE):
             temp += constant.FREE_SPACE
         # create a temp string of length 64
         temp = bytearray(temp,'utf-8')
@@ -45,7 +45,7 @@ class Board(object):
         # set the corner locations on the board representation
         corner_pos = [(0,0),(0,7),(7,0),(7,7)]
         for col,row in corner_pos:
-            self.set_array_char(temp,row,col,constant.CORNER_PIECE)
+            self.set_array_char(temp, row, col, constant.CORNER_PIECE)
 
         return temp
 
@@ -53,10 +53,10 @@ class Board(object):
         # set the valid zones for placement
         if piece_type == constant.WHITE_PIECE:
             start_zone = 0
-            end_zone = constant.BOARD_SIZE-2
+            end_zone = constant.BOARD_SIZE - 2
         else:
             start_zone = 2
-            end_zone = constant.BOARD_SIZE-1
+            end_zone = constant.BOARD_SIZE - 1
 
         # get the row and col
         pos_col, pos_row = piece_place
@@ -225,8 +225,8 @@ class Board(object):
 
     # change the piece type in the board representation
     def set_board(self, row, col, piece_type):
-        piece_types = (constant.CORNER_PIECE,constant.WHITE_PIECE,constant.BLACK_PIECE,
-                       constant.FREE_SPACE,constant.INVALID_SPACE)
+        piece_types = (constant.CORNER_PIECE, constant.WHITE_PIECE, constant.BLACK_PIECE,
+                       constant.FREE_SPACE, constant.INVALID_SPACE)
         # check if the piece_type is valid
         if piece_type not in piece_types:
             return
@@ -240,7 +240,7 @@ class Board(object):
         for row in range(constant.BOARD_SIZE):
             for col in range (constant.BOARD_SIZE):
                 # get the char to print
-                char_index = row*constant.BOARD_SIZE + col
+                char_index = row * constant.BOARD_SIZE + col
 
                 char = chr(self.board_state[char_index])
                 print('{} '.format(char),end='')
@@ -265,7 +265,7 @@ class Board(object):
 
                 # update the string board representation
                 remove_col,remove_row = piece
-                self.set_board(remove_row,remove_col,constant.FREE_SPACE)
+                self.set_board(remove_row, remove_col, constant.FREE_SPACE)
 
         # check for self elimination if there is not opponent piece to be eliminated
         piece = self.check_self_elimination(my_piece_pos,my_piece_type)
@@ -350,7 +350,7 @@ class Board(object):
         old_col, old_row = old_pos
 
         # first we update the board representation
-        self.set_board(old_row,old_col,constant.FREE_SPACE)
+        self.set_board(old_row, old_col, constant.FREE_SPACE)
         self.set_board(new_row,new_col,my_piece_type)
 
         # then we can update the dictionaries
@@ -431,22 +431,22 @@ class Board(object):
     def shrink_board(self):
         # use the referee code for the shrinking of the board
         offset = self.num_shrink
-        for i in range(offset,constant.BOARD_SIZE-offset):
+        for i in range(offset, constant.BOARD_SIZE - offset):
             # list storing the row and column we need to shrink
             shrink = [(i,offset), (offset,i), (i,7-offset), (7-offset,i)]
             for (col,row) in shrink:
                 # update the board representation
                 # set the row to invalid spaces
-                self.set_board(row,col,constant.INVALID_SPACE)
+                self.set_board(row, col, constant.INVALID_SPACE)
 
                 # remove any piece that is eliminated from the position lists
                 if (col, row) in self.piece_pos[constant.BLACK_PIECE]:
-                    self.piece_pos[constant.BLACK_PIECE].remove((col,row))
+                    self.piece_pos[constant.BLACK_PIECE].remove((col, row))
                 elif (col,row) in self.piece_pos[constant.WHITE_PIECE]:
-                    self.piece_pos[constant.WHITE_PIECE].remove((col,row))
+                    self.piece_pos[constant.WHITE_PIECE].remove((col, row))
 
                 # set the column to invalid spaces
-                self.set_board(col,row,constant.INVALID_SPACE)
+                self.set_board(col, row, constant.INVALID_SPACE)
 
         self.num_shrink += 1
         offset += 1
@@ -458,7 +458,7 @@ class Board(object):
 
         # update the board representations
         for corner_col,corner_row in self.corner_pos:
-            self.set_board(corner_row,corner_col,constant.CORNER_PIECE)
+            self.set_board(corner_row, corner_col, constant.CORNER_PIECE)
 
         # check for one space eliminations about the corner pieces
 
@@ -470,7 +470,7 @@ class Board(object):
 
     def corner_elimination(self,corner):
 
-        player_types = (constant.WHITE_PIECE,constant.BLACK_PIECE)
+        player_types = (constant.WHITE_PIECE, constant.BLACK_PIECE)
 
         # the corner piece can act as the player piece -- therefore we can eliminate
         # the white pieces around the corner first, then the black pieces
@@ -483,7 +483,7 @@ class Board(object):
                 self.piece_pos[player].remove(eliminated_piece)
                 col, row = eliminated_piece
                 # update the board representation
-                self.set_board(row,col,constant.FREE_SPACE)
+                self.set_board(row, col, constant.FREE_SPACE)
 
     # check if there is a winner
     def is_terminal(self):

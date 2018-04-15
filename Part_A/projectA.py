@@ -1,7 +1,7 @@
-from gameBoard import Board
-import constant
-from Massacre import Massacre
-from node import Node
+from Part_A.gameBoard import Board
+from Part_A import constant
+from Part_A.Massacre import Massacre
+from Part_A.node import Node
 
 def main():
 

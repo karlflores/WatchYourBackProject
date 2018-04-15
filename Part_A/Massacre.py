@@ -1,7 +1,7 @@
 import heapq
-from node import Node
+from Part_A.node import Node
 from copy import deepcopy
-import constant
+from Part_A import constant
 
 
 class Massacre(object):
