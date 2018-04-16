@@ -65,24 +65,24 @@ class Player:
             # print(self.available_moves)
         elif self.board.phase == constant.MOVING_PHASE:
             if isinstance(action[0],tuple) is False:
-                print("WHYYYYYYYY")
+                # print("WHYYYYYYYY")
                 return
 
             move_type = self.board.convert_coord_to_move_type(action[0], action[1])
-            print("MOVETYPE: " + str(move_type))
-            print(action[0])
+            # print("MOVETYPE: " + str(move_type))
+            # print(action[0])
             self.board.update_board((action[0], move_type), self.opponent)
             # self.update_available_moves()
             # now we need to update this players available moves after the opponent has moved
             # the player could have one or more pieces that have been eliminated and thus his
             # available moves could change
-        # print("UPDATE CALLED: BOARD REPRESENTATION COUNTER: " + str(self.board.move_counter))
-        print("UPDATE CALLED: " + self.colour + "  " + str(self.board.piece_pos))
+        print("UPDATE CALLED: BOARD REPRESENTATION COUNTER: " + str(self.board.move_counter))
+        # print("UPDATE CALLED: " + self.colour + "  " + str(self.board.piece_pos))
 
     def action(self, turns):
 
         # print("TURNS SO FAR ---------- " + str(turns))
-        # print("ACTION CALLED: BOARD REPRESENTATION COUNTER: " + str(self.board.move_counter))
+        print("ACTION CALLED: BOARD REPRESENTATION COUNTER: " + str(self.board.move_counter))
         if turns == 0 and self.board.phase == constant.PLACEMENT_PHASE:
             # then we are first person to move
             self.board.set_player_to_move(self.colour)
@@ -114,10 +114,10 @@ class Player:
                 # self.update_available_moves()
                 # print(self.available_moves)
 
-            print("MOVE APPLIED: " + str(next_move))
+            # print("MOVE APPLIED: " + str(next_move))
             # print(self.available_moves)
 
-            print(self.colour + "  " + str(self.board.piece_pos))
+            # print(self.colour + "  " + str(self.board.piece_pos))
             return next_move
 
         elif self.board.phase == constant.MOVING_PHASE:

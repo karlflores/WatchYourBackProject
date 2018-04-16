@@ -138,7 +138,7 @@ class Board(object):
         # coord is the stationary piece, coord_2 is the piece we want to move to
         # the move type returned is the move type to get from coord_1 to coord_2
         coord_1_col, coord_1_row = coord_1
-        print(coord_1_col, coord_1_row)
+        # print(coord_1_col, coord_1_row)
         coord_2_col, coord_2_row = coord_2
 
         # check left and right first
@@ -300,20 +300,20 @@ class Board(object):
                 (pos_col-2,pos_row) in my_piece_pos_list:
             return pos_col-1,pos_row
         # check right
-        elif (pos_col+1,pos_row) in self.piece_pos[opp_piece_type] and\
+        if (pos_col+1,pos_row) in self.piece_pos[opp_piece_type] and\
                 (pos_col+2,pos_row) in my_piece_pos_list:
             return pos_col+1,pos_row
         # check up
-        elif (pos_col,pos_row-1) in self.piece_pos[opp_piece_type] and\
+        if (pos_col,pos_row-1) in self.piece_pos[opp_piece_type] and\
                 (pos_col,pos_row-2) in my_piece_pos_list:
             return pos_col,pos_row-1
         # check down
-        elif (pos_col,pos_row+1) in self.piece_pos[opp_piece_type] and\
+        if (pos_col,pos_row+1) in self.piece_pos[opp_piece_type] and\
                 (pos_col,pos_row+2) in my_piece_pos_list:
             return pos_col, pos_row+1
-        else:
-            # if it does not exist therefore there is no piece to be eliminated
-            return None
+
+        # if it does not exist therefore there is no piece to be eliminated
+        return None
     
     def check_self_elimination(self,my_piece_pos,my_piece_type):
         # update piecePos from tuple to pos_row and pos_col
@@ -433,14 +433,15 @@ class Board(object):
         self.move_counter += 1
 
         # test if we need to switch from placement to moving
-        if self.move_counter == 24:
+        if self.move_counter == 24 and self.phase == constant.PLACEMENT_PHASE:
             # change the phase from placement to moving
             self.phase = constant.MOVING_PHASE
+            self.move_counter = 0
             # all 24 pieces have been placed on the board
 
         if self.phase == constant.MOVING_PHASE:
             # do we need to shrink the board
-            if self.move_counter in (128+24,196+24):
+            if self.move_counter in (128, 192):
                 self.shrink_board()
 
             # check if the move passed in was a forfeit move
@@ -485,12 +486,17 @@ class Board(object):
         self.corner_pos[2] = (offset,7-offset)
         self.corner_pos[3] = (7-offset,7-offset)
 
+        # if a corner is on top of a piece , eliminate that piece
+        for corner in self.corner_pos:
+            for player in (constant.BLACK_PIECE, constant.WHITE_PIECE):
+                if corner in self.piece_pos[player]:
+                    self.piece_pos[player].remove(corner)
+
         # update the board representations
         for corner_col,corner_row in self.corner_pos:
             self.set_board(corner_row, corner_col, constant.CORNER_PIECE)
 
         # check for one space eliminations about the corner pieces
-
         for i in (0,2,3,1):
             corner = self.corner_pos[i]
             self.corner_elimination(corner)
@@ -498,14 +504,14 @@ class Board(object):
     # helper function for elimination of pieces at a corner -- for board shrinks
 
     def corner_elimination(self,corner):
-
+        # types of players
         player_types = (constant.WHITE_PIECE, constant.BLACK_PIECE)
 
         # the corner piece can act as the player piece -- therefore we can eliminate
         # the white pieces around the corner first, then the black pieces
         for player in player_types:
             # there can be more than one elimination or there can be None
-            while self.check_self_elimination(corner,player) is not None:
+            while self.check_self_elimination(corner, player) is not None:
                 eliminated_piece = self.check_one_piece_elimination(corner,player)
 
                 # remove from the players piece pos list
