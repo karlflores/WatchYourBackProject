@@ -134,35 +134,33 @@ class Board(object):
             return pos_col, pos_row - 2
 
     @ staticmethod
-    def convert_coord_to_move_type(coord_1,coord_2):
+    def convert_coord_to_move_type(coord_1, coord_2):
         # coord is the stationary piece, coord_2 is the piece we want to move to
         # the move type returned is the move type to get from coord_1 to coord_2
         coord_1_col, coord_1_row = coord_1
+        print(coord_1_col, coord_1_row)
         coord_2_col, coord_2_row = coord_2
 
-        diff_col = coord_2_col-coord_1_col
-        diff_row = coord_2_row - coord_1_row
-
         # check left and right first
-        if diff_col == 0:
-            if diff_row == 1:
-                return constant.RIGHT_1
-            elif diff_row == -1:
-                return constant.LEFT_1
-            elif diff_row == 2:
-                return constant.RIGHT_2
-            elif diff_row == -2:
-                return constant.LEFT_2
-        # check up and down
-        elif diff_row == 0:
-            if diff_col == 1:
-                return constant.DOWN_1
-            elif diff_col == -1:
-                return constant.UP_1
-            elif diff_col == 2:
-                return constant.DOWN_2
-            elif diff_col == -2:
-                return constant.UP_2
+        # check left
+        if coord_1_col + 1 == coord_2_col and coord_1_row == coord_2_row:
+            return constant.RIGHT_1
+        elif coord_1_col == coord_2_col and coord_1_row + 1 == coord_2_row:
+            return constant.DOWN_1
+        elif coord_1_col - 1 == coord_2_col and coord_1_row == coord_2_row:
+            return constant.LEFT_1
+        elif coord_1_col == coord_2_col and coord_1_row - 1 == coord_2_row:
+            return constant.UP_1
+        elif coord_1_col + 2 == coord_2_col and coord_1_row == coord_2_row:
+            return constant.RIGHT_2
+        elif coord_1_col == coord_2_col and coord_1_row + 2 == coord_2_row:
+            return constant.DOWN_2
+        elif coord_1_col - 2 == coord_2_col and coord_1_row == coord_2_row:
+            return constant.LEFT_2
+        elif coord_1_col == coord_2_col and coord_1_row - 2 == coord_2_row:
+            return constant.UP_2
+
+
 
     # check if a move is legal
     def is_legal_move(self,my_piece_pos,move_type):
@@ -201,6 +199,7 @@ class Board(object):
             # get the intermediate position piece_type
             inter_pos = self.convert_move_type_to_coord(my_piece_pos,move_type-4)
             inter_pos_piece_type = self.return_cell_type(inter_pos)
+            # print("INTERMEDIATE SPACE " + inter_pos_piece_type)
 
             # if there is a piece adjacent to that piece then we can make the jump
             if inter_pos_piece_type in (constant.BLACK_PIECE, constant.WHITE_PIECE):
@@ -407,7 +406,7 @@ class Board(object):
     # move has to be in the form ((row,col),move_type)
     def update_board(self,move,my_piece_type):
         eliminated_pieces = []
-        print(move)
+        # print(move)
 
         # make the action
         if self.phase == constant.PLACEMENT_PHASE:
@@ -422,7 +421,7 @@ class Board(object):
             # move is in the form (pos, move_type)
             pos = move[0]
             move_type = move[1]
-            print(pos)
+            # print(pos)
             # make the move
             pieces = self.make_move(pos,move_type, my_piece_type)
             # return the eliminated pieces list
@@ -441,7 +440,7 @@ class Board(object):
 
         if self.phase == constant.MOVING_PHASE:
             # do we need to shrink the board
-            if self.move_counter in (64,128):
+            if self.move_counter in (128+24,196+24):
                 self.shrink_board()
 
             # check if the move passed in was a forfeit move
@@ -507,7 +506,7 @@ class Board(object):
         for player in player_types:
             # there can be more than one elimination or there can be None
             while self.check_self_elimination(corner,player) is not None:
-                eliminated_piece = self.check_self_elimination(corner,player)
+                eliminated_piece = self.check_one_piece_elimination(corner,player)
 
                 # remove from the players piece pos list
                 self.piece_pos[player].remove(eliminated_piece)
