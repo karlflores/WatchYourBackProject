@@ -43,7 +43,7 @@ class Player:
                         self.available_moves.append((col, row))
 
     def update(self, action):
-        print("UPDATING THIS ACTION : " + str(action))
+        # print("UPDATING THIS ACTION : " + str(action))
         if self.board.move_counter == 0:
             # then the opponent is the first person to move
             self.board.set_player_to_move(self.opponent)
@@ -76,13 +76,13 @@ class Player:
             # now we need to update this players available moves after the opponent has moved
             # the player could have one or more pieces that have been eliminated and thus his
             # available moves could change
-        print("UPDATE CALLED: BOARD REPRESENTATION COUNTER: " + str(self.board.move_counter))
+        # print("UPDATE CALLED: BOARD REPRESENTATION COUNTER: " + str(self.board.move_counter))
         # print("UPDATE CALLED: " + self.colour + "  " + str(self.board.piece_pos))
 
     def action(self, turns):
 
         # print("TURNS SO FAR ---------- " + str(turns))
-        print("ACTION CALLED: BOARD REPRESENTATION COUNTER: " + str(self.board.move_counter))
+        # print("ACTION CALLED: BOARD REPRESENTATION COUNTER: " + str(self.board.move_counter))
         if turns == 0 and self.board.phase == constant.PLACEMENT_PHASE:
             # then we are first person to move
             self.board.set_player_to_move(self.colour)
@@ -142,7 +142,7 @@ class Player:
             self.board.update_board(next_move,self.colour)
 
             new_pos = self.board.convert_move_type_to_coord(next_move[0],next_move[1])
-            print(self.colour + "  " + str(self.board.piece_pos))
+            # print(self.colour + "  " + str(self.board.piece_pos))
             self.update_available_moves()
             return next_move[0],new_pos
 
@@ -156,10 +156,10 @@ class Player:
 
         # recalculate the moves a piece can make based on the available pieces on the board
         # print(self.colour)
-        print("-"*20)
-        self.board.print_board()
-        print("-"*20)
-        print("THIS PLAYERS CURRENT PIECES: " + str(self.colour) + str(self.board.piece_pos[self.colour]))
+        # print("-"*20)
+        # self.board.print_board()
+        # print("-"*20)
+        # print("THIS PLAYERS CURRENT PIECES: " + str(self.colour) + str(self.board.piece_pos[self.colour]))
         for piece in self.board.piece_pos[self.colour]:
             for move_type in range(constant.MAX_MOVETYPE):
                 if self.board.is_legal_move(piece, move_type):

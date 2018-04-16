@@ -504,6 +504,10 @@ class Board(object):
     # helper function for elimination of pieces at a corner -- for board shrinks
 
     def corner_elimination(self,corner):
+        # print("CALLED CORNER ELIMINATION")
+        # print("*"*50)
+        # self.print_board()
+        # print("*"*50)
         # types of players
         player_types = (constant.WHITE_PIECE, constant.BLACK_PIECE)
 
@@ -511,11 +515,13 @@ class Board(object):
         # the white pieces around the corner first, then the black pieces
         for player in player_types:
             # there can be more than one elimination or there can be None
-            while self.check_self_elimination(corner, player) is not None:
+            while self.check_one_piece_elimination(corner, player) is not None:
+                opp_player = self.get_opp_piece_type(player)
                 eliminated_piece = self.check_one_piece_elimination(corner,player)
 
-                # remove from the players piece pos list
-                self.piece_pos[player].remove(eliminated_piece)
+                # remove from the oppenent players piece pos list
+                # print("ELIMINATED: " + str(eliminated_piece))
+                self.piece_pos[opp_player].remove(eliminated_piece)
                 col, row = eliminated_piece
                 # update the board representation
                 self.set_board(row, col, constant.FREE_SPACE)
