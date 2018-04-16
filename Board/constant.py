@@ -1,6 +1,6 @@
 '''
 THIS FILE CONTAINS THE GLOBAL VARIABLES FOR THE GAME BOARD
-INCLUDE IN gameBoard.py
+INCLUDE IN Board.py
 
 '''
 
@@ -22,13 +22,13 @@ MOVING_PHASE = 1
 TERMINAL = 2
 
 # move types
-LEFT_1 = 0
+RIGHT_1 = 0
 DOWN_1 = 1
-RIGHT_1 = 2
+LEFT_1 = 2
 UP_1 = 3
-LEFT_2 = 4
+RIGHT_2 = 4
 DOWN_2 = 5
-RIGHT_2 = 6
+LEFT_2 = 6
 UP_2 = 7
 # search constants
 

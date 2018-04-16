@@ -4,9 +4,10 @@
 
 '''
 
-from Part_A import constant
+from Board import constant
 from copy import deepcopy
 import math
+
 
 class Board(object):
 
@@ -23,6 +24,7 @@ class Board(object):
         # LT RT LB RB
         self.corner_pos = [(0, 0), (7, 0), (0, 7), (7, 7)]
 
+        # how many moves have been applied to the board so far
         self.move_counter = 0
         self.phase = constant.PLACEMENT_PHASE
         self.num_shrink = 0
@@ -31,8 +33,8 @@ class Board(object):
         self.winner = None
         self.terminal = False
 
-        # initialise the start of the game
-        #self.init_start_moves()
+        # who is moving first
+        self.player_to_move = None
 
     def init_board_rep(self):
         # store the board representation as a byte_array length 64 (64bytes)
@@ -77,7 +79,7 @@ class Board(object):
             return False
 
     # returns the type of the cell at a given position
-    def return_cell_type(self,my_piece_pos):
+    def return_cell_type(self, my_piece_pos):
         # based on the corner positions we know the current
         # dimensions of the board
         col_min = self.corner_pos[0][1]
@@ -118,7 +120,7 @@ class Board(object):
             return pos_col + 1, pos_row
         elif move_type == constant.DOWN_1:
             return pos_col, pos_row + 1
-        elif move_type == constant.RIGHT_1:
+        elif move_type == constant.LEFT_1:
             return pos_col - 1, pos_row
         elif move_type == constant.UP_1:
             return pos_col, pos_row - 1
@@ -134,7 +136,7 @@ class Board(object):
     @ staticmethod
     def convert_coord_to_move_type(coord_1,coord_2):
         # coord is the stationary piece, coord_2 is the piece we want to move to
-        # the move type returned is the movetype to get from coord_1 to coord_2
+        # the move type returned is the move type to get from coord_1 to coord_2
         coord_1_col, coord_1_row = coord_1
         coord_2_col, coord_2_row = coord_2
 
@@ -164,9 +166,10 @@ class Board(object):
 
     # check if a move is legal
     def is_legal_move(self,my_piece_pos,move_type):
-
+        # print("MOVE: " + str(my_piece_pos))
         # apply the move to the piece
-        new_pos = self.convert_move_type_to_coord(my_piece_pos,move_type)
+        new_pos = self.convert_move_type_to_coord(my_piece_pos, move_type)
+        # print("NEW POS: " + str(new_pos))
         my_piece_type = self.return_cell_type(my_piece_pos)
 
         # check if the piece is actually a piece on the board
@@ -187,14 +190,14 @@ class Board(object):
         # then it is a valid move
         # now we can check the move itself
         # if it is an adjacent move
-        if move_type >=0 and move_type < 4:
+        if 0 <= move_type < 4:
             if new_my_piece_type == constant.FREE_SPACE:
                 return True
             else:
                 # there is a piece that is occupying this space
                 return False
         # check the two space move
-        elif move_type >= 4 and move_type < 8:
+        elif 4 <= move_type < 8:
             # get the intermediate position piece_type
             inter_pos = self.convert_move_type_to_coord(my_piece_pos,move_type-4)
             inter_pos_piece_type = self.return_cell_type(inter_pos)
@@ -249,11 +252,11 @@ class Board(object):
 
     # elimination checkers
 
-    # TODO -- NEED TO TEST IF THE CHANGES TO MAKE IT HANDLE BOTH PLACEMENT AND MOVING
-    # TODO -- WILL WORK CORRECTLY
-    def perform_elimination(self,my_piece_pos,my_piece_type):
+    def perform_elimination(self, my_piece_pos, my_piece_type):
         # get the opponent piece type
         opp_piece_type = self.get_opp_piece_type(my_piece_type)
+
+        eliminated_pieces = []
 
         while self.check_one_piece_elimination(my_piece_pos,my_piece_type) is not None:
             piece = self.check_one_piece_elimination(my_piece_pos,my_piece_type)
@@ -266,6 +269,7 @@ class Board(object):
                 # update the string board representation
                 remove_col,remove_row = piece
                 self.set_board(remove_row, remove_col, constant.FREE_SPACE)
+                eliminated_pieces.append(piece)
 
         # check for self elimination if there is not opponent piece to be eliminated
         piece = self.check_self_elimination(my_piece_pos,my_piece_type)
@@ -275,6 +279,9 @@ class Board(object):
 
             remove_col, remove_row = piece
             self.set_board(remove_row, remove_col, constant.FREE_SPACE)
+            eliminated_pieces.append(piece)
+
+        return eliminated_pieces
 
     # elimination helper function
     def check_one_piece_elimination(self,my_piece_pos,my_piece_type):
@@ -314,7 +321,7 @@ class Board(object):
         pos_col,pos_row = my_piece_pos
         
         # if the current piece pos is not the expected piece type then return None
-        #if self.return_cell_type(my_piece_pos) != my_piece_type:
+        # if self.return_cell_type(my_piece_pos) != my_piece_type:
         #    return None
 
         opp_piece_type = self.get_opp_piece_type(my_piece_type)
@@ -340,9 +347,10 @@ class Board(object):
 
     # when we want to apply a move to the board -- update the board and the dict associated
     def make_move(self, old_pos, move_type, my_piece_type):
+        eliminated_pieces = []
         # check if the move is legal first
         if self.is_legal_move(old_pos, move_type) is False:
-            return False
+            return
 
         # we know we can make the move now
         new_pos = self.convert_move_type_to_coord(old_pos, move_type)
@@ -354,27 +362,27 @@ class Board(object):
         self.set_board(new_row,new_col,my_piece_type)
 
         # then we can update the dictionaries
-        self.available_moves[my_piece_type].pop(old_pos)
+        self.piece_pos[my_piece_type].remove(old_pos)
         # create a new entry in the dictionary containing the piece on the board
-        # and its available moves it can make
-        new_entry = self.update_available_moves(new_pos)
-        self.available_moves[my_piece_type].update(new_entry)
+        self.piece_pos[my_piece_type].append(new_pos)
 
         # now we can test for elimination at the new position on the board
-        self.perform_elimination(new_pos,my_piece_type)
-
+        pieces = self.perform_elimination(new_pos,my_piece_type)
+        if pieces is not None:
+            for piece in pieces:
+                eliminated_pieces.append(piece)
         # increase the number of moves made on the board
-        self.move_counter += 1
+        # self.move_counter += 1
         # success
-        return True
+        return eliminated_pieces
 
     def make_placement(self,pos, my_piece_type):
-
+        eliminated_pieces = []
         col,row = pos
 
         # check if that placement is legal
         if self.is_valid_placement(pos, my_piece_type) is False:
-            return False
+            return
 
         # else we know that this piece can be placed on the board
 
@@ -385,47 +393,69 @@ class Board(object):
         self.piece_pos[my_piece_type].append(pos)
 
         # increment the move counter
-        self.move_counter += 1
+        # self.move_counter += 1
 
         # perform the elimination around the piece that has been placed
-        self.perform_elimination(pos, my_piece_type)
+        pieces = self.perform_elimination(pos, my_piece_type)
+        if pieces is not None:
+            for piece in pieces:
+                eliminated_pieces.append(piece)
         # success if we reach here
-        return True
+        return eliminated_pieces
 
     # went we want to update the board we call this function
     # move has to be in the form ((row,col),move_type)
     def update_board(self,move,my_piece_type):
+        eliminated_pieces = []
+        print(move)
+
         # make the action
         if self.phase == constant.PLACEMENT_PHASE:
             # make the placement -- this should take care of the update to the piece position list
             # as well as the move counter
-            self.make_placement(move, my_piece_type)
+            pieces = self.make_placement(move, my_piece_type)
+            if pieces is not None:
+                for piece in pieces:
+                    eliminated_pieces.append(piece)
+
         elif self.phase == constant.MOVING_PHASE:
             # move is in the form (pos, move_type)
             pos = move[0]
             move_type = move[1]
             print(pos)
             # make the move
-            self.make_move(pos,move_type, my_piece_type)
+            pieces = self.make_move(pos,move_type, my_piece_type)
+            # return the eliminated pieces list
+            if pieces is not None:
+                for piece in pieces:
+                    eliminated_pieces.append(piece)
+
+        # after an action is applied we can increment the move counter of the board
+        self.move_counter += 1
 
         # test if we need to switch from placement to moving
-        if self.phase == constant.PLACEMENT_PHASE:
-            if self.move_counter == 24:
-                # change the phase from placement to moving
-                self.phase = constant.MOVING_PHASE
-                # all 24 pieces have been placed on the board
-        elif self.phase == constant.MOVING_PHASE:
+        if self.move_counter == 24:
+            # change the phase from placement to moving
+            self.phase = constant.MOVING_PHASE
+            # all 24 pieces have been placed on the board
+
+        if self.phase == constant.MOVING_PHASE:
             # do we need to shrink the board
             if self.move_counter in (64,128):
                 self.shrink_board()
 
-            # check if the move passed in was a forfiet move
+            # check if the move passed in was a forfeit move
             if move is None:
                 self.move_counter += 1
-                return
+
+            # the current player has made its move the we need to
+            # set the next player to move to be the player to move on next update
+            self.set_player_to_move(self.get_opp_piece_type(self.player_to_move))
 
             # check if the board is a terminal state / a win/ loose/ draw
             self.is_terminal()
+
+        return eliminated_pieces
 
     # shrink the board
     def shrink_board(self):
@@ -485,31 +515,36 @@ class Board(object):
                 # update the board representation
                 self.set_board(row, col, constant.FREE_SPACE)
 
-    # check if there is a winner
+    # check if there is a winner terminal states can only occur in the final phase
     def is_terminal(self):
 
         # use the referee code for this
         white_num = len(self.piece_pos[constant.WHITE_PIECE])
         black_num = len(self.piece_pos[constant.BLACK_PIECE])
 
-        if black_num >= 2 and white_num >= 2:
+        if self.phase == constant.MOVING_PHASE:
+            if black_num >= 2 and white_num >= 2:
+                return False
+            elif black_num >= 2 and white_num < 2:
+                self.winner = constant.BLACK_PIECE
+                # self.phase = constant.TERMINAL
+                self.terminal = True
+                return True
+            elif black_num < 2 and white_num >=2:
+                self.winner = constant.WHITE_PIECE
+                # self.phase = constant.TERMINAL
+                self.terminal = True
+                return True
+            elif black_num < 2 and white_num < 2:
+                self.winner = None
+                # self.phase = constant.TERMINAL
+                self.terminal = True
+                return True
+        else:
             return False
-        elif black_num >= 2 and white_num < 2:
-            self.winner = constant.BLACK_PIECE
-            #self.phase = constant.TERMINAL
-            self.terminal = True
-            return True
-        elif black_num < 2 and white_num >=2:
-            self.winner = constant.WHITE_PIECE
-            #self.phase = constant.TERMINAL
-            self.terminal = True
-            return True
-        elif black_num <2 and white_num < 2:
-            self.winner = None
-            #s#elf.phase = constant.TERMINAL
-            self.terminal = True
-            return True
 
+    def set_player_to_move(self,player):
+        self.player_to_move = player
 
     # string_array helper methods
     @staticmethod
