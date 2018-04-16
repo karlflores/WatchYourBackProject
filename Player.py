@@ -80,7 +80,6 @@ class Player:
         # print("UPDATE CALLED: " + self.colour + "  " + str(self.board.piece_pos))
 
     def action(self, turns):
-
         # print("TURNS SO FAR ---------- " + str(turns))
         # print("ACTION CALLED: BOARD REPRESENTATION COUNTER: " + str(self.board.move_counter))
         if turns == 0 and self.board.phase == constant.PLACEMENT_PHASE:
@@ -134,7 +133,13 @@ class Player:
             #print(self.available_moves)
 
             self.update_available_moves()
+            # if there are no available moves to be made we can return None:
+            if len(self.available_moves) == 0:
+                return None
             # print("AVAILABLE MOVES: " + str(self.colour) + " " + str(self.available_moves))
+            # if there is a move to be made we can return the best move
+
+            # TODO : THIS IS WHERE WE CARRY OUT OUR SEARCH ALGORITHM
             # then we pick the best move to make based on a search algorithm
             search_algorithm = Random(len(self.available_moves))
             next_move = self.available_moves[search_algorithm.choose_move()]
@@ -143,8 +148,10 @@ class Player:
 
             new_pos = self.board.convert_move_type_to_coord(next_move[0],next_move[1])
             # print(self.colour + "  " + str(self.board.piece_pos))
+
+            # TODO - need to double check if this update_available_moves is necessary
             self.update_available_moves()
-            return next_move[0],new_pos
+            return next_move[0], new_pos
 
     # updates the available moves a piece can make after it has been moved
     # this way we don;t need to calculate all the available moves on the board
