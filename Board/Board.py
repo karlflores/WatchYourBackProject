@@ -10,6 +10,7 @@ import math
 
 from sys import getsizeof
 
+
 class Board(object):
 
     def __init__(self):
@@ -605,10 +606,10 @@ class Board(object):
         # update the starting rows based off the player colour
         if colour == constant.WHITE_PIECE:
             min_row = 0
-            max_row = 6
+            max_row = 5
         elif colour == constant.BLACK_PIECE:
             min_row = 2
-            max_row = 8
+            max_row = 7
         col,row = move
 
         if min_row <= row <= max_row :

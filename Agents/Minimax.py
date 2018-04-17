@@ -23,30 +23,46 @@ class Minimax(object):
 
     @staticmethod
     def alpha_beta_minimax(depth,root):
+        evaluate = -inf
         best_move = None
+        best_eval = inf
+        alpha = -inf
+        beta = inf
         # print the available mvoes of the alpha beta call
-        print(root.available_moves)
-        print("*"*20)
-        root.board.print_board()
-        print("*"*20)
+        #print(root.available_moves)
+
+        #print("*"*20)
+        #root.board.print_board()
+        #print("*"*20)
         # generate the child nodes of the root node and run minimax  on these
         # nodes -- choose the node that has the best value
         # initially the best move has not been found
 
-        minimax_val = Minimax.max_value(root,depth,-inf,inf)
+        # minimax_val = Minimax.max_value(root,depth,alpha,beta)
 
-        print("MINIMAX VALUE IS: " + str(minimax_val))
-        print()
+        #print("MINIMAX VALUE IS: " + str(minimax_val))
+        #print()
         for action in root.available_moves:
+            '''
+            #print(action)
             # create a child node based on these available moves
 
             child = Minimax.create_node(root.board, Board.get_opp_piece_type(root.colour),action)
+            evaluate = min(evaluate,Minimax.min_value(child,depth-1,-alpha,beta))
+
+            # need to find the maximum of all min values
+            if evaluate > best_eval:
+                best_move = action
+                best_eval = evaluate
+
+            if best_eval >= beta:
+                return best_move
             # find the node that equates to the minimax value found and return this
             # this is the best move according to the algorithm
             # print(Minimax.evaluate_node(child))
-            if Minimax.evaluate_node(child) == minimax_val:
-                print(action)
-                best_move = action
+            alpha = max(best_eval, alpha)
+            '''
+            if
         return best_move
 
         # find the action associated with eval
@@ -67,11 +83,11 @@ class Minimax(object):
             # get the minimax value for this node
             evaluate = max(evaluate, Minimax.min_value(child, depth-1, alpha, beta))
 
-            if evaluate >= beta:
-                return evaluate
-
             alpha = max(evaluate,alpha)
+            if alpha >= beta:
+                break
 
+        node.minimax = evaluate
         return evaluate
 
     @staticmethod
@@ -88,15 +104,18 @@ class Minimax(object):
             child = Minimax.create_node(node.board, Board.get_opp_piece_type(node.colour), action)
             evaluate = min(evaluate, Minimax.max_value(child, depth-1, alpha, beta))
 
-            if evaluate <= alpha:
-                return evaluate
-
             beta = min(beta, evaluate)
 
+            if beta <= alpha:
+                break
+
+        node.minimax = evaluate
         return evaluate
 
     @staticmethod
     def create_node(board,colour,move):
+        # colour is the colour this player with the move from the previous player applied
+        # therefore move is the opposite colour player
 
         # create a new node object based on the board
         node = Node(board,colour)
@@ -106,20 +125,19 @@ class Minimax(object):
         eliminated = []
         # apply this move to the node
         if move is not None:
-            eliminated = node.board.update_board(move,colour)
+            eliminated = node.board.update_board(move, Board.get_opp_piece_type(colour))
         else:
-            print("WTFFFFFFF")
+            pass
+            #print("Move is None: WTFFFFFFF")
 
         # get the available moves based on what phase the board is in
-        '''
-        if node.board.phase == constant.PLACEMENT_PHASE and\
-            node.board.move_counter == 24:
-            
+
+        if node.board.phase == constant.PLACEMENT_PHASE and node.board.move_counter == 24:
             node.board.phase = constant.MOVING_PHASE
             node.board.move_counter = 0
-        '''
 
         if node.board.phase == constant.PLACEMENT_PHASE:
+            '''
             if len(node.available_moves) == 0:
                 # then we have not began the game yet --
                 for row in range(constant.BOARD_SIZE):
@@ -140,6 +158,8 @@ class Minimax(object):
                     # check if this piece is within the starting area
                     if Board.within_starting_area(piece, colour):
                         node.available_moves.append(piece)
+            '''
+            Minimax.update_available_nodes_placement(node)
 
         elif node.board.phase == constant.MOVING_PHASE:
             if node.board.move_counter == 24:
@@ -183,3 +203,20 @@ class Minimax(object):
     @staticmethod
     def is_terminal(node):
         return node.is_leaf()
+
+    @staticmethod
+    def update_available_nodes_placement(node):
+        Minimax.init_placable_area(node)
+
+        for colour in (constant.BLACK_PIECE,constant.WHITE_PIECE):
+            for piece in node.board.piece_pos[colour]:
+                if piece in node.available_moves:
+                    node.available_moves.remove(piece)
+
+    @staticmethod
+    def init_placable_area(node):
+        node.available_moves = []
+        for row in range(constant.BOARD_SIZE):
+            for col in range(constant.BOARD_SIZE):
+                if Board.within_starting_area((col,row),node.colour):
+                    node.available_moves.append((col,row))

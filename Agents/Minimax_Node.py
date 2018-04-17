@@ -6,7 +6,7 @@
 from Evaluation.Policies import Evaluation
 from Board.Board import Board
 from copy import deepcopy
-
+from math import inf
 
 class Node(object):
     def __init__(self, board, colour):
@@ -15,6 +15,7 @@ class Node(object):
         self.move_applied = None
         self.parent = None
         self.colour = colour
+        self.minimax = 0
         self.available_moves = []
 
     # it is a leaf node if terminal

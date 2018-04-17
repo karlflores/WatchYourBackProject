@@ -22,7 +22,7 @@ class Player:
 
         self.opponent = self.board.get_opp_piece_type(self.colour)
 
-        self.search_algorithm = Minimax(self.board,self.available_moves,self.colour)
+        #self.search_algorithm = Minimax(self.board,self.available_moves,self.colour)
 
         # print(self.opponent)
     # set up the board for the first time
@@ -46,7 +46,7 @@ class Player:
                         self.available_moves.append((col, row))
 
     def update(self, action):
-        # print("UPDATING THIS ACTION : " + str(action))
+        #print("UPDATING THIS ACTION : " + str(action))
         if self.board.move_counter == 0:
             # then the opponent is the first person to move
             self.board.set_player_to_move(self.opponent)
@@ -58,41 +58,52 @@ class Player:
             # update board also returns the pieces of the board that will be eliminated
             eliminated_pieces = self.board.update_board(action, self.opponent)
 
-            # remove the eliminated pieces from the available moves of this player
-            for piece in eliminated_pieces:
-                if piece in self.available_moves and Player.within_starting_area(piece,self.colour):
-                    # self.available_moves.remove(piece)
-                    self.available_moves.append(piece)
             # remove the opponent piece from the available moves list
-            if action in self.available_moves:
-                self.available_moves.remove(action)
-
-            # print(self.available_moves)
         elif self.board.phase == constant.MOVING_PHASE:
             if isinstance(action[0],tuple) is False:
-                # print("WHYYYYYYYY")
+                print("asdfasf")
                 return
 
             move_type = self.board.convert_coord_to_move_type(action[0], action[1])
             # print("MOVETYPE: " + str(move_type))
             # print(action[0])
             self.board.update_board((action[0], move_type), self.opponent)
-            # self.update_available_moves()
-            # now we need to update this players available moves after the opponent has moved
-            # the player could have one or more pieces that have been eliminated and thus his
-            # available moves could change
-        # print("UPDATE CALLED: BOARD REPRESENTATION COUNTER: " + str(self.board.move_counter))
-        # print("UPDATE CALLED: " + self.colour + "  " + str(self.board.piece_pos))
-        # update the minimax function
-        self.search_algorithm.update_board(self.board)
-        self.search_algorithm.update_available_moves(self.available_moves)
+       # print("&"*20)
+       # self.board.print_board()
+       # print("&"*20)
+
 
     def action(self, turns):
+
+       # print("+"*20)
+       # self.board.print_board()
+       # print("+"*20)
         # update the search algorithm so that it is searching the correct space
-        self.search_algorithm.update_available_moves(self.available_moves)
-        self.search_algorithm.update_board(self.board)
+        #self.search_algorithm.update_available_moves(self.available_moves)
+        #self.search_algorithm.update_board(self.board)
+        # create a board holding the current board state
+        if turns == 0 and self.board.phase == constant.PLACEMENT_PHASE:
+            self.board.set_player_to_move(self.colour)
+        if turns == 24 and self.board.phase == constant.PLACEMENT_PHASE:
+            self.board.move_counter = 0
+            self.board.phase =constant.MOVING_PHASE
+
+        root = Minimax.create_node(self.board,self.colour,None)
+        best_move = Minimax.alpha_beta_minimax(3,root)
+        # do an alpha beta search on this node
+        if self.board.phase == constant.PLACEMENT_PHASE:
+            self.board.update_board(best_move,self.colour)
+            return best_move
+        else:
+            print(best_move is None)
+            print(best_move[0],best_move[1])
+            new_pos = Board.convert_move_type_to_coord(best_move[0],best_move[1])
+            self.board.update_board(best_move,self.colour)
+            return best_move[0], new_pos
+        # create the node to search on
         # print("TURNS SO FAR ---------- " + str(turns))
         # print("ACTION CALLED: BOARD REPRESENTATION COUNTER: " + str(self.board.move_counter))
+        '''
         if turns == 0 and self.board.phase == constant.PLACEMENT_PHASE:
             # then we are first person to move
             self.board.set_player_to_move(self.colour)
@@ -168,8 +179,7 @@ class Player:
             #print(getsizeof(self.board.piece_pos))
             #print(getsizeof(self.board.board_state))
             #print(getsizeof(self.available_moves))
-
-            return next_move[0], new_pos
+    '''
 
     # updates the available moves a piece can make after it has been moved
     # this way we don;t need to calculate all the available moves on the board

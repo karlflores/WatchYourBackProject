@@ -13,7 +13,9 @@ class Evaluation(object):
         for pieces in board.piece_pos[colour]:
             dist_cent+= Evaluation.distance(pieces,(3,3))
 
-        return int(dist_cent)+int(fabs(diff_pieces))
+        dist_pieces = 0
+
+        return 1/(1+int(dist_cent))+int(fabs(diff_pieces))*5
 
     @staticmethod
     def distance(pos_1,pos_2):
