@@ -2,7 +2,7 @@ from Board import constant
 from Board.Board import Board
 from Agents.Random import Random
 from sys import getsizeof
-
+from Agents.Minimax import Minimax
 
 class Player:
 
@@ -21,6 +21,8 @@ class Player:
         self.init_start_moves()
 
         self.opponent = self.board.get_opp_piece_type(self.colour)
+
+        self.search_algorithm = Minimax(self.board,self.available_moves,self.colour)
 
         # print(self.opponent)
     # set up the board for the first time
@@ -81,8 +83,14 @@ class Player:
             # available moves could change
         # print("UPDATE CALLED: BOARD REPRESENTATION COUNTER: " + str(self.board.move_counter))
         # print("UPDATE CALLED: " + self.colour + "  " + str(self.board.piece_pos))
+        # update the minimax function
+        self.search_algorithm.update_board(self.board)
+        self.search_algorithm.update_available_moves(self.available_moves)
 
     def action(self, turns):
+        # update the search algorithm so that it is searching the correct space
+        self.search_algorithm.update_available_moves(self.available_moves)
+        self.search_algorithm.update_board(self.board)
         # print("TURNS SO FAR ---------- " + str(turns))
         # print("ACTION CALLED: BOARD REPRESENTATION COUNTER: " + str(self.board.move_counter))
         if turns == 0 and self.board.phase == constant.PLACEMENT_PHASE:
@@ -91,10 +99,13 @@ class Player:
 
         if turns < 24 and self.board.phase == constant.PLACEMENT_PHASE:
 
+            print(str(self.available_moves))
             # then we pick the best move to make based on a search algorithm
-            search_algorithm = Random(len(self.available_moves))
-            next_move = self.available_moves[search_algorithm.choose_move()]
-
+            next_move = Minimax.alpha_beta_minimax(2, self.search_algorithm.node)
+            print(self.search_algorithm.node.available_moves)
+            print(self.search_algorithm.node.board.piece_pos)
+            self.search_algorithm.node.board.print_board()
+            print("MOVE MADE: " + str(next_move))
             # making moves during the placement phase
             eliminated_pieces = self.board.update_board(next_move, self.colour)
             # print("BOARDS TURNS NOW  ---------- " + str(self.board.move_counter))
@@ -139,14 +150,13 @@ class Player:
             # if there are no available moves to be made we can return None:
             if len(self.available_moves) == 0:
                 return None
-            # print("AVAILABLE MOVES: " + str(self.colour) + " " + str(self.available_moves))
+            print("AVAILABLE MOVES: " + str(self.colour) + " " + str(self.available_moves))
             # if there is a move to be made we can return the best move
 
             # TODO : THIS IS WHERE WE CARRY OUT OUR SEARCH ALGORITHM
             # then we pick the best move to make based on a search algorithm
-            search_algorithm = Random(len(self.available_moves))
-            next_move = self.available_moves[search_algorithm.choose_move()]
-
+            next_move = self.search_algorithm.alpha_beta_minimax(2,self.search_algorithm.node)
+            print("MOVE MADE: " + str(next_move))
             self.board.update_board(next_move,self.colour)
 
             new_pos = self.board.convert_move_type_to_coord(next_move[0],next_move[1])
@@ -155,9 +165,10 @@ class Player:
             # TODO - need to double check if this update_available_moves is necessary
             self.update_available_moves()
 
-            print(getsizeof(self.board.piece_pos))
-            print(getsizeof(self.board.board_state))
-            print(getsizeof(self.available_moves))
+            #print(getsizeof(self.board.piece_pos))
+            #print(getsizeof(self.board.board_state))
+            #print(getsizeof(self.available_moves))
+
             return next_move[0], new_pos
 
     # updates the available moves a piece can make after it has been moved
@@ -180,21 +191,3 @@ class Player:
                     available_moves.append((piece, move_type))
 
         self.available_moves = available_moves
-
-    @staticmethod
-    def within_starting_area(move,colour):
-        if colour == constant.WHITE_PIECE:
-            # update the starting rows based off the player colour
-            if colour == constant.WHITE_PIECE:
-                min_row = 0
-                max_row = 6
-            elif colour == constant.BLACK_PIECE:
-                min_row = 2
-                max_row = 8
-            col,row = move
-
-            if min_row <= row <= max_row:
-                return True
-            else:
-                return False
-

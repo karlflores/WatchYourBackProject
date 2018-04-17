@@ -11,6 +11,7 @@ Plays a basic game of Watch Your Back! between two Player classes
 Run `python referee.py -h` for help and additional usage information
 """
 
+
 def main():
     """Coordinate a game of Watch Your Back! between two Player classes."""
 

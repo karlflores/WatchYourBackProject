@@ -8,6 +8,7 @@ from Board import constant
 from copy import deepcopy
 import math
 
+from sys import getsizeof
 
 class Board(object):
 
@@ -588,3 +589,30 @@ class Board(object):
         # set the new char in the string
         # need to turn char into utf-8 encoding first
         byte_array[row * dimension + col] = ord(new_char)
+
+    def size_of_node(self):
+        return getsizeof(self)
+
+
+    @staticmethod
+    def within_starting_area(move,colour):
+        corner = [(0,0),(7,0),(0,7),(7,7)]
+
+        # if the move is on the corner piece then this is not a valid move
+        if move in corner:
+            return False
+
+        # update the starting rows based off the player colour
+        if colour == constant.WHITE_PIECE:
+            min_row = 0
+            max_row = 6
+        elif colour == constant.BLACK_PIECE:
+            min_row = 2
+            max_row = 8
+        col,row = move
+
+        if min_row <= row <= max_row :
+            return True
+        else:
+            return False
+

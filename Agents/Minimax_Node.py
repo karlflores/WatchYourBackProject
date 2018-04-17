@@ -2,6 +2,7 @@
 * SEARCHABLE NODE STRUCTURE FOR MINIMAX / ALPHABETA SEARCH
 '''
 
+
 from Evaluation.Policies import Evaluation
 from Board.Board import Board
 from copy import deepcopy
@@ -11,7 +12,6 @@ class Node(object):
     def __init__(self, board, colour):
         self.board = deepcopy(board)
         self.depth = 0
-        self.eval = Evaluation.basic_policy(board.board_state)
         self.move_applied = None
         self.parent = None
         self.colour = colour
