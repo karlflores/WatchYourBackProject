@@ -62,7 +62,6 @@ class Minimax(object):
             # print(Minimax.evaluate_node(child))
             alpha = max(best_eval, alpha)
             '''
-            if
         return best_move
 
         # find the action associated with eval
