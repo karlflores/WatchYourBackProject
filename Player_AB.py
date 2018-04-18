@@ -1,7 +1,5 @@
 from Board import constant
 from Board.Board import Board
-from Agents.Random import Random
-from sys import getsizeof
 from Agents.Minimax import Minimax
 
 class Player:
@@ -22,9 +20,10 @@ class Player:
 
         self.opponent = self.board.get_opp_piece_type(self.colour)
 
-        #self.search_algorithm = Minimax(self.board,self.available_moves,self.colour)
+        # self.search_algorithm = Minimax(self.board,self.available_moves,self.colour)
 
         # print(self.opponent)
+
     # set up the board for the first time
     def init_start_moves(self):
         # set the initial board parameters
@@ -46,7 +45,7 @@ class Player:
                         self.available_moves.append((col, row))
 
     def update(self, action):
-        #print("UPDATING THIS ACTION : " + str(action))
+        # print("UPDATING THIS ACTION : " + str(action))
         if self.board.move_counter == 0:
             # then the opponent is the first person to move
             self.board.set_player_to_move(self.opponent)
@@ -68,19 +67,15 @@ class Player:
             # print("MOVETYPE: " + str(move_type))
             # print(action[0])
             self.board.update_board((action[0], move_type), self.opponent)
-       # print("&"*20)
-       # self.board.print_board()
-       # print("&"*20)
-
 
     def action(self, turns):
 
-       # print("+"*20)
-       # self.board.print_board()
-       # print("+"*20)
+        # print("+"*20)
+        # self.board.print_board()
+        # print("+"*20)
         # update the search algorithm so that it is searching the correct space
-        #self.search_algorithm.update_available_moves(self.available_moves)
-        #self.search_algorithm.update_board(self.board)
+        # self.search_algorithm.update_available_moves(self.available_moves)
+        # self.search_algorithm.update_board(self.board)
         # create a board holding the current board state
         if turns == 0 and self.board.phase == constant.PLACEMENT_PHASE:
             self.board.set_player_to_move(self.colour)
@@ -100,86 +95,6 @@ class Player:
             new_pos = Board.convert_move_type_to_coord(best_move[0],best_move[1])
             self.board.update_board(best_move,self.colour)
             return best_move[0], new_pos
-        # create the node to search on
-        # print("TURNS SO FAR ---------- " + str(turns))
-        # print("ACTION CALLED: BOARD REPRESENTATION COUNTER: " + str(self.board.move_counter))
-        '''
-        if turns == 0 and self.board.phase == constant.PLACEMENT_PHASE:
-            # then we are first person to move
-            self.board.set_player_to_move(self.colour)
-
-        if turns < 24 and self.board.phase == constant.PLACEMENT_PHASE:
-
-            print(str(self.available_moves))
-            # then we pick the best move to make based on a search algorithm
-            next_move = Minimax.alpha_beta_minimax(2, self.search_algorithm.node)
-            print(self.search_algorithm.node.available_moves)
-            print(self.search_algorithm.node.board.piece_pos)
-            self.search_algorithm.node.board.print_board()
-            print("MOVE MADE: " + str(next_move))
-            # making moves during the placement phase
-            eliminated_pieces = self.board.update_board(next_move, self.colour)
-            # print("BOARDS TURNS NOW  ---------- " + str(self.board.move_counter))
-            # remove the move made from the available moves
-            self.available_moves.remove(next_move)
-            if len(eliminated_pieces) != 0:
-                for piece in eliminated_pieces:
-                    if piece in self.available_moves:
-                        self.available_moves.remove(piece)
-
-            # if there is only one more move to make switch the phase of the game
-            # and update the available moves
-            # if turns == 23:
-                # all players have placed their pieces on the board, we can call update_available_moves to update the
-                # available moves available to this player
-                # clear the list
-                # self.available_moves = []
-                # update the lists available moves -- now in the form ((col,row),move_type)
-                # self.update_available_moves()
-                # print(self.available_moves)
-
-            # print("MOVE APPLIED: " + str(next_move))
-            # print(self.available_moves)
-
-            # print(self.colour + "  " + str(self.board.piece_pos))
-            return next_move
-
-        elif self.board.phase == constant.MOVING_PHASE:
-            if turns == 0 or turns == 1:
-                # if the turns is 0 or 1 and the board is in moving phase then the
-                # all players have placed their pieces on the board, we can call update_available_moves to update the
-                # available moves available to this player
-                # clear the list
-                self.available_moves = []
-                # update the lists available moves -- now in the form ((col,row),move_type)
-                # self.update_available_moves()
-                # print(self.available_moves)
-            # we are making a move in the moving phase
-            #print(self.available_moves)
-
-            self.update_available_moves()
-            # if there are no available moves to be made we can return None:
-            if len(self.available_moves) == 0:
-                return None
-            print("AVAILABLE MOVES: " + str(self.colour) + " " + str(self.available_moves))
-            # if there is a move to be made we can return the best move
-
-            # TODO : THIS IS WHERE WE CARRY OUT OUR SEARCH ALGORITHM
-            # then we pick the best move to make based on a search algorithm
-            next_move = self.search_algorithm.alpha_beta_minimax(2,self.search_algorithm.node)
-            print("MOVE MADE: " + str(next_move))
-            self.board.update_board(next_move,self.colour)
-
-            new_pos = self.board.convert_move_type_to_coord(next_move[0],next_move[1])
-            # print(self.colour + "  " + str(self.board.piece_pos))
-
-            # TODO - need to double check if this update_available_moves is necessary
-            self.update_available_moves()
-
-            #print(getsizeof(self.board.piece_pos))
-            #print(getsizeof(self.board.board_state))
-            #print(getsizeof(self.available_moves))
-    '''
 
     # updates the available moves a piece can make after it has been moved
     # this way we don;t need to calculate all the available moves on the board
