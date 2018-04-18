@@ -155,9 +155,9 @@ class Player:
             # TODO - need to double check if this update_available_moves is necessary
             self.update_available_moves()
 
-            print(getsizeof(self.board.piece_pos))
-            print(getsizeof(self.board.board_state))
-            print(getsizeof(self.available_moves))
+            #print(getsizeof(self.board.piece_pos))
+            #print(getsizeof(self.board.board_state))
+            #print(getsizeof(self.available_moves))
             return next_move[0], new_pos
 
     # updates the available moves a piece can make after it has been moved

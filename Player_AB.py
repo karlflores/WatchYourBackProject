@@ -84,13 +84,13 @@ class Player:
             self.board.phase =constant.MOVING_PHASE
 
         root = Minimax.create_node(self.board,self.colour,None)
-        best_move = Minimax.alpha_beta_minimax(3,root)
+        best_move = Minimax.alpha_beta_minimax(2,root)
         # do an alpha beta search on this node
         if self.board.phase == constant.PLACEMENT_PHASE:
             self.board.update_board(best_move,self.colour)
             return best_move
         else:
-            print(best_move is None)
+            #(best_move is None)
             print(best_move[0],best_move[1])
             new_pos = Board.convert_move_type_to_coord(best_move[0],best_move[1])
             self.board.update_board(best_move,self.colour)

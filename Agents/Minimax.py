@@ -41,8 +41,12 @@ class Minimax(object):
         best_move = -inf
         alpha = -inf
         beta = inf
+        child_nodes = []
         for action in root.available_moves:
-            child = Minimax.create_node(root.board, Board.get_opp_piece_type(root.colour),action)
+            child_nodes.append(Minimax.create_node(root.board, Board.get_opp_piece_type(root.colour),action))
+
+        # child_nodes.sort(reverse=False)
+        for child in child_nodes:
             evaluate = Minimax.min_value(child,depth-1,alpha,beta)
 
             if evaluate > alpha:
@@ -65,9 +69,14 @@ class Minimax(object):
 
         # visit each available move
         # print(node.available_moves)
+        child_nodes = []
         for action in node.available_moves:
+            child_nodes.append(Minimax.create_node(node.board, Board.get_opp_piece_type(node.colour),action))
+
+        # child_nodes.sort(reverse=False)
+        for child in child_nodes:
             # make a new node for each available node -- this child is now the opposite colour
-            child = Minimax.create_node(node.board, Board.get_opp_piece_type(node.colour), action)
+            # child = Minimax.create_node(node.board, Board.get_opp_piece_type(node.colour), action)
 
             # get the minimax value for this node
             evaluate = max(evaluate, Minimax.min_value(child, depth-1, alpha, beta))
@@ -88,9 +97,15 @@ class Minimax(object):
             return Minimax.evaluate_node(node)
 
         # print(node.available_moves)
+        child_nodes = []
+
         for action in node.available_moves:
             # apply the move to the child node, this node is now the opposite colour
-            child = Minimax.create_node(node.board, Board.get_opp_piece_type(node.colour), action)
+            child_nodes.append(Minimax.create_node(node.board, Board.get_opp_piece_type(node.colour), action))
+
+        # child_nodes.sort(reverse=True)
+
+        for child in child_nodes:
             evaluate = min(evaluate, Minimax.max_value(child, depth-1, alpha, beta))
 
             beta = min(beta, evaluate)

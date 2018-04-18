@@ -15,7 +15,10 @@ class Node(object):
         self.move_applied = None
         self.parent = None
         self.colour = colour
-        self.minimax = 0
+
+        self.eval = 0
+        self.evaluate()
+
         self.available_moves = []
 
     # it is a leaf node if terminal
@@ -27,4 +30,10 @@ class Node(object):
         self.colour = Board.get_opp_piece_type(self.colour)
 
     def evaluate(self):
-        self.eval = Evaluation.basic_policy(self.board.board_state)
+        self.eval = Evaluation.basic_policy(self.board,self.colour)
+
+    def __lt__(self, other):
+        if other is None:
+            return False
+        else:
+            return self.eval - other.eval
