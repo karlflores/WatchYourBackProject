@@ -12,20 +12,16 @@ from copy import deepcopy
 
 class Minimax(object):
 
-    def __init__(self,board,available_moves,colour):
+    def __init__(self):
         # we want to create a node
-        self.node = Minimax.create_node(board,colour,None)
-        self.depth = 0
-        self.best_move = None
-        self.iteration = 0
-
-        self.node.available_moves = available_moves
+        self.visited = set()
 
     '''
     * Alpha Beta - Minimax Driver Function 
     '''
-    @staticmethod
-    def alpha_beta_minimax(depth,root):
+
+    def alpha_beta_minimax(self,depth,root):
+        self.visited = set()
         # print the available mvoes of the alpha beta call
         #print(root.available_moves)
 
@@ -38,19 +34,25 @@ class Minimax(object):
         # essentially we just need to do a min search on the child nodes
         # of the root -- do this week alpha-beta pruning
 
-        best_move = -inf
+        best_move = None
         alpha = -inf
         beta = inf
         child_nodes = []
         for action in root.available_moves:
             child_nodes.append(Minimax.create_node(root.board, Board.get_opp_piece_type(root.colour),action))
 
-        # child_nodes.sort(reverse=False)
+        child_nodes.sort(reverse=False)
+
         for child in child_nodes:
-            evaluate = Minimax.min_value(child,depth-1,alpha,beta)
+            # if there is a symmetry of the board state that matches a visited state
+            # then we can skip this node -- don't need to explore it anymore
+            if self.check_symmetry(child.board.board_state) is True:
+                continue
+
+            evaluate = self.min_value(child,depth-1,alpha,beta)
 
             if evaluate > alpha:
-                best_move = action
+                best_move = child.move_applied
                 alpha = evaluate
 
             if beta < alpha:
@@ -60,9 +62,7 @@ class Minimax(object):
 
         # find the action associated with eval
 
-
-    @staticmethod
-    def max_value(node, depth, alpha, beta):
+    def max_value(self,node, depth, alpha, beta):
         evaluate = -inf
         if Minimax.cutoff_test(node,depth):
             return Minimax.evaluate_node(node)
@@ -73,13 +73,16 @@ class Minimax(object):
         for action in node.available_moves:
             child_nodes.append(Minimax.create_node(node.board, Board.get_opp_piece_type(node.colour),action))
 
-        # child_nodes.sort(reverse=False)
+        child_nodes.sort(reverse=False)
         for child in child_nodes:
+
+            #if self.check_symmetry(child.board.board_state) is True:
+                #continue
             # make a new node for each available node -- this child is now the opposite colour
             # child = Minimax.create_node(node.board, Board.get_opp_piece_type(node.colour), action)
 
             # get the minimax value for this node
-            evaluate = max(evaluate, Minimax.min_value(child, depth-1, alpha, beta))
+            evaluate = max(evaluate, self.min_value(child, depth-1, alpha, beta))
 
             alpha = max(evaluate,alpha)
             if alpha >= beta:
@@ -88,8 +91,7 @@ class Minimax(object):
         node.minimax = evaluate
         return evaluate
 
-    @staticmethod
-    def min_value(node, depth, alpha, beta):
+    def min_value(self,node, depth, alpha, beta):
         # beginning evaluation value
         evaluate = inf
 
@@ -103,10 +105,13 @@ class Minimax(object):
             # apply the move to the child node, this node is now the opposite colour
             child_nodes.append(Minimax.create_node(node.board, Board.get_opp_piece_type(node.colour), action))
 
-        # child_nodes.sort(reverse=True)
-
+        child_nodes.sort(reverse=True)
         for child in child_nodes:
-            evaluate = min(evaluate, Minimax.max_value(child, depth-1, alpha, beta))
+            # need to check if this is valid -- skip over all previously visied symmetric nodes
+            #if self.check_symmetry(child.board.board_state) is True:
+            #    print("xxxxxx")
+            #    continue
+            evaluate = min(evaluate, self.max_value(child, depth-1, alpha, beta))
 
             beta = min(beta, evaluate)
 
@@ -125,7 +130,7 @@ class Minimax(object):
         node = Node(board,colour)
         if node is None:
             return None
-
+        node.move_applied = move
         eliminated = []
         # apply this move to the node
         if move is not None:
@@ -202,3 +207,29 @@ class Minimax(object):
             for col in range(constant.BOARD_SIZE):
                 if Board.within_starting_area((col,row),node.colour):
                     node.available_moves.append((col,row))
+
+    def check_symmetry(self,board_state):
+
+        transformation = Minimax.apply_horizontal_reflection(board_state)
+        board = deepcopy(board_state)
+        if transformation.decode("utf-8") in self.visited:
+            return True
+        else:
+            self.visited.add(board.decode("utf-8"))
+            return False
+
+    @staticmethod
+    def apply_horizontal_reflection(board_state):
+        temp = ''
+        for index in range(constant.BOARD_SIZE**2):
+            temp+=constant.FREE_SPACE
+
+        temp = bytearray(temp,'utf-8')
+
+        for row in range(constant.BOARD_SIZE):
+            for col in range(constant.BOARD_SIZE):
+                Board.set_array_char(temp,7-row,7-col,
+                                     Board.get_array_element(board_state,row,col))
+        #print(temp)
+        #print(board_state)
+        return temp

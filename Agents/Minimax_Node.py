@@ -5,7 +5,7 @@
 
 from Evaluation.Policies import Evaluation
 from Board.Board import Board
-from copy import deepcopy
+from copy import deepcopy, copy
 from math import inf
 
 class Node(object):
@@ -14,6 +14,7 @@ class Node(object):
         self.depth = 0
         self.move_applied = None
         self.parent = None
+        self.expand = True
         self.colour = colour
 
         self.eval = 0

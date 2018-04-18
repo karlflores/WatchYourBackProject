@@ -8,14 +8,16 @@ class Evaluation(object):
     @staticmethod
     def basic_policy(board,colour):
         # assume that the board is in a byte string representation
-        diff_pieces = len(board.piece_pos[colour])-len(board.piece_pos[Board.get_opp_piece_type(colour)])
+        diff_pieces = len(board.piece_pos[colour])-3*len(board.piece_pos[Board.get_opp_piece_type(colour)])
         dist_cent = 0
         for pieces in board.piece_pos[colour]:
             dist_cent+= Evaluation.distance(pieces,(3,3))
 
         dist_pieces = 0
 
-        return 1/(1+int(dist_cent))+int(fabs(diff_pieces))*5
+        return 1/(1+int(dist_cent))+10*diff_pieces
+        #print(dist_cent)
+        #return diff_pieces
 
     @staticmethod
     def distance(pos_1,pos_2):

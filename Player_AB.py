@@ -17,7 +17,7 @@ class Player:
 
         # initialise the available moves
         self.init_start_moves()
-
+        self.minimax = Minimax()
         self.opponent = self.board.get_opp_piece_type(self.colour)
 
         # self.search_algorithm = Minimax(self.board,self.available_moves,self.colour)
@@ -84,7 +84,7 @@ class Player:
             self.board.phase =constant.MOVING_PHASE
 
         root = Minimax.create_node(self.board,self.colour,None)
-        best_move = Minimax.alpha_beta_minimax(2,root)
+        best_move = self.minimax.alpha_beta_minimax(3,root)
         # do an alpha beta search on this node
         if self.board.phase == constant.PLACEMENT_PHASE:
             self.board.update_board(best_move,self.colour)

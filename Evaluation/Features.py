@@ -7,5 +7,5 @@
 
 class Features(object):
     @staticmethod
-    def basic(board):
+    def dist_to_piece(board,move):
         pass
