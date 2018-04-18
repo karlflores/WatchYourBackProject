@@ -1,24 +1,4 @@
-# watch your back
-
-## PROJECT PART A
-
-### running the program: 
-* to run the program: 
-```
-    python3 projecta,py < path_to_file
-```
-### moves
-* implemented the backend for the game. this includes the moving mechanics and elimination mechanics.
-* implemented certain methods relating to updating the game and getting information about the game 
-* implemented moves functionality by storing then counting the number of available moves each colour player can make.
-* this works for supplied inputs 
-
-### massacre 
-* implemented the node, massacre classes 
-* node is the structure to store each game board such that we are able to search through different configurations via graph traversal algorithms.
-* node also includes certain evaluation functions to evualute which states are better than others. note currently that the countnum() method is the best evaluation function that has been implemented so far. 
-* implemented the massacre class. this is the searching class that has implementations of breadth first search, an iteration of greedy first search using a heap based priority queue, depth limited search and iterative deepenign depth first search have been fully implemented. note that greedy search has been the most efficient so far, but it does not provide the most optimal path. since all path calls are of cost 1 (can only move once during a move), therefore both iddfs and also breadth first search will return optimal paths, but each has big limitations in terms of time and speed. 
-* implemented iddfs search and dls, now dls checks for visited nodes in its current call
+# Watch Your Back
 
 ## PROJECT PART B
 
