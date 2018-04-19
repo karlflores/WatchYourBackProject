@@ -76,10 +76,10 @@ class Minimax(object):
         child_nodes.sort(reverse=False)
         for child in child_nodes:
 
-            #if self.check_symmetry(child.board.board_state) is True:
-                #continue
+            # if self.check_symmetry(child.board.board_state) is True:
+                # continue
             # make a new node for each available node -- this child is now the opposite colour
-            # child = Minimax.create_node(node.board, Board.get_opp_piece_type(node.colour), action)
+            # child = M inimax.create_node(node.board, Board.get_opp_piece_type(node.colour), action)
 
             # get the minimax value for this node
             evaluate = max(evaluate, self.min_value(child, depth-1, alpha, beta))

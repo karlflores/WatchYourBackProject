@@ -347,7 +347,7 @@ class Board(object):
     # call this when we want to make a move -- change the dict and change the board
 
     # when we want to apply a move to the board -- update the board and the dict associated
-    def make_move(self, old_pos, move_type, my_piece_type):
+    def apply_move(self, old_pos, move_type, my_piece_type):
         eliminated_pieces = []
         # check if the move is legal first
         if self.is_legal_move(old_pos, move_type) is False:
@@ -376,8 +376,9 @@ class Board(object):
         # self.move_counter += 1
         # success
         return eliminated_pieces
-
-    def make_placement(self,pos, my_piece_type):
+    
+    
+    def apply_placement(self,pos, my_piece_type):
         eliminated_pieces = []
         col,row = pos
 
@@ -414,7 +415,7 @@ class Board(object):
         if self.phase == constant.PLACEMENT_PHASE:
             # make the placement -- this should take care of the update to the piece position list
             # as well as the move counter
-            pieces = self.make_placement(move, my_piece_type)
+            pieces = self.apply_placement(move, my_piece_type)
             if pieces is not None:
                 for piece in pieces:
                     eliminated_pieces.append(piece)
@@ -425,7 +426,7 @@ class Board(object):
             move_type = move[1]
             # print(pos)
             # make the move
-            pieces = self.make_move(pos,move_type, my_piece_type)
+            pieces = self.apply_move(pos,move_type, my_piece_type)
             # return the eliminated pieces list
             if pieces is not None:
                 for piece in pieces:
