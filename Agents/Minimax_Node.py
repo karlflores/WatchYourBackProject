@@ -5,10 +5,12 @@
 
 from Evaluation.Policies import Evaluation
 from Board.Board import Board
-from copy import deepcopy, copy
+from copy import deepcopy
 from math import inf
 
+
 class Node(object):
+
     def __init__(self, board, colour):
         self.board = deepcopy(board)
         self.depth = 0

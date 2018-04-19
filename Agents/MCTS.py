@@ -31,3 +31,8 @@ class MonteCarloTreeSearch(object):
     def best_UCB_node(self):
         pass
 
+    def update_root(self):
+        self.root = root
+
+    
+
