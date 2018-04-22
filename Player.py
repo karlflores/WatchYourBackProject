@@ -54,8 +54,8 @@ class Player:
         if self.board.phase == constant.PLACEMENT_PHASE:
 
             # update board also returns the pieces of the board that will be eliminated
-            eliminated_pieces = self.board.update_board(action, self.opponent)
-
+            self.board.update_board(action, self.opponent)
+            eliminated_pieces = self.board.eliminated_pieces[self.opponent]
             # remove the eliminated pieces from the available moves of this player
             for piece in eliminated_pieces:
                 if piece in self.available_moves and Player.within_starting_area(piece,self.colour):
@@ -96,7 +96,8 @@ class Player:
             next_move = self.available_moves[search_algorithm.choose_move()]
 
             # making moves during the placement phase
-            eliminated_pieces = self.board.update_board(next_move, self.colour)
+            self.board.update_board(next_move, self.colour)
+            eliminated_pieces = self.board.eliminated_pieces[self.colour]
             # print("BOARDS TURNS NOW  ---------- " + str(self.board.move_counter))
             # remove the move made from the available moves
             self.available_moves.remove(next_move)

@@ -57,7 +57,9 @@ class Player:
         if self.board.phase == constant.PLACEMENT_PHASE:
 
             # update board also returns the pieces of the board that will be eliminated
-            eliminated_pieces = self.board.update_board(action, self.opponent)
+            self.board.update_board(action, self.opponent)
+            eliminated_pieces = self.board.eliminated_pieces[self.opponent]
+            self.minimax.update_board(self.board)
 
             # remove the opponent piece from the available moves list
         elif self.board.phase == constant.MOVING_PHASE:
@@ -69,6 +71,7 @@ class Player:
             # print("MOVETYPE: " + str(move_type))
             # print(action[0])
             self.board.update_board((action[0], move_type), self.opponent)
+            self.minimax.update_board(self.board)
 
     def action(self, turns):
 
@@ -98,12 +101,14 @@ class Player:
         if self.board.phase == constant.PLACEMENT_PHASE:
             print(best_move)
             self.board.update_board(best_move,self.colour)
+            self.minimax.update_board(self.board)
             return best_move
         else:
             #(best_move is None)
             print(best_move[0],best_move[1])
             new_pos = Board.convert_move_type_to_coord(best_move[0],best_move[1])
             self.board.update_board(best_move,self.colour)
+            self.minimax.update_board(self.board)
             return best_move[0], new_pos
 
     # updates the available moves a piece can make after it has been moved

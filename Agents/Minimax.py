@@ -461,7 +461,7 @@ class MinimaxUndo(object):
             if self.board.move_counter == 24:
                 node.available_moves = []
             # generate the moves that you can apply to this node
-            node.available_moves = Minimax.generate_moves(node, node.colour)
+            node.available_moves = self.generate_moves(node.colour)
 
     def generate_moves(self,colour):
         available_moves = []

@@ -458,6 +458,7 @@ class Board(object):
     def undo_move(self):
         pos = None
         action_applied = self.pop_action()
+
         print(action_applied)
 
         is_piece_already_eliminated = False
@@ -515,7 +516,7 @@ class Board(object):
             # in that piece being eliminated -- do not need to remove
             # this piece from the board
 
-            if pos not in self.eliminated_pieces[colour]:
+            if pos not in self.eliminated_pieces[colour] and pos in self.piece_pos[colour]:
                 print("BBBBB")
                 self.piece_pos[colour].remove(pos)
             else:
@@ -532,7 +533,8 @@ class Board(object):
             for piece in self.eliminated_pieces[colour]:
                 # put the piece back on the board
                 if is_piece_already_eliminated is False:
-                    self.apply_placement(piece,colour)
+                    self.apply_placement(piece, colour)
+                    is_piece_already_eliminated = False
 
         # decrease the move counter
         self.move_counter -= 1
