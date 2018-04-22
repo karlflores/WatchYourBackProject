@@ -457,6 +457,7 @@ class Board(object):
     # undo a move that was made
     def undo_move(self):
         pos = None
+        print(self.action_applied)
         action_applied = self.pop_action()
 
         print(action_applied)
@@ -486,23 +487,76 @@ class Board(object):
 
         # get the move based on the phase of the game
         if self.phase == constant.MOVING_PHASE:
-            print("MOVING")
-            pos = action_applied[0][0]
-            print(pos)
-            original_move_type = action_applied[0][1]
+            # if the move counter is at zero we know that the move applied is of form
+            # (row,col), colour -- the last piece on the board was placed
+            if self.move_counter == 0:
+                print("MOVE COUNTER 0")
+                pos = action_applied[0]
+                col,row = pos
 
-            move_pos = self.convert_move_type_to_coord(pos,original_move_type)
-            print(original_move_type)
-            colour = action_applied[1]
-            print(colour)
-            # put the piece back to its original position
-            if original_move_type < 4:
-                reset_move = (original_move_type + 2) % 4
-                print(reset_move)
+                colour = action_applied[1]
+                if pos not in self.eliminated_pieces[colour] and pos in self.piece_pos[colour]:
+                    self.piece_pos[colour].remove(pos)
+                else:
+                    is_piece_already_eliminated = True
+
+                # remove from the board
+                if self.within_starting_area(pos,colour):
+                    self.set_board(row,col, constant.FREE_SPACE)
+                #self.apply_placement(pos,colour)
+
+                # put back the eliminated pieces back on the board
+                for col in (constant.BLACK_PIECE, constant.WHITE_PIECE):
+                    print("CCCCC")
+                    print(self.eliminated_pieces[col], pos)
+                    for piece in self.eliminated_pieces[col]:
+                        print(piece)
+                        print(pos)
+                        # put the piece back on the board
+                        if piece[0]!=pos[0] and piece[1]!=pos[1]:
+                            self.apply_placement(piece, col)
+                            if piece in self.eliminated_pieces[col]:
+                                self.eliminated_pieces[col].remove(piece)
+                                print("removed")
+                            self.print_board()
+                            print("xxxx")
+
+                self.move_counter = 24
+                self.phase = constant.PLACEMENT_PHASE
+                return
             else:
-                reset_move = 4 + (original_move_type+2) % 4
-                print(reset_move)
-            self.apply_move(move_pos,reset_move,colour)
+                print("MOVING")
+                pos = action_applied[0][0]
+                print(pos)
+                original_move_type = action_applied[0][1]
+
+                move_pos = self.convert_move_type_to_coord(pos,original_move_type)
+                print(original_move_type)
+                colour = action_applied[1]
+                print(colour)
+                # put the piece back to its original position
+                if original_move_type < 4:
+                    reset_move = (original_move_type + 2) % 4
+                    print(reset_move)
+                else:
+                    reset_move = 4 + (original_move_type+2) % 4
+                    print(reset_move)
+                self.apply_move(move_pos,reset_move,colour)
+
+            # put back the eliminated pieces back on the board
+            for col in (constant.BLACK_PIECE, constant.WHITE_PIECE):
+                print("CCCCC")
+                for piece in self.eliminated_pieces[col]:
+                    print(piece)
+                    print(pos)
+                    # put the piece back on the board
+                    if piece[0]!=pos[0] and piece[1]!=pos[1]:
+                        self.apply_placement(piece, col)
+                        if piece in self.eliminated_pieces[col]:
+                            self.eliminated_pieces[col].remove(piece)
+                            print("removed")
+                        self.print_board()
+                        print("xxxx")
 
         elif self.phase == constant.PLACEMENT_PHASE:
             print("XXXX")
@@ -527,14 +581,21 @@ class Board(object):
                 self.set_board(row,col, constant.FREE_SPACE)
             #self.apply_placement(pos,colour)
 
-        # put back the eliminated pieces back on the board
-        for colour in (constant.BLACK_PIECE, constant.WHITE_PIECE):
-            print("CCCCC")
-            for piece in self.eliminated_pieces[colour]:
-                # put the piece back on the board
-                if is_piece_already_eliminated is False:
-                    self.apply_placement(piece, colour)
-                    is_piece_already_eliminated = False
+            # put back the eliminated pieces back on the board
+            for col in (constant.BLACK_PIECE, constant.WHITE_PIECE):
+                print("CCCCC")
+                print(self.eliminated_pieces[col], pos)
+                for piece in self.eliminated_pieces[col]:
+                    print(piece)
+                    print(pos)
+                    # put the piece back on the board
+                    if piece[0]!=pos[0] and piece[1]!=pos[1]:
+                        self.apply_placement(piece, col)
+                        if piece in self.eliminated_pieces[col]:
+                            self.eliminated_pieces[col].remove(piece)
+                            print("removed")
+                        self.print_board()
+                        print("xxxx")
 
         # decrease the move counter
         self.move_counter -= 1
