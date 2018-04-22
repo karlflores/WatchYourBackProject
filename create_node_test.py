@@ -483,7 +483,7 @@ print(child.colour)
 print(child.board.move_counter)
 
 print()
-print(child.available_moves[1])
+print(child.available_moves[5])
 child = Minimax.create_node(child.board,Board.get_opp_piece_type(child.colour),child.available_moves[1])
 child.board.print_board()
 print(child.available_moves)
@@ -491,13 +491,29 @@ print(child.colour)
 print(child.board.move_counter)
 
 print()
-print(child.available_moves[1])
+print(child.available_moves[5])
 child = Minimax.create_node(child.board,Board.get_opp_piece_type(child.colour),child.available_moves[1])
 child.board.print_board()
 print(child.available_moves)
 print(child.colour)
 print(child.board.move_counter)
+print()
 
+print("UNDO MOVE")
+child.board.undo_move()
+child.board.print_board()
+
+print("UNDO MOVE")
+child.board.undo_move()
+child.board.print_board()
+
+print("UNDO MOVE")
+child.board.undo_move()
+child.board.print_board()
+
+print("UNDO MOVE")
+child.board.undo_move()
+child.board.print_board()
 
 
 

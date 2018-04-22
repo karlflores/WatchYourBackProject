@@ -38,6 +38,13 @@ class Board(object):
         # who is moving first
         self.player_to_move = None
 
+        # eliminated pieces -- store for board undo move
+        self.eliminated_pieces = {constant.BLACK_PIECE: [], constant.WHITE_PIECE: []}
+
+        # move applied when the update was called -- this is changed when an update is
+        # called
+        self.action_applied = []
+
     def init_board_rep(self):
         # store the board representation as a byte_array length 64 (64bytes)
         temp = ''
@@ -257,8 +264,6 @@ class Board(object):
         # get the opponent piece type
         opp_piece_type = self.get_opp_piece_type(my_piece_type)
 
-        eliminated_pieces = []
-
         while self.check_one_piece_elimination(my_piece_pos,my_piece_type) is not None:
             piece = self.check_one_piece_elimination(my_piece_pos,my_piece_type)
 
@@ -270,7 +275,9 @@ class Board(object):
                 # update the string board representation
                 remove_col,remove_row = piece
                 self.set_board(remove_row, remove_col, constant.FREE_SPACE)
-                eliminated_pieces.append(piece)
+
+                # update the eliminated piece dict
+                self.eliminated_pieces[opp_piece_type].append(piece)
 
         # check for self elimination if there is not opponent piece to be eliminated
         piece = self.check_self_elimination(my_piece_pos,my_piece_type)
@@ -280,9 +287,9 @@ class Board(object):
 
             remove_col, remove_row = piece
             self.set_board(remove_row, remove_col, constant.FREE_SPACE)
-            eliminated_pieces.append(piece)
 
-        return eliminated_pieces
+            # update the eliminated piece dictionary
+            self.eliminated_pieces[my_piece_type].append(piece)
 
     # elimination helper function
     def check_one_piece_elimination(self,my_piece_pos,my_piece_type):
@@ -348,7 +355,7 @@ class Board(object):
 
     # when we want to apply a move to the board -- update the board and the dict associated
     def apply_move(self, old_pos, move_type, my_piece_type):
-        eliminated_pieces = []
+
         # check if the move is legal first
         if self.is_legal_move(old_pos, move_type) is False:
             return
@@ -368,18 +375,12 @@ class Board(object):
         self.piece_pos[my_piece_type].append(new_pos)
 
         # now we can test for elimination at the new position on the board
-        pieces = self.perform_elimination(new_pos,my_piece_type)
-        if pieces is not None:
-            for piece in pieces:
-                eliminated_pieces.append(piece)
+        self.perform_elimination(new_pos,my_piece_type)
         # increase the number of moves made on the board
         # self.move_counter += 1
         # success
-        return eliminated_pieces
-    
-    
+
     def apply_placement(self,pos, my_piece_type):
-        eliminated_pieces = []
         col,row = pos
 
         # check if that placement is legal
@@ -398,27 +399,23 @@ class Board(object):
         # self.move_counter += 1
 
         # perform the elimination around the piece that has been placed
-        pieces = self.perform_elimination(pos, my_piece_type)
-        if pieces is not None:
-            for piece in pieces:
-                eliminated_pieces.append(piece)
-        # success if we reach here
-        return eliminated_pieces
+        self.perform_elimination(pos, my_piece_type)
 
     # went we want to update the board we call this function
     # move has to be in the form ((row,col),move_type)
     def update_board(self,move,my_piece_type):
-        eliminated_pieces = []
+
+        # reset the eliminated pieces dictionary when an update is called
+        self.eliminated_pieces[constant.BLACK_PIECE] = []
+        self.eliminated_pieces[constant.WHITE_PIECE] = []
         # print(move)
 
         # make the action
         if self.phase == constant.PLACEMENT_PHASE:
             # make the placement -- this should take care of the update to the piece position list
             # as well as the move counter
-            pieces = self.apply_placement(move, my_piece_type)
-            if pieces is not None:
-                for piece in pieces:
-                    eliminated_pieces.append(piece)
+            self.apply_placement(move, my_piece_type)
+            self.push_action((move,my_piece_type))
 
         elif self.phase == constant.MOVING_PHASE:
             # move is in the form (pos, move_type)
@@ -426,11 +423,10 @@ class Board(object):
             move_type = move[1]
             # print(pos)
             # make the move
-            pieces = self.apply_move(pos,move_type, my_piece_type)
-            # return the eliminated pieces list
-            if pieces is not None:
-                for piece in pieces:
-                    eliminated_pieces.append(piece)
+            self.apply_move(pos,move_type, my_piece_type)
+
+            # possibly can store this in a different way
+            self.push_action((move, my_piece_type))
 
         # after an action is applied we can increment the move counter of the board
         self.move_counter += 1
@@ -458,7 +454,81 @@ class Board(object):
             # check if the board is a terminal state / a win/ loose/ draw
             self.is_terminal()
 
-        return eliminated_pieces
+    # undo a move that was made
+    def undo_move(self):
+        pos = None
+        action_applied = self.pop_action()
+        print(action_applied)
+        if action_applied is None:
+            # do nothing
+            return
+
+        # if there was no move applied to the board previously
+        # depending on the move_counter of the board -- reset the corner positions
+        if self.move_counter == 128:
+            # reset the corner pieces to free spaces
+            for (col, row) in self.corner_pos:
+                self.set_board(row, col, constant.FREE_SPACE)
+            self.corner_pos = [(0,0),(7,0),(0,7),(7,7)]
+            for (col, row) in self.corner_pos:
+                self.set_board(row, col, constant.CORNER_PIECE)
+        elif self.move_counter == 192:
+            # reset the corner pieces to free spaces
+            for (col, row) in self.corner_pos:
+                self.set_board(row, col, constant.FREE_SPACE)
+            self.corner_pos = [(1,1),(6,1),(1,6),(6,6)]
+            for (col, row) in self.corner_pos:
+                self.set_board(row, col, constant.CORNER_PIECE)
+
+        # get the move based on the phase of the game
+        if self.phase == constant.MOVING_PHASE:
+            print("MOVING")
+            pos = action_applied[0][0]
+            print(pos)
+            original_move_type = action_applied[0][1]
+
+            move_pos = self.convert_move_type_to_coord(pos,original_move_type)
+            print(original_move_type)
+            colour = action_applied[1]
+            print(colour)
+            # put the piece back to its original position
+            if original_move_type < 4:
+                reset_move = (original_move_type + 2) % 4
+                print(reset_move)
+            else:
+                reset_move = 4 + (original_move_type+2) % 4
+                print(reset_move)
+            self.apply_move(move_pos,reset_move,colour)
+
+        elif self.phase == constant.PLACEMENT_PHASE:
+            print("XXXX")
+            pos = action_applied[0]
+            col,row = pos
+            print(pos)
+            colour = action_applied[1]
+            print(colour)
+            # remove from piece pos list
+            # if, when the piece was placed on the board, it resulted
+            # in that piece being eliminated -- do not need to remove
+            # this piece from the board
+
+            if pos in self.piece_pos[colour]:
+                self.piece_pos[colour].remove(pos)
+
+            # remove from the board
+            if self.within_starting_area(pos,colour):
+                self.set_board(row,col, constant.FREE_SPACE)
+            #self.apply_placement(pos,colour)
+
+        # put back the eliminated pieces back on the board
+        for colour in (constant.BLACK_PIECE, constant.WHITE_PIECE):
+            for piece in self.eliminated_pieces[colour]:
+                if piece is not pos:
+                # put the piece back on the board
+                    self.apply_placement(piece,colour)
+
+        # decrease the move counter
+        self.move_counter -= 1
 
     # shrink the board
     def shrink_board(self):
@@ -505,7 +575,6 @@ class Board(object):
             self.corner_elimination(corner)
 
     # helper function for elimination of pieces at a corner -- for board shrinks
-
     def corner_elimination(self,corner):
         # print("CALLED CORNER ELIMINATION")
         # print("*"*50)
@@ -517,15 +586,16 @@ class Board(object):
         # the corner piece can act as the player piece -- therefore we can eliminate
         # the white pieces around the corner first, then the black pieces
         for player in player_types:
+            opp_player = self.get_opp_piece_type(player)
             # there can be more than one elimination or there can be None
             while self.check_one_piece_elimination(corner, player) is not None:
-                opp_player = self.get_opp_piece_type(player)
                 eliminated_piece = self.check_one_piece_elimination(corner,player)
 
                 # remove from the oppenent players piece pos list
                 # print("ELIMINATED: " + str(eliminated_piece))
                 self.piece_pos[opp_player].remove(eliminated_piece)
                 col, row = eliminated_piece
+                self.eliminated_pieces[opp_player].append(eliminated_piece)
                 # update the board representation
                 self.set_board(row, col, constant.FREE_SPACE)
 
@@ -595,7 +665,6 @@ class Board(object):
     def size_of_node(self):
         return getsizeof(self)
 
-
     @staticmethod
     def within_starting_area(move,colour):
         corner = [(0,0),(7,0),(0,7),(7,7)]
@@ -618,3 +687,13 @@ class Board(object):
         else:
             return False
 
+    # stack helper method
+    def push_action(self,data):
+        self.action_applied.append(data)
+
+    def pop_action(self):
+        if len(self.action_applied) > 0:
+            return self.action_applied.pop()
+
+        else:
+            return None

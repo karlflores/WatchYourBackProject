@@ -12,13 +12,12 @@ from math import inf
 class Node(object):
 
     def __init__(self, board, colour):
+        # self.board = board
+
         self.board = deepcopy(board)
-        self.depth = 0
         self.move_applied = None
         self.parent = None
-        self.expand = True
         self.colour = colour
-
         self.eval = 0
         self.evaluate()
 
@@ -34,6 +33,37 @@ class Node(object):
 
     def evaluate(self):
         self.eval = Evaluation.basic_policy(self.board,self.colour)
+
+    def __lt__(self, other):
+        if other is None:
+            return False
+        else:
+            return self.eval - other.eval
+
+
+class UndoNode(object):
+
+    def __init__(self,board, colour):
+        self.move_applied = None
+        self.parent = None
+        self.colour = colour
+        self.eval = 0
+
+        self.evaluate(board)
+
+        self.available_moves = []
+
+    # it is a leaf node if terminal
+    @staticmethod
+    def is_leaf(board):
+        return board.is_terminal()
+
+    # set the next colour
+    def next_colour(self):
+        self.colour = Board.get_opp_piece_type(self.colour)
+
+    def evaluate(self,board):
+        self.eval = Evaluation.basic_policy(board,self.colour)
 
     def __lt__(self, other):
         if other is None:

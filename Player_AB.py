@@ -1,6 +1,6 @@
 from Board import constant
 from Board.Board import Board
-from Agents.Minimax import Minimax
+from Agents.Minimax import Minimax, MinimaxUndo
 
 class Player:
 
@@ -17,7 +17,9 @@ class Player:
 
         # initialise the available moves
         self.init_start_moves()
-        self.minimax = Minimax()
+
+        # TODO -- need to see if this works correctly
+        self.minimax = MinimaxUndo(self.board)
         self.opponent = self.board.get_opp_piece_type(self.colour)
 
         # self.search_algorithm = Minimax(self.board,self.available_moves,self.colour)
@@ -81,12 +83,20 @@ class Player:
             self.board.set_player_to_move(self.colour)
         if turns == 24 and self.board.phase == constant.PLACEMENT_PHASE:
             self.board.move_counter = 0
-            self.board.phase =constant.MOVING_PHASE
+            self.board.phase = constant.MOVING_PHASE
 
-        root = Minimax.create_node(self.board,self.colour,None)
-        best_move = self.minimax.alpha_beta_minimax(2,root)
+        #root = Minimax.create_node(self.board,self.colour,None)
+
+        root = self.minimax.create_node(self.colour, None)
+        self.minimax.update_minimax_board(None,root)
+
+        # best_move = self.minimax.alpha_beta_minimax(2,root)
+        # best_move = self.minimax.iterative_deepening_alpha_beta(root)
+        best_move = self.minimax.alpha_beta_minimax(3,root)
+
         # do an alpha beta search on this node
         if self.board.phase == constant.PLACEMENT_PHASE:
+            print(best_move)
             self.board.update_board(best_move,self.colour)
             return best_move
         else:

@@ -21,6 +21,10 @@ MOVING_PHASE = 1
 TERMINAL = 2
 
 # move types
+
+# to the get the reverse move add 2
+# to get a 2 square move -- add 4
+
 RIGHT_1 = 0
 DOWN_1 = 1
 LEFT_1 = 2
@@ -29,6 +33,8 @@ RIGHT_2 = 4
 DOWN_2 = 5
 LEFT_2 = 6
 UP_2 = 7
+
+
 # search constants
 
 # IDDFS and DLS
