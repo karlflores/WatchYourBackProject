@@ -393,6 +393,7 @@ class MinimaxUndo(object):
 
             # undo the move so that we can apply the next board move to evaluate minimax value
             self.undo_move()
+
         node.minimax = evaluate
 
         return evaluate

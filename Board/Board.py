@@ -459,6 +459,9 @@ class Board(object):
         pos = None
         action_applied = self.pop_action()
         print(action_applied)
+
+        is_piece_already_eliminated = False
+
         if action_applied is None:
             # do nothing
             return
@@ -512,8 +515,11 @@ class Board(object):
             # in that piece being eliminated -- do not need to remove
             # this piece from the board
 
-            if pos in self.piece_pos[colour]:
+            if pos not in self.eliminated_pieces[colour]:
+                print("BBBBB")
                 self.piece_pos[colour].remove(pos)
+            else:
+                is_piece_already_eliminated = True
 
             # remove from the board
             if self.within_starting_area(pos,colour):
@@ -522,9 +528,10 @@ class Board(object):
 
         # put back the eliminated pieces back on the board
         for colour in (constant.BLACK_PIECE, constant.WHITE_PIECE):
+            print("CCCCC")
             for piece in self.eliminated_pieces[colour]:
-                if piece is not pos:
                 # put the piece back on the board
+                if is_piece_already_eliminated is False:
                     self.apply_placement(piece,colour)
 
         # decrease the move counter
