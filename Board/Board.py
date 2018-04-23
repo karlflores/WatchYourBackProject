@@ -461,9 +461,12 @@ class Board(object):
         # print("CALLED UNDO MOVE")
         # print(self.eliminated_pieces)
         # first we need to get the most recent action applied to the board
-        print(self.action_applied)
+        # print(self.action_applied)
         action_applied = self.pop_action()
-        print(self.action_applied)
+        # print("last action is: ",end='')
+        # print(action_applied)
+        # print(self.move_counter)
+        # print(self.phase)
         colour_tup = (constant.BLACK_PIECE, constant.WHITE_PIECE)
         # then we need to update the board to being in the state where it originally was in
         # first we need to see if the board has just recently been shrunk
@@ -544,16 +547,17 @@ class Board(object):
                     self.set_board(row,col,colour)
                     self.piece_pos[colour].append((col,row))
                     # remove the piece from the eliminated piece list
-                    self.eliminated_pieces[colour].remove((col,row))
+            for colour in colour_tup:
+                self.eliminated_pieces[colour] = []
             # print("TEST")
             # self.print_board()
             # reverse the move that was placed on the board
             pos = action_applied[0]
             col,row = pos
             colour = action_applied[1]
-            print(pos)
-
-            self.piece_pos[colour].remove(pos)
+            # print(pos)
+            if pos in self.piece_pos[colour]:
+                self.piece_pos[colour].remove(pos)
             self.set_board(row,col,constant.FREE_SPACE)
 
             # decrease the moving counter
@@ -563,21 +567,23 @@ class Board(object):
         elif self.phase == constant.MOVING_PHASE:
             # need to check if it is the first move of moving phase
             if self.move_counter == 0:
-                print("MOVE COUNTER IS NOW 0")
+                # print("MOVE COUNTER IS NOW 0")
                 # this is the first move, then the action applied to the
                 # board is a placement
                 for colour in colour_tup:
                     for (col,row) in self.eliminated_pieces[colour]:
                         self.set_board(row,col,colour)
                         self.piece_pos[colour].append((col,row))
-                        self.eliminated_pieces[colour].remove((col,row))
+                for colour in colour_tup:
+                    self.eliminated_pieces[colour] = []
 
                 # reverse the move that was placed on the board
                 pos = action_applied[0]
                 col,row = pos
                 colour = action_applied[1]
                 # print(pos)
-                self.piece_pos[colour].remove(pos)
+                if pos in self.piece_pos[colour]:
+                    self.piece_pos[colour].remove(pos)
                 self.set_board(row,col,constant.FREE_SPACE)
                 # decrease the move counter
                 self.move_counter = 24
@@ -586,20 +592,25 @@ class Board(object):
             else:
                 # if the move counter was not 128,192 we need to place
                 # the eliminated pieces back on the board
+                # print("started here")
                 if self.move_counter not in (0,128,192):
                     for colour in colour_tup:
-                        for (col,row) in self.piece_pos[colour]:
+                        for (col,row) in self.eliminated_pieces[colour]:
                             self.set_board(row,col,colour)
                             self.piece_pos[colour].append((col,row))
-                            self.eliminated_pieces[colour].remove((col,row))
-
+                # print("got here")
+                for colour in colour_tup:
+                    self.eliminated_pieces[colour] = []
+                # print("eliminated pieces")
                 # we just need to undo the move that was made
-                pos = action_applied[0][0]
+                old_pos = action_applied[0][0]
                 move_type = action_applied[0][1]
-                col,row = pos
                 colour = action_applied[1][0]
-                pos = self.convert_move_type_to_coord(pos,move_type)
 
+                curr_pos = self.convert_move_type_to_coord(old_pos,move_type)
+
+
+                '''
                 if move_type < 4:
                     reverse_move_type = (move_type + 2) % 4
                 else:
@@ -607,18 +618,21 @@ class Board(object):
                     reverse_move_type = 4 + (move_type + 2) % 4
 
                 reverse_pos = self.convert_move_type_to_coord(pos,reverse_move_type)
+                '''
 
                 # reset the old location to being free
-                self.set_board(pos[1],pos[0],constant.FREE_SPACE)
-                self.piece_pos[colour].remove(pos)
+                self.set_board(curr_pos[1],curr_pos[0],constant.FREE_SPACE)
+                if curr_pos in self.piece_pos[colour]:
+                    self.piece_pos[colour].remove(curr_pos)
 
                 # put the piece back to its old location
-                self.set_board(reverse_pos[1],reverse_pos[0],colour)
-                self.piece_pos[colour].append(reverse_pos)
+                self.set_board(old_pos[1],old_pos[0], colour)
+                self.piece_pos[colour].append(old_pos)
 
                 # decrease the move counter
-                self.move_counter-=1
+                self.move_counter -= 1
                 return
+
 
     # undo a move that was made
     def undomove(self):

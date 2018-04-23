@@ -336,12 +336,13 @@ class MinimaxUndo(object):
         alpha = -inf
         beta = inf
         i = 0
+
         for action in root.available_moves:
-            print("{} Action AB call".format(i))
+            # print("{} Action AB call".format(i))
             child = self.create_node(Board.get_opp_piece_type(root.colour), action)
             self.update_minimax_board(action, child)
-            #print("\nAB call")
-            #self.board.print_board()
+            # print("\nAB call")
+            # self.board.print_board()
 
             if self.check_symmetry(self.board.board_state) is True:
                 continue
@@ -352,15 +353,15 @@ class MinimaxUndo(object):
                 best_move = child.move_applied
                 alpha = evaluate
 
+            self.undo_move()
             if beta < alpha:
-                self.undo_move()
                 break
 
             # called undo move
-            self.board.print_board()
-            print(self.board.piece_pos)
-            self.undo_move()
+            # self.board.print_board()
+            # print(self.board.piece_pos)
             i+=1
+
         print(best_move)
         return best_move
 
@@ -387,7 +388,8 @@ class MinimaxUndo(object):
             # update the board representation with the move
             self.update_minimax_board(action, child)
             #print("\nMAX CALL")
-            self.board.print_board()
+            # print("MAX UPDATE")
+            #self.board.print_board()
 
             #print(node.available_moves)
             #print(child.available_moves)
@@ -398,18 +400,16 @@ class MinimaxUndo(object):
             evaluate = max(evaluate, self.min_value(child, depth-1, alpha, beta))
             alpha = max(evaluate,alpha)
             #print(self.board.action_applied)
+            self.undo_move()
             if alpha >= beta:
                 #print("UNDO")
-                self.undo_move()
                 break
 
             # undo the move so that we can apply the next board move to evaluate minimax value
             #print("UNDO 2")
             #self.board.print_board()
-            self.undo_move()
             #self.board.print_board()
         node.minimax = evaluate
-
         return evaluate
 
     def min_value(self,node, depth, alpha, beta):
@@ -424,18 +424,18 @@ class MinimaxUndo(object):
             # apply the move to the child node, this node is now the opposite colour
             child = self.create_node(Board.get_opp_piece_type(node.colour), action)
             self.update_minimax_board(action, child)
+            # print("MIN UPDATE")
+            # self.board.print_board()
             #print("\nMin Call")
             #self.board.print_board()
 
             evaluate = min(evaluate, self.max_value(child, depth-1, alpha, beta))
 
             beta = min(beta, evaluate)
-
+            self.undo_move()
             if beta <= alpha:
                 # when we break from the loop make sure to undo the move
-                self.undo_move()
                 break
-            self.undo_move()
 
         node.minimax = evaluate
         return evaluate

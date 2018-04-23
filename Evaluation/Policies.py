@@ -15,7 +15,7 @@ class Evaluation(object):
 
         dist_pieces = 0
 
-        return 1/(1+int(dist_cent))+10*diff_pieces
+        return 1/(1+int(dist_cent))+100*diff_pieces
         #print(dist_cent)
         #return diff_pieces
 
