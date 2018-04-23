@@ -337,7 +337,7 @@ class MinimaxUndo(object):
         beta = inf
         i = 0
         for action in root.available_moves:
-            #print("{} Action AB call".format(i))
+            print("{} Action AB call".format(i))
             child = self.create_node(Board.get_opp_piece_type(root.colour), action)
             self.update_minimax_board(action, child)
             #print("\nAB call")
@@ -356,6 +356,9 @@ class MinimaxUndo(object):
                 self.undo_move()
                 break
 
+            # called undo move
+            self.board.print_board()
+            print(self.board.piece_pos)
             self.undo_move()
             i+=1
         print(best_move)
@@ -384,7 +387,7 @@ class MinimaxUndo(object):
             # update the board representation with the move
             self.update_minimax_board(action, child)
             #print("\nMAX CALL")
-            #self.board.print_board()
+            self.board.print_board()
 
             #print(node.available_moves)
             #print(child.available_moves)

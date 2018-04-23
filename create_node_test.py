@@ -23,13 +23,17 @@ print(len(child.available_moves))
 print(child.colour)
 print()
 
+print("UNDO MOVE")
+child.board.undo_move()
+child.board.print_board()
+print(child.board.eliminated_pieces)
+print(child.board.piece_pos)
+
 child = Minimax.create_node(child.board,Board.get_opp_piece_type(child.colour),child.available_moves[3])
 child.board.print_board()
 print(len(child.available_moves))
 print(child.colour)
 print(child.board.piece_pos)
-
-
 
 child = Minimax.create_node(child.board,Board.get_opp_piece_type(child.colour),child.available_moves[7])
 child.board.print_board()
@@ -41,7 +45,28 @@ child.board.print_board()
 print(len(child.available_moves))
 print(child.colour)
 print(child.board.move_counter)
+print(child.board.piece_pos)
+print("UNDO MOVE")
+child.board.undo_move()
+child.board.print_board()
+print(child.board.eliminated_pieces)
+print(child.board.piece_pos)
+print(child.board.action_applied)
 
+print("UNDO MOVE")
+child.board.undo_move()
+child.board.print_board()
+print(child.board.eliminated_pieces)
+print(child.board.piece_pos)
+print(child.board.action_applied)
+
+print("UNDO MOVE")
+child.board.undo_move()
+child.board.print_board()
+print(child.board.eliminated_pieces)
+print(child.board.piece_pos)
+print(child.board.action_applied)
+'''
 child = Minimax.create_node(child.board,Board.get_opp_piece_type(child.colour),child.available_moves[7])
 child.board.print_board()
 print(len(child.available_moves))
@@ -1180,11 +1205,14 @@ print(child.board.move_counter)
 print()
 print(child.board.eliminated_pieces)
 
-
+'''
+'''
 print("UNDO MOVE")
 child.board.undo_move()
 child.board.print_board()
-'''
+print(child.board.eliminated_pieces)
+print(child.board.piece_pos)
+
 print("UNDO MOVE")
 child.board.undo_move()
 child.board.print_board()
