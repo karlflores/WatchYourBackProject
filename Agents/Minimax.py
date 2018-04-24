@@ -345,15 +345,16 @@ class MinimaxABUndo(object):
             # print("{} Action AB call".format(i))
             child = self.create_node(Board.get_opp_piece_type(root.colour), action)
             self.update_minimax_board(action, child)
+            '''
             if self.board.phase == constant.PLACEMENT_PHASE:
                 if TranspositionTable.check_placement_sym(self.transposition_table,self.board.board_state) is True:
                     continue
             elif self.board.phase == constant.MOVING_PHASE:
                 if TranspositionTable.check_already_visited(self.transposition_table, self.board.board_state):
                     continue
-
+            '''
             ab_evaluate = self.min_value(child, depth-1, alpha, beta)
-
+            print(ab_evaluate)
             if ab_evaluate > evaluate:
                 best_move = child.move_applied
                 evaluate = ab_evaluate
@@ -361,11 +362,13 @@ class MinimaxABUndo(object):
             self.undo_move()
 
             if evaluate >= beta:
+                print(evaluate)
                 return best_move
 
             alpha = max(alpha, evaluate)
 
         print(best_move)
+        print(evaluate)
         return best_move
 
         # find the action associated with eval
@@ -395,9 +398,12 @@ class MinimaxABUndo(object):
 
         # visit each available move
         for action in node.available_moves:
+
+            '''
             if self.board.phase == constant.MOVING_PHASE:
                 if TranspositionTable.check_already_visited(self.transposition_table, self.board.board_state):
                     continue
+            '''
 
             child = self.create_node(Board.get_opp_piece_type(node.colour), action)
             # update the board representation with the move
@@ -437,8 +443,10 @@ class MinimaxABUndo(object):
 
         for action in node.available_moves:
             if self.board.phase == constant.MOVING_PHASE:
+                '''
                 if TranspositionTable.check_already_visited(self.transposition_table, self.board.board_state):
                     continue
+                '''
             # apply the move to the child node, this node is now the opposite colour
             child = self.create_node(Board.get_opp_piece_type(node.colour), action)
             self.update_minimax_board(action, child)
@@ -456,7 +464,7 @@ class MinimaxABUndo(object):
                 break
             '''
             if evaluate <= alpha:
-                node.evaluate = evaluate
+                node.minimax = evaluate
                 return evaluate
 
             beta = min(beta, evaluate)
@@ -554,8 +562,8 @@ class MinimaxABUndo(object):
 
         return False
 
-    def evaluate_node(self,node):
-        return Evaluation.basic_policy(self.board,node.colour)
+    def evaluate_node(self, node):
+        return Evaluation.basic_policy(self.board, node)
 
     # update the available moves of the search algorithm after it has been instantiated
     #

@@ -5,18 +5,23 @@ from math import sqrt, fabs
 
 
 class Evaluation(object):
+
     @staticmethod
-    def basic_policy(board,colour):
+    def basic_policy(board, node):
+        colour = node.colour
         # assume that the board is in a byte string representation
-        diff_pieces = len(board.piece_pos[colour])-3*len(board.piece_pos[Board.get_opp_piece_type(colour)])
+        diff_pieces = len(board.piece_pos[colour])-10*len(board.piece_pos[Board.get_opp_piece_type(colour)])
         dist_cent = 0
         for pieces in board.piece_pos[colour]:
             dist_cent += Evaluation.distance(pieces,(3,3))
 
+        # number of pieces of the opponent eliminated
+        num_moves = len(node.available_moves)
 
         dist_pieces = 0
 
-        return 10/(1+int(dist_cent))+diff_pieces
+        #return 10/(1+int(dist_cent))+diff_pieces
+        return diff_pieces + 100/(1+10*dist_cent)+ num_moves
         #print(dist_cent)
         #return diff_pieces
 
