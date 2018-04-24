@@ -510,7 +510,7 @@ class Board(object):
                 self.set_board(i,0,constant.INVALID_SPACE)
 
             # set the corner positions to be at the old corners
-            self.corner_pos = [(0,0),(7,0),(0,7),(7,7)]
+            self.corner_pos = [(1,1),(6,1),(1,6),(6,6)]
             for (col,row) in self.corner_pos:
                 self.set_board(row,col,constant.CORNER_PIECE)
 

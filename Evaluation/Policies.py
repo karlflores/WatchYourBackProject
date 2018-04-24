@@ -11,7 +11,8 @@ class Evaluation(object):
         diff_pieces = len(board.piece_pos[colour])-3*len(board.piece_pos[Board.get_opp_piece_type(colour)])
         dist_cent = 0
         for pieces in board.piece_pos[colour]:
-            dist_cent+= Evaluation.distance(pieces,(3,3))
+            dist_cent += Evaluation.distance(pieces,(3,3))
+
 
         dist_pieces = 0
 
