@@ -9,3 +9,28 @@ class Features(object):
     @staticmethod
     def dist_to_piece(board,move):
         pass
+
+    @staticmethod
+    #what to do if colour has middle 4 pieces in final stage
+    def final_captures(board):
+        pass
+
+    #binary - does colour have middle 4
+    def middle_pieces(board):
+        pass
+
+    #implement massacre as a count for how many moves would be taken to eliminate all other pieces (<2) if no moves were made by them
+    def massacre(board):
+        pass
+
+    #how many moves from capturing an opponent piece
+    def min_dist_to_capture(board):
+        pass
+
+    #number of pieces
+    def number_of_pieces(board):
+        pass
+
+    #compare number of moves to get all pieces on edge out of edge to move counter
+    def edge_moves_to_shrink(board):
+        pass
