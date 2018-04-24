@@ -8,6 +8,8 @@ from Board import constant
 from copy import deepcopy
 import math
 
+from Data_Structures.Stack import Stack
+
 from sys import getsizeof
 
 
@@ -278,7 +280,7 @@ class Board(object):
                 self.set_board(remove_row, remove_col, constant.FREE_SPACE)
 
                 # update the eliminated piece dict
-                self.eliminated_pieces[opp_piece_type].append(piece)
+                self.eliminated_pieces[opp_piece_type].append((piece,self.phase,self.move_counter))
 
         # check for self elimination if there is not opponent piece to be eliminated
         piece = self.check_self_elimination(my_piece_pos,my_piece_type)
@@ -290,7 +292,7 @@ class Board(object):
             self.set_board(remove_row, remove_col, constant.FREE_SPACE)
 
             # update the eliminated piece dictionary
-            self.eliminated_pieces[my_piece_type].append(piece)
+            self.eliminated_pieces[my_piece_type].append((piece,self.phase,self.move_counter))
 
     # elimination helper function
     def check_one_piece_elimination(self,my_piece_pos,my_piece_type):
@@ -405,19 +407,13 @@ class Board(object):
     # went we want to update the board we call this function
     # move has to be in the form ((row,col),move_type)
     def update_board(self,move,my_piece_type):
-
-        # reset the eliminated pieces dictionary when an update is called
-        self.eliminated_pieces[constant.BLACK_PIECE] = []
-        self.eliminated_pieces[constant.WHITE_PIECE] = []
-
-        # print(move)
-
+        # we no longer reset the eliminated moves dictionary
         # make the action
         if self.phase == constant.PLACEMENT_PHASE:
             # make the placement -- this should take care of the update to the piece position list
             # as well as the move counter
             self.apply_placement(move, my_piece_type)
-            self.push_action((move,my_piece_type))
+            Stack.push(self.action_applied,(move,my_piece_type))
 
         elif self.phase == constant.MOVING_PHASE:
             # move is in the form (pos, move_type)
@@ -428,7 +424,7 @@ class Board(object):
             self.apply_move(pos,move_type, my_piece_type)
 
             # possibly can store this in a different way
-            self.push_action((move, my_piece_type))
+            Stack.push(self.action_applied,(move, my_piece_type))
 
         # after an action is applied we can increment the move counter of the board
         self.move_counter += 1
@@ -456,7 +452,44 @@ class Board(object):
             # check if the board is a terminal state / a win/ loose/ draw
             self.is_terminal()
 
-    def undo_move(self,node):
+    # this is called in undo move to determine the pieces that were eliminated last move
+    def eliminated_pieces_last_move(self,curr_phase,curr_move_count):
+
+        eliminated_pieces = {constant.WHITE_PIECE: [], constant.BLACK_PIECE: []}
+
+        # generally speaking
+        last_phase = curr_phase
+        last_move_count = curr_move_count - 1
+        # check the boundary of the phase transition
+
+        if curr_move_count == 0 and curr_phase == constant.MOVING_PHASE:
+            last_phase = constant.PLACEMENT_PHASE
+            last_move_count = 23
+
+        # peak into the eliminated piece stack
+        for colour in (constant.WHITE_PIECE, constant.BLACK_PIECE):
+            piece_tup = Stack.peek(self.eliminated_pieces[colour])
+            print(piece_tup)
+            # check if the stack is populated, else we continue with the next piece
+            if piece_tup is None:
+                continue
+            # else we can get the phase and move_counter for that eliminated piece
+            phase = piece_tup[1]
+            move_count = piece_tup[2]
+
+            if phase == last_phase and move_count == last_move_count:
+                eliminated_pieces[colour].append(piece_tup[0])
+
+        return eliminated_pieces
+
+
+
+    def undo_move(self):
+        print(self.move_counter)
+        print(self.phase)
+        eliminated_pieces = self.eliminated_pieces_last_move(self.phase,self.move_counter)
+
+        print(eliminated_pieces)
         if len(self.action_applied) == 0:
             # do nothing -- nothing to undo
             return
@@ -464,7 +497,7 @@ class Board(object):
         # print(self.eliminated_pieces)
         # first we need to get the most recent action applied to the board
         # print(self.action_applied)
-        action_applied = self.pop_action()
+        action_applied = Stack.pop(self.action_applied)
         # print("last action is: ",end='')
         # print(action_applied)
         # print(self.move_counter)
@@ -490,16 +523,10 @@ class Board(object):
 
             # place all the eliminated pieces back on the board
             for colour in colour_tup:
-                for (col,row) in self.eliminated_pieces[colour]:
-
+                for (col,row) in eliminated_pieces[colour]:
                     # print((col,row))
                     self.set_board(row,col,colour)
                     self.piece_pos[colour].append((col,row))
-
-            # reset the eliminated pieces back to zero
-            for colour in colour_tup:
-                self.eliminated_pieces[colour] = []
-
             # self.print_board()
 
         elif self.move_counter == 192:
@@ -524,12 +551,9 @@ class Board(object):
 
             # place all the eliminated pieces back on the board
             for colour in colour_tup:
-                for (col,row) in self.eliminated_pieces[colour]:
+                for (col,row) in eliminated_pieces[colour]:
                     self.set_board(row,col,colour)
                     self.piece_pos[colour].append((col,row))
-
-            for colour in colour_tup:
-                self.eliminated_pieces[colour] = []
 
         # now we just need to deal the with action applied to the board
 
@@ -545,12 +569,10 @@ class Board(object):
         if self.phase == constant.PLACEMENT_PHASE:
             # put the eliminated pieces back on the board, then move the piece
             for colour in colour_tup:
-                for (col,row) in self.eliminated_pieces[colour]:
+                for (col,row) in eliminated_pieces[colour]:
                     self.set_board(row,col,colour)
                     self.piece_pos[colour].append((col,row))
-                    # remove the piece from the eliminated piece list
-            for colour in colour_tup:
-                self.eliminated_pieces[colour] = []
+
             # print("TEST")
             # self.print_board()
             # reverse the move that was placed on the board
@@ -573,11 +595,9 @@ class Board(object):
                 # this is the first move, then the action applied to the
                 # board is a placement
                 for colour in colour_tup:
-                    for (col,row) in self.eliminated_pieces[colour]:
+                    for (col,row) in eliminated_pieces[colour]:
                         self.set_board(row,col,colour)
                         self.piece_pos[colour].append((col,row))
-                for colour in colour_tup:
-                    self.eliminated_pieces[colour] = []
 
                 # reverse the move that was placed on the board
                 pos = action_applied[0]
@@ -597,12 +617,9 @@ class Board(object):
                 # print("started here")
                 if self.move_counter not in (0,128,192):
                     for colour in colour_tup:
-                        for (col,row) in self.eliminated_pieces[colour]:
+                        for (col,row) in eliminated_pieces[colour]:
                             self.set_board(row,col,colour)
                             self.piece_pos[colour].append((col,row))
-                # print("got here")
-                for colour in colour_tup:
-                    self.eliminated_pieces[colour] = []
                 # print("eliminated pieces")
                 # we just need to undo the move that was made
                 old_pos = action_applied[0][0]
@@ -610,18 +627,6 @@ class Board(object):
                 colour = action_applied[1][0]
 
                 curr_pos = self.convert_move_type_to_coord(old_pos,move_type)
-
-
-                '''
-                if move_type < 4:
-                    reverse_move_type = (move_type + 2) % 4
-                else:
-
-                    reverse_move_type = 4 + (move_type + 2) % 4
-
-                reverse_pos = self.convert_move_type_to_coord(pos,reverse_move_type)
-                '''
-
                 # reset the old location to being free
                 self.set_board(curr_pos[1],curr_pos[0],constant.FREE_SPACE)
                 if curr_pos in self.piece_pos[colour]:
@@ -651,10 +656,10 @@ class Board(object):
                 # remove any piece that is eliminated from the position lists
                 if (col, row) in self.piece_pos[constant.BLACK_PIECE]:
                     self.piece_pos[constant.BLACK_PIECE].remove((col, row))
-                    self.eliminated_pieces[constant.BLACK_PIECE].append((col,row))
+                    self.eliminated_pieces[constant.BLACK_PIECE].append(((col,row),self.phase,self.move_counter))
                 elif (col,row) in self.piece_pos[constant.WHITE_PIECE]:
                     self.piece_pos[constant.WHITE_PIECE].remove((col, row))
-                    self.eliminated_pieces[constant.WHITE_PIECE].append((col,row))
+                    self.eliminated_pieces[constant.WHITE_PIECE].append(((col,row),self.phase,self.move_counter))
 
                 # set the column to invalid spaces
                 self.set_board(col, row, constant.INVALID_SPACE)
@@ -672,7 +677,7 @@ class Board(object):
             for player in (constant.BLACK_PIECE, constant.WHITE_PIECE):
                 if corner in self.piece_pos[player]:
                     self.piece_pos[player].remove(corner)
-                    self.eliminated_pieces[player].append(corner)
+                    self.eliminated_pieces[player].append((corner,self.phase,self.move_counter))
 
         # update the board representations
         for corner_col,corner_row in self.corner_pos:
@@ -704,7 +709,7 @@ class Board(object):
                 # print("ELIMINATED: " + str(eliminated_piece))
                 self.piece_pos[opp_player].remove(eliminated_piece)
                 col, row = eliminated_piece
-                self.eliminated_pieces[opp_player].append(eliminated_piece)
+                self.eliminated_pieces[opp_player].append((eliminated_piece,self.phase,self.move_counter))
                 # update the board representation
                 self.set_board(row, col, constant.FREE_SPACE)
 
@@ -795,6 +800,7 @@ class Board(object):
             return True
         else:
             return False
+
 
     # stack helper method
     def push_action(self,data):
