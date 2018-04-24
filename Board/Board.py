@@ -847,13 +847,4 @@ class Board(object):
         else:
             return False
 
-    # stack helper method
-    def push_action(self,data):
-        self.action_applied.append(data)
 
-    def pop_action(self):
-        if len(self.action_applied) > 0:
-            return self.action_applied.pop()
-
-        else:
-            return None
