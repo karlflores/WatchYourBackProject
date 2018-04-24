@@ -50,7 +50,7 @@ class UndoNode(object):
         self.eval = 0
 
         self.evaluate(board)
-
+        self.eliminated_moves = None
         self.available_moves = []
 
     # it is a leaf node if terminal

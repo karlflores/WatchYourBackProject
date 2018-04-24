@@ -453,7 +453,7 @@ class Board(object):
             # check if the board is a terminal state / a win/ loose/ draw
             self.is_terminal()
 
-    def undo_move(self):
+    def undo_move(self,node):
         if len(self.action_applied) == 0:
             # do nothing -- nothing to undo
             return

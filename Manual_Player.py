@@ -57,8 +57,8 @@ class Player:
                 for piece in self.board.eliminated_pieces[colour]:
                     if (piece not in self.available_moves) and (Player.within_starting_area(piece,self.opponent)):
                         # self.available_moves.remove(piece)
-                        print("ELIMINATED: ", end='')
-                        print(piece)
+                        # print("ELIMINATED: ", end='')
+                        # print(piece)
                         self.available_moves.append(piece)
                     else:
                         print("dskjghdskjfh")
@@ -71,8 +71,8 @@ class Player:
                 for piece in self.board.eliminated_pieces[colour]:
                     if (piece not in self.available_moves) and (Player.within_starting_area(piece,self.opponent)):
                         # self.available_moves.remove(piece)
-                        print("ELIMINATED: ", end='')
-                        print(piece)
+                        # print("ELIMINATED: ", end='')
+                        # print(piece)
                         self.available_moves.append(piece)
                     else:
                         print("dskjghdskjfh")
@@ -99,10 +99,10 @@ class Player:
         # print("UPDATE CALLED: " + self.colour + "  " + str(self.board.piece_pos))
 
     def action(self, turns):
-        print(self.board.piece_pos)
-        print(self.board.eliminated_pieces)
-        print("THIS BOARD REPRESENTATION")
-        self.board.print_board()
+        # print(self.board.piece_pos)
+        # print(self.board.eliminated_pieces)
+        # p rint("THIS BOARD REPRESENTATION")
+        # self.board.print_board()
         # print("TURNS SO FAR ---------- " + str(turns))
         # print("ACTION CALLED: BOARD REPRESENTATION COUNTER: " + str(self.board.move_counter))
         if turns == 0 and self.board.phase == constant.PLACEMENT_PHASE:
@@ -114,9 +114,10 @@ class Player:
                 for piece in self.board.eliminated_pieces[colour]:
                     if (piece not in self.available_moves) and (Board.within_starting_area(piece,self.colour)):
                         self.available_moves.append(piece)
-                        print("ACTION: ",end='')
-                        print(piece)
+                        # print("ACTION: ",end='')
+                        # print(piece)
             # then we pick the best move to make based on a search algorithm
+            self.available_moves.sort()
             for i in range(len(self.available_moves)):
                 print(str(i) + " : " + str(self.available_moves[i]))
 
@@ -125,15 +126,15 @@ class Player:
 
             # making moves during the placement phase
             self.board.update_board(next_move, self.colour)
-            print(self.board.eliminated_pieces)
-            print("EEEEEE")
+            # print(self.board.eliminated_pieces)
+            # print("EEEEEE")
             # print("BOARDS TURNS NOW  ---------- " + str(self.board.move_counter))
             for colour in (constant.BLACK_PIECE, constant.WHITE_PIECE):
                 for piece in self.board.eliminated_pieces[colour]:
                     if (piece not in self.available_moves) and (Board.within_starting_area(piece,self.colour)):
                         self.available_moves.append(piece)
-                        print("ACTION: ",end='')
-                        print(piece)
+              #           print("ACTION: ",end='')
+               #          print(piece)
             print(self.available_moves)
             # remove the move made from the available moves
             self.available_moves.remove(next_move)
@@ -168,7 +169,7 @@ class Player:
 
             # TODO : THIS IS WHERE WE CARRY OUT OUR SEARCH ALGORITHM
             # then we pick the best move to make based on a search algorithm
-
+            self.available_moves.sort()
             for i in range(len(self.available_moves)):
                 print(str(i) + " : " + str(self.available_moves[i]))
 
