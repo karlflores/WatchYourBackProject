@@ -9,7 +9,7 @@ from Board.Board import Board
 from Evaluation.Policies import Evaluation
 from copy import deepcopy
 from time import time, sleep
-
+from Data_Structures.Transposition_Table import TranspositionTable
 
 class MinimaxAB(object):
 
@@ -345,9 +345,12 @@ class MinimaxABUndo(object):
             # print("{} Action AB call".format(i))
             child = self.create_node(Board.get_opp_piece_type(root.colour), action)
             self.update_minimax_board(action, child)
-
-            #if self.check_symmetry(self.board.board_state) is True:
-            #    continue
+            if self.board.phase == constant.PLACEMENT_PHASE:
+                if TranspositionTable.check_placement_sym(self.transposition_table,self.board.board_state) is True:
+                    continue
+            elif self.board.phase == constant.MOVING_PHASE:
+                if TranspositionTable.check_already_visited(self.transposition_table, self.board.board_state):
+                    continue
 
             ab_evaluate = self.min_value(child, depth-1, alpha, beta)
 
@@ -392,6 +395,10 @@ class MinimaxABUndo(object):
 
         # visit each available move
         for action in node.available_moves:
+            if self.board.phase == constant.MOVING_PHASE:
+                if TranspositionTable.check_already_visited(self.transposition_table, self.board.board_state):
+                    continue
+
             child = self.create_node(Board.get_opp_piece_type(node.colour), action)
             # update the board representation with the move
             self.update_minimax_board(action, child)
@@ -429,6 +436,9 @@ class MinimaxABUndo(object):
             return self.evaluate_node(node)
 
         for action in node.available_moves:
+            if self.board.phase == constant.MOVING_PHASE:
+                if TranspositionTable.check_already_visited(self.transposition_table, self.board.board_state):
+                    continue
             # apply the move to the child node, this node is now the opposite colour
             child = self.create_node(Board.get_opp_piece_type(node.colour), action)
             self.update_minimax_board(action, child)

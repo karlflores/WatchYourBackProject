@@ -14,18 +14,36 @@ a way to discard old states -- thus need to look into using a cache of some sort
 that have not been accessed recently, and therefore can be evicted from the cache 
 
 '''
+
+# we treat a dictionary as a transposition table
 class TranspositionTable:
     def __init__(self):
 
         pass
 
     @staticmethod
-    def add(tt,hash_bytearr):
+    def add(tt,hash_bytearr,colour,minmax_val):
         hash = hash_bytearr.decode("utf-8")
-        tt.add(hash)
+        tup = (hash,colour)
+        temp_dict = {tup: minmax_val}
+        tt.update(hash)
 
     @staticmethod
-    def remove():
+    def contains(tt,tup):
+        if tup in tt:
+            return True
+        else:
+            return None
+
+    @staticmethod
+    def get_val(tt,tup):
+        if TranspositionTable.contains(tt,tup):
+            return tt[tup]
+
+    @staticmethod
+    def remove(tt, tup):
+        if TranspositionTable.contains(tt,tup):
+            tt.pop(tup)
 
     @staticmethod
     def check_placement_sym(tt, board_state):
