@@ -510,6 +510,7 @@ class MinimaxABUndo(object):
         if self.board.phase == constant.PLACEMENT_PHASE:
             self.update_available_nodes_placement(node)
             # if the move is none then we need to initalise the available moves of the board
+            '''
             if move is None and start_node is True:
                 # then this is the first node in the search -- initialise the placement actions
                 if self.board.move_counter == 0 or self.board.move_counter == 1:
@@ -522,14 +523,14 @@ class MinimaxABUndo(object):
                 self.update_available_placement(move)
                 #print(self.available_actions)
                 return
-
+            '''
         elif self.board.phase == constant.MOVING_PHASE:
             if self.board.move_counter == 24:
                 node.available_moves = []
             # generate the moves that you can apply to this node
             node.available_moves = self.generate_moves(node.colour)
             # this is the start to the search -- we don't want to update the available_moves list
-
+            '''
             if start_node is True and move is None:
                 # if it is the start to the moving phase -- need to initialise
                 self.init_available_moving_actions()
@@ -538,7 +539,7 @@ class MinimaxABUndo(object):
             elif start_node is False:
                 self.update_available_moves(move, node.colour)
                 return
-
+            '''
 
     def generate_moves(self,colour):
         available_moves = []
@@ -615,6 +616,8 @@ class MinimaxABUndo(object):
 
     def undo_move(self):
         self.board.undo_move()
+        # then we need to recalculate the available moves based on the board representation
+        #self.generate_actions()
 
     '''
     #################################################################################
@@ -626,7 +629,12 @@ class MinimaxABUndo(object):
     ################################################################################
     '''
     # we update the available actions when we update the board representation
-
+    def generate_actions(self):
+        if self.board.phase == constant.PLACEMENT_PHASE:
+            self.init_available_placement_actions()
+            self.start_available_actions_placement()
+        elif self.board.phase == constant.MOVING_PHASE:
+            self.init_available_moving_actions()
 
     def init_available_placement_actions(self):
         # initialise the dictionary with the available placements on the board
