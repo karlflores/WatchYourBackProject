@@ -45,12 +45,9 @@ class UndoNode(object):
 
     def __init__(self,board, colour):
         self.move_applied = None
-        self.parent = None
         self.colour = colour
         self.eval = 0
-
         self.evaluate(board)
-        self.eliminated_moves = None
         self.available_moves = []
 
     # it is a leaf node if terminal

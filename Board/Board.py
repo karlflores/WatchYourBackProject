@@ -453,9 +453,10 @@ class Board(object):
             self.is_terminal()
 
     # this is called in undo move to determine the pieces that were eliminated last move
-    def eliminated_pieces_last_move(self,curr_phase,curr_move_count):
+    def eliminated_pieces_last_move(self,curr_phase,curr_move_count,pop=True):
 
         eliminated_pieces = {constant.WHITE_PIECE: [], constant.BLACK_PIECE: []}
+        eliminated_pieces_tup = {constant.WHITE_PIECE: [], constant.BLACK_PIECE: []}
 
         # generally speaking
         last_phase = curr_phase
@@ -467,8 +468,11 @@ class Board(object):
             last_move_count = 23
 
         # peak into the eliminated piece stack
+
         for colour in (constant.WHITE_PIECE, constant.BLACK_PIECE):
+
             piece_tup = Stack.peek(self.eliminated_pieces[colour])
+
             # print(piece_tup)
             # check if the stack is populated, else we continue with the next piece
             if piece_tup is None:
@@ -477,9 +481,23 @@ class Board(object):
             phase = piece_tup[1]
             move_count = piece_tup[2]
 
-            if phase == last_phase and move_count == last_move_count:
+            # while loop to get all pieces that were eliminated in the last move
+
+            while phase == last_phase and move_count == last_move_count:
                 Stack.pop(self.eliminated_pieces[colour])
                 eliminated_pieces[colour].append(piece_tup[0])
+                eliminated_pieces_tup[colour].append(piece_tup)
+                piece_tup = Stack.peek(self.eliminated_pieces[colour])
+                if piece_tup is None:
+                    break
+                phase = piece_tup[1]
+                move_count = piece_tup[2]
+
+        if pop is False:
+            for colour in (constant.WHITE_PIECE, constant.BLACK_PIECE):
+                # push each piece back to the respective queues
+                for piece_tup in eliminated_pieces_tup[colour]:
+                    Stack.push(self.eliminated_pieces[colour],piece_tup)
 
         return eliminated_pieces
 

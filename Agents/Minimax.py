@@ -11,7 +11,7 @@ from copy import deepcopy
 from time import time, sleep
 
 
-class Minimax(object):
+class MinimaxAB(object):
 
     def __init__(self):
         # we want to create a node
@@ -274,7 +274,7 @@ class Minimax(object):
         node.board.undo_move()
 
 
-class MinimaxUndo(object):
+class MinimaxABUndo(object):
 
     def __init__(self,board):
         # we want to create a node
@@ -285,12 +285,11 @@ class MinimaxUndo(object):
         # save memory
         self.board = deepcopy(board)
 
-
         # test the dictionary for the available moves
         # each piece has their available able
         self.available_actions = {constant.WHITE_PIECE: {}, constant.BLACK_PIECE: {}}
         # initialise the available actions
-        self.init_available_actions()
+        self.init_available_placement_actions()
         print(self.available_actions)
 
     '''
@@ -359,13 +358,15 @@ class MinimaxUndo(object):
             if self.check_symmetry(self.board.board_state) is True:
                 continue
 
-            evaluate = self.min_value(child, depth-1, alpha, beta)
+            ab_evaluate = self.min_value(child, depth-1, alpha, beta)
 
-            if evaluate > alpha:
+            if ab_evaluate > evaluate:
                 best_move = child.move_applied
-                alpha = evaluate
+                evaluate = ab_evaluate
 
             self.undo_move()
+            alpha = max(alpha, evaluate)
+
             if beta < alpha:
                 break
 
@@ -482,29 +483,62 @@ class MinimaxUndo(object):
         node.move_applied = move
         return node
 
-    def update_minimax_board(self,move, node):
+    def update_minimax_board(self,move,node,start_node=False):
+
+        # if the move is None -- this could be a forfeit of a move or it could be a start of a search
         # apply this move to the node
+
         if move is not None:
             self.board.update_board(move, Board.get_opp_piece_type(node.colour))
-        else:
+        elif move is None and self.board.move_counter is not 0:
+            # if the move is none and the counter is not zero this is a forfeit
             self.board.move_counter += 1
             self.board.set_player_to_move(self.board.get_opp_piece_type(self.board.player_to_move))
 
-            #print("Move is None: WTFFFFFFF")
+        # update minimax board represents the start of the minimax search then we need to initalise
+        # the available moves
+         #print("Move is None: WTFFFFFFF")
 
         # get the available moves based on what phase the board is in
+        '''
         if self.board.phase == constant.PLACEMENT_PHASE and self.board.move_counter == 24:
             self.board.phase = constant.MOVING_PHASE
             self.board.move_counter = 0
+        '''
+        # print(self.board.phase,self.board.move_counter)
 
         if self.board.phase == constant.PLACEMENT_PHASE:
             self.update_available_nodes_placement(node)
+            # if the move is none then we need to initalise the available moves of the board
+            if move is None and start_node is True:
+                # then this is the first node in the search -- initialise the placement actions
+                if self.board.move_counter == 0 or self.board.move_counter == 1:
+                    self.start_available_actions_placement()
+                    return
+            elif start_node is False:
+                # this is a start node but a move has been applied, therefore we just need to update the available
+                # moves list
+                #print(move)
+                self.update_available_placement(move)
+                #print(self.available_actions)
+                return
 
         elif self.board.phase == constant.MOVING_PHASE:
             if self.board.move_counter == 24:
                 node.available_moves = []
             # generate the moves that you can apply to this node
             node.available_moves = self.generate_moves(node.colour)
+            # this is the start to the search -- we don't want to update the available_moves list
+
+            if start_node is True and move is None:
+                # if it is the start to the moving phase -- need to initialise
+                self.init_available_moving_actions()
+                return
+
+            elif start_node is False:
+                self.update_available_moves(move, node.colour)
+                return
+
 
     def generate_moves(self,colour):
         available_moves = []
@@ -539,7 +573,7 @@ class MinimaxUndo(object):
         return node.is_leaf(self.board)
 
     def update_available_nodes_placement(self, node):
-        MinimaxUndo.init_placable_area(node)
+        MinimaxABUndo.init_placable_area(node)
 
         for colour in (constant.BLACK_PIECE,constant.WHITE_PIECE):
             for piece in self.board.piece_pos[colour]:
@@ -555,7 +589,7 @@ class MinimaxUndo(object):
                     node.available_moves.append((col,row))
 
     def check_symmetry(self,board_state):
-        transformation = MinimaxUndo.apply_horizontal_reflection(board_state)
+        transformation = MinimaxABUndo.apply_horizontal_reflection(board_state)
         board = deepcopy(board_state)
         if transformation.decode("utf-8") in self.visited:
             return True
@@ -582,25 +616,50 @@ class MinimaxUndo(object):
     def undo_move(self):
         self.board.undo_move()
 
-    def update_available_actions(self,action,colour):
-        if self.board.phase == constant.PLACEMENT_PHASE:
-            self.update_available_placement(action)
-        elif self.board.phase == constant.MOVING_PHASE:
-            self.update_available_moves(action,colour)
+    '''
+    #################################################################################
+    # METHODS FOR THE DICTIONARY REPRESENTATION OF THE AVAILABLE MOVES ON THE BOARD #
+    #
+    #
+    #
+    #
+    ################################################################################
+    '''
+    # we update the available actions when we update the board representation
 
-    def init_available_actions(self):
+
+    def init_available_placement_actions(self):
         # initialise the dictionary with the available placements on the board
         for row in range(constant.BOARD_SIZE):
             for col in range(constant.BOARD_SIZE):
                 piece = col,row
-                print(col,row)
+                # print(col,row)
                 for colour in (constant.WHITE_PIECE, constant.BLACK_PIECE):
                     if Board.within_starting_area(piece, colour):
                         temp = {piece: constant.PLACEMENT_PHASE}
-                        print(temp)
+                        # print(temp)
                         self.available_actions[colour].update(temp)
 
+    def start_available_actions_placement(self):
+        # get rid of all pieces that exist on the board
+        for colour in (constant.BLACK_PIECE,constant.WHITE_PIECE):
+            for piece in self.board.piece_pos[colour]:
+                if piece in self.available_actions[colour]:
+                    if Board.within_starting_area(piece,colour):
+                        self.available_actions[colour].pop(piece)
+
+    def init_available_moving_actions(self):
+        for colour in (constant.WHITE_PIECE, constant.BLACK_PIECE):
+            for piece in self.available_actions[colour].keys():
+                self.update_actions_dict_entry(piece,colour)
+
+    # need to ensure that we call this after an update to the minimax board representation
     def update_available_moves(self,action,colour):
+
+        # if there were any eliminated pieces last move retrieve them from the stack -- but make sure not to pop them
+        # off the stack completely
+        eliminated_pieces = self.board.eliminated_pieces_last_move(self.board.phase,self.board.move_counter,pop=False)
+
         # action is in the form (position, movetype)
         #       -- i,e. we are moving the piece at position by the movetype
         #       -- when an action is called we have move that piece already and we need to change
@@ -616,6 +675,8 @@ class MinimaxUndo(object):
         # need to update the available moves of the piece at its new location
         # delete entry in the dictionary that corresponds to the old position
         old_pos = action[0]
+        print(old_pos)
+        print(action)
         new_pos = Board.convert_move_type_to_coord(old_pos, action[1])
 
         # first we need to update the dictionary by removing the old piece from the
@@ -626,9 +687,10 @@ class MinimaxUndo(object):
             pass
             # need to raise an error saying
 
-        # then add an entry into the dictionary corresponding to the location of the piece
+        # then add an entry into the dictionary corresponding to the new location of the piece
+        # after the move has been applied
         if new_pos not in self.available_actions[colour]:
-            temp_list = self.get_piece_legal_moves(new_pos,colour)
+            temp_list = self.get_piece_legal_moves(new_pos)
             temp_dict = {new_pos: temp_list}
             self.available_actions.update(temp_dict)
         else:
@@ -637,7 +699,7 @@ class MinimaxUndo(object):
 
         # remove all eliminated pieces from the dictionary
         for piece_type in (constant.WHITE_PIECE, constant.BLACK_PIECE):
-            for piece in self.board.eliminated_pieces[piece_type]:
+            for piece in eliminated_pieces[piece_type]:
                 if piece in self.available_actions[piece_type]:
                     self.available_actions[piece_type].pop(piece)
                 else:
@@ -645,44 +707,85 @@ class MinimaxUndo(object):
                     # need to raise an error
 
         # update any piece that is surrounding the old position but also any eliminated pieces and update
-        # their available moves by adding the corresponding movetype to that list
+        # their available moves by adding the corresponding move type to that list
+        # this old position is now a free space on the board and therefore pieces are able to now move into it
+        # need to test all positions surround this newly freed space and update their available actions
         for move_type in range(constant.MAX_MOVETYPE):
             # iterate through all the possible moves at the old location, checking
             # whether or not there is a piece there
             # if there is a piece at that location we can update that piece's available moves
-
             piece = Board.convert_move_type_to_coord(old_pos,move_type)
             for piece_colour in (constant.WHITE_PIECE, constant.BLACK_PIECE):
                 if piece in self.available_actions[piece_colour]:
-                    list = self.get_piece_legal_moves(piece,piece_colour)
-                    update_entry = {piece: list}
-                    self.available_actions[piece_colour].update(update_entry)
+                    if move_type < 4:
+                        self.update_actions_dict_entry(piece,piece_colour)
+                    else:
+                        if self.board.can_jump_into_position(old_pos,move_type):
+                            self.update_actions_dict_entry(piece,piece_colour)
 
             # update the pieces around any eliminated pieces
             for piece_colour in (constant.WHITE_PIECE, constant.BLACK_PIECE):
                 # iterate through all the eliminated pieces on the board
-                for elim_piece in self.board.eliminated_pieces[piece_colour]:
-                    # test the move type
+                for elim_piece in eliminated_pieces[piece_colour]:
+                    # for each eliminated piece we apply a move (move_type to it), checking if there is a piece
+                    # at this position on the board, we do this by checking the available moves dictionary
+                    # if there is a piece associated with that position on the board then if it is a one step move
+                    # we just need to update that pieces available moves, if it is a jump, then we need to test if there
+                    # is an adjacent piece between the jump and the free space -- do this by calling
+                    # can_jump_into_position -- for a given space, if we apply a move_type corresponding to a
+                    # two piece move, can we jump into this free spot
+                    # if we can then we just need to update this pieces available actions
                     piece = Board.convert_move_type_to_coord(elim_piece,move_type)
                     # if this piece corresponds to an entry in the dictionary, then there is a piece at this location
                     if piece in self.available_actions[piece_colour]:
-                        list = self.get_piece_legal_moves(piece,piece_colour)
-                        update_entry = {piece: list}
-                        self.available_actions[piece_colour].update(update_entry)
+                        # one step moves
+                        if move_type < 4:
+                            self.update_actions_dict_entry(piece,piece_colour)
+                        else:
+                            # need to check if a jump is available into the free space
+                            # if the piece at the jump location is in the available_action dict
+                            if self.board.can_jump_into_position(elim_piece,move_type):
+                                self.update_actions_dict_entry(piece,piece_colour)
+
+            # update the available moves of the pieces that surround where the
+            # new position of the piece is -- this is no longer an occupied space therefore pieces surrounding
+            # it cannot move into this space anymore
+            piece = Board.convert_move_type_to_coord(new_pos,move_type)
+            for piece_colour in (constant.WHITE_PIECE, constant.BLACK_PIECE):
+                if piece in self.available_actions[piece_colour]:
+                    if move_type < 4:
+                        self.update_actions_dict_entry(piece,piece_colour)
+                    else:
+                        # treat this old position as a free space -- if there are pieces
+                        # that can jump into this piece we have to update these pieces available
+                        # actions because this space is no longer free
+                        if self.board.can_jump_into_position(new_pos,move_type):
+                            self.update_actions_dict_entry(piece,piece_colour)
+
+    # HELPER METHOD THAT ALLOWS TO UPDATE A PARTICULAR PIECES AVAILABLE ACTIONS IN THE DICTIONARY
+    def update_actions_dict_entry(self,piece,colour):
+        temp_list = self.get_piece_legal_moves(piece)
+        update_entry = {piece: temp_list}
+        self.available_actions[colour].update(update_entry)
 
     # get a list of the legal moves of a particular piece
-    def get_piece_legal_moves(self,piece,colour):
+    def get_piece_legal_moves(self,piece):
         available_moves = []
         for move_type in range(constant.MAX_MOVETYPE):
-            if self.board.is_legal_move(piece,move_type):
+            if self.board.is_legal_move(piece, move_type):
                 available_moves.append(move_type)
 
         return available_moves
 
-    def update_available_placement(self,action):
+    def update_available_placement(self, action):
         # to update the available actions in the placement phase we just need to read in the action made
         # remove this entry from the dictionary
         # add the entries of any eliminated positions in the dictionary
+        eliminated_pieces = self.board.eliminated_pieces_last_move(self.board.phase,self.board.move_counter,pop=False)
+        print("ELIMINATED: ",end='')
+        print(eliminated_pieces)
+        print("AVAILABLE: ",end='')
+        print(self.available_actions)
         for colour in (constant.WHITE_PIECE, constant.BLACK_PIECE):
             if Board.within_starting_area(action, colour):
                 # remove the action from the entry of the dictionary
@@ -690,13 +793,13 @@ class MinimaxUndo(object):
                     self.available_actions[colour].pop(action)
 
             # add all the eliminated pieces to the available moves of the dictionary
-            for piece in self.board.eliminated_pieces[colour]:
-                if Board.within_starting_area(piece,colour):
-                    if piece in self.available_actions[colour]:
-                        self.available_actions[colour].pop(piece)
+            for piece in eliminated_pieces[colour]:
+                if Board.within_starting_area(piece, colour):
+                    if piece not in self.available_actions[colour]:
+                        update_entry = {piece: constant.PLACEMENT_PHASE}
+                        self.available_actions[colour].update(update_entry)
 
     # return a list of actions corresponding to a particular board state
-
     def get_actions(self,colour):
         actions = []
         if self.board.phase == constant.PLACEMENT_PHASE:
@@ -712,4 +815,3 @@ class MinimaxUndo(object):
                     # return a list of the piece_position and the move it can make
                     actions.append((key,move_type))
             return actions
-
