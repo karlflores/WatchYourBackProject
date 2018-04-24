@@ -70,3 +70,4 @@ class UndoNode(object):
             return False
         else:
             return self.eval - other.eval
+

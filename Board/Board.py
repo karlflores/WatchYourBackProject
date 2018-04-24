@@ -169,8 +169,6 @@ class Board(object):
         elif coord_1_col == coord_2_col and coord_1_row - 2 == coord_2_row:
             return constant.UP_2
 
-
-
     # check if a move is legal
     def is_legal_move(self,my_piece_pos,move_type):
         # print("MOVE: " + str(my_piece_pos))
@@ -960,7 +958,7 @@ class Board(object):
             max_row = 7
         col,row = move
 
-        if min_row <= row <= max_row :
+        if min_row <= row <= max_row:
             return True
         else:
             return False
