@@ -39,6 +39,9 @@ class Board(object):
         self.player_to_move = None
 
         # eliminated pieces -- store for board undo move
+        # store a stack for each player
+        # we only pop from the stack when we want to undo a move
+
         self.eliminated_pieces = {constant.BLACK_PIECE: [], constant.WHITE_PIECE: []}
 
         # move applied when the update was called -- this is changed when an update is
