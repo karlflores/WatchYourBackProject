@@ -28,3 +28,14 @@
 ### Evaluation 
 * Need to work out good evaluation functions so that minimax works efficently -- currently we do not have any evaluation functions 
 
+### TODO 
+* Implement Monte Carlo Tree Search ----- THIS IS MOST IMPORTANT (first we will do it with a random rollout)
+* Implement 3 types of roll outs for MCTS -- random rollout, light roll out (greedy), medium roll-out (2-ply negamax/ab-minimax)
+* Implement negamax
+* Need to work out a way to use the available moves function I wrote earlier with the undo moves functionality 
+* Need to work out how to use Machine Learning to train the evaluation function 
+* Need to work out what the dominant feature of the game are 
+* Need to work out how to use a cache to store recent board-state-Minimax value pairs (possibly using an LRU cache or something similar such that we can limit the size of the cache -- keep recently used items and expell least used items -- these items will be added back to the cache if they are visited again)
+    - For the LRU cache -- think about using a double ended linked list -- when we add to the cache we add to the head of the cache, but we only add until the cache is below a certain size, when we reach the size and we want to add more, we need to get rid an element at the tail of the cache -- these are the least frequently used items 
+    - Or we can use a dictionary to store the entries of the items up until a fixed size, then we can get rid of elements of the dictionary that are old to reduce space in the dictionary 
+        - by doing so we limit the size of the cache 

@@ -1,0 +1,2 @@
+class Negamax(object):
+    pass
