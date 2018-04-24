@@ -58,7 +58,7 @@ class Player:
 
             # update board also returns the pieces of the board that will be eliminated
             self.board.update_board(action, self.opponent)
-            self.board.eliminated_pieces[self.opponent]
+            # self.board.eliminated_pieces[self.opponent]
             self.minimax.update_board(self.board)
 
             # remove the opponent piece from the available moves list
@@ -73,7 +73,7 @@ class Player:
             self.board.update_board((action[0], move_type), self.opponent)
             self.minimax.update_board(self.board)
 
-            self.minimax.update_available_actions(action,self.opponent)
+            #self.minimax.update_available_actions(action,self.opponent)
 
     def action(self, turns):
 
@@ -94,10 +94,10 @@ class Player:
 
         root = self.minimax.create_node(self.colour, None)
         self.minimax.update_minimax_board(None,root)
-        self.minimax.update_available_actions(None)
+        # self.minimax.update_available_actions(None)
         # best_move = self.minimax.alpha_beta_minimax(2,root)
         # best_move = self.minimax.iterative_deepening_alpha_beta(root)
-        best_move = self.minimax.alpha_beta_minimax(5,root)
+        best_move = self.minimax.alpha_beta_minimax(2,root)
 
         # do an alpha beta search on this node
         if self.board.phase == constant.PLACEMENT_PHASE:

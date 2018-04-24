@@ -345,7 +345,7 @@ class MinimaxUndo(object):
         i = 0
 
 
-        '''
+
         
         for action in root.available_moves:
             # print("{} Action AB call".format(i))
@@ -358,7 +358,7 @@ class MinimaxUndo(object):
             if self.check_symmetry(self.board.board_state) is True:
                 continue
 
-            evaluate = self.min_value(child, depth-1, alpha, beta)
+            evaluate = self.min_value(child, depth, alpha, beta)
 
             if evaluate > alpha:
                 best_move = child.move_applied
@@ -392,7 +392,7 @@ class MinimaxUndo(object):
             available_actions = self.get_actions(root.colour)
             print(self.available_actions)
             return
-
+            '''
 
     def max_value(self, node, depth, alpha, beta):
         #self.board.print_board()
