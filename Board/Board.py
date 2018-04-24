@@ -469,7 +469,7 @@ class Board(object):
         # peak into the eliminated piece stack
         for colour in (constant.WHITE_PIECE, constant.BLACK_PIECE):
             piece_tup = Stack.peek(self.eliminated_pieces[colour])
-            print(piece_tup)
+            # print(piece_tup)
             # check if the stack is populated, else we continue with the next piece
             if piece_tup is None:
                 continue
@@ -478,18 +478,45 @@ class Board(object):
             move_count = piece_tup[2]
 
             if phase == last_phase and move_count == last_move_count:
+                Stack.pop(self.eliminated_pieces[colour])
                 eliminated_pieces[colour].append(piece_tup[0])
 
         return eliminated_pieces
 
+    # when checking for a jump space need to check if there is a piece that is occupying the adjacent square
+    def can_jump_into_position(self,position,move_type):
+        # checks if pieces exixt at a jump length away anf if that piece can jump into this position
+        # move_type must be greater than 4
+        # get the adjacent movetype
+        if move_type < 4:
+            return False
 
+        adj_move_type = move_type - 4
+        adj_pos = Board.convert_move_type_to_coord(position,adj_move_type)
+        jump_pos = Board.convert_move_type_to_coord(position,move_type)
+
+        # get the piece types of the jump position and the adjacent position to the reference position
+
+        adj_piece_type = self.return_cell_type(adj_pos)
+        jump_piece_type = self.return_cell_type(jump_pos)
+
+        colour_tup = (constant.BLACK_PIECE, constant.WHITE_PIECE)
+
+        # check if both the piece types of the adj and jump pieces are a player colour
+        # if they are not then we return false
+        if adj_piece_type in colour_tup and jump_piece_type in colour_tup:
+            return True
+        else:
+            return False
 
     def undo_move(self):
-        print(self.move_counter)
-        print(self.phase)
-        eliminated_pieces = self.eliminated_pieces_last_move(self.phase,self.move_counter)
+        # print("undo")
+        # print(self.move_counter)
+        # print(self.phase)
 
-        print(eliminated_pieces)
+        eliminated_pieces = self.eliminated_pieces_last_move(self.phase,self.move_counter)
+        # print(eliminated_pieces)
+        # print(eliminated_pieces)
         if len(self.action_applied) == 0:
             # do nothing -- nothing to undo
             return
@@ -560,6 +587,7 @@ class Board(object):
         # if there was no action applied to the board, all we need to do
         # is to decrease the move counter
         # print("GOT HERE")
+
         if action_applied is None:
             self.move_counter-=1
             return
@@ -607,6 +635,7 @@ class Board(object):
                 if pos in self.piece_pos[colour]:
                     self.piece_pos[colour].remove(pos)
                 self.set_board(row,col,constant.FREE_SPACE)
+
                 # decrease the move counter
                 self.move_counter = 24
                 self.phase = constant.PLACEMENT_PHASE
@@ -626,7 +655,7 @@ class Board(object):
                 move_type = action_applied[0][1]
                 colour = action_applied[1][0]
 
-                curr_pos = self.convert_move_type_to_coord(old_pos,move_type)
+                curr_pos = self.convert_move_type_to_coord(old_pos, move_type)
                 # reset the old location to being free
                 self.set_board(curr_pos[1],curr_pos[0],constant.FREE_SPACE)
                 if curr_pos in self.piece_pos[colour]:
@@ -639,7 +668,6 @@ class Board(object):
                 # decrease the move counter
                 self.move_counter -= 1
                 return
-
 
     # shrink the board
     def shrink_board(self):
@@ -800,7 +828,6 @@ class Board(object):
             return True
         else:
             return False
-
 
     # stack helper method
     def push_action(self,data):
