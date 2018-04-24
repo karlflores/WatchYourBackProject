@@ -19,8 +19,8 @@ class Features(object):
     def middle_pieces(board):
         pass
 
-    #implement massacre as a count for how many moves would be taken to eliminate all other pieces (<2) if no moves were made by them
-    def massacre(board):
+    #implement massacre as a count for how many moves would be taken to eliminate all but 1 piece of opponent if no moves were made by them
+    def massacre_1left(board):
         pass
 
     #how many moves from capturing an opponent piece
