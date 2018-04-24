@@ -1,6 +1,6 @@
 from Board import constant
 from Board.Board import Board
-from Agents.Minimax import MinimaxAB, MinimaxABUndo
+from Agents.Minimax import MinimaxAB, MinimaxABUndo, MinimaxUndo
 
 
 class Player:
@@ -61,8 +61,8 @@ class Player:
         root = self.minimax.create_node(self.colour, None)
         # update the board representation and the available moves
         self.minimax.update_minimax_board(None, root, start_node=True)
-        print(self.minimax.available_actions)
-        best_move = self.minimax.alpha_beta_minimax(2, root)
+        # print(self.minimax.available_actions)
+        best_move = self.minimax.alpha_beta_minimax(3, root)
 
         # do an alpha beta search on this node
         # once we have found the best move we must apply it to the board representation
