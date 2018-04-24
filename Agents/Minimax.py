@@ -66,6 +66,7 @@ class Minimax(object):
         best_move = None
         alpha = -inf
         beta = inf
+        evaluate = -inf
         child_nodes = []
         for action in root.available_moves:
             child_nodes.append(Minimax.create_node(root.board, Board.get_opp_piece_type(root.colour),action))
@@ -78,11 +79,13 @@ class Minimax(object):
             if self.check_symmetry(child.board.board_state) is True:
                 continue
 
-            evaluate = self.min_value(child,depth-1,alpha,beta)
+            evaluate_min = self.min_value(child,depth-1,alpha,beta)
 
-            if evaluate > alpha:
+            if evaluate_min > evaluate:
                 best_move = child.move_applied
-                alpha = evaluate
+                evaluate = evaluate_min
+
+            alpha = max(evaluate, alpha)
 
             if beta < alpha:
                 break
@@ -341,11 +344,9 @@ class MinimaxUndo(object):
 
         best_move = None
         alpha = -inf
+        evaluate = -inf
         beta = inf
         i = 0
-
-
-
         
         for action in root.available_moves:
             # print("{} Action AB call".format(i))
@@ -358,7 +359,7 @@ class MinimaxUndo(object):
             if self.check_symmetry(self.board.board_state) is True:
                 continue
 
-            evaluate = self.min_value(child, depth, alpha, beta)
+            evaluate = self.min_value(child, depth-1, alpha, beta)
 
             if evaluate > alpha:
                 best_move = child.move_applied
