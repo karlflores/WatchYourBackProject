@@ -19,8 +19,10 @@ class Evaluation(object):
 
         # number of pieces of the opponent eliminated
         num_moves = len(node.available_moves)
-        return randint(0,5)
-        # return diff_pieces + 100/(1+10*dist_cent) + 0.3*num_moves
+
+        # RANDOM MOVES FOR TESTING IF MINIMAX IS WORKING CORRECTLY
+        # return randint(0,5)
+        return diff_pieces + 100/(1+10*dist_cent) + 0.3*num_moves
 
         #print(dist_cent)
         #return diff_pieces

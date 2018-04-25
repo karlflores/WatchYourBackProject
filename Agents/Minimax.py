@@ -341,7 +341,7 @@ class MinimaxABUndo(object):
         beta = inf
         i = 0
         
-        for action in root.available_moves[:2]:
+        for action in root.available_moves:
             # print("{} Action AB call".format(i))
             child = self.create_node(Board.get_opp_piece_type(root.colour), action)
             self.update_minimax_board(action, child)
@@ -371,8 +371,8 @@ class MinimaxABUndo(object):
             '''
         # print(best_move)
         # print(evaluate)
-        print("AB Best Value: ",end='')
-        print(evaluate, best_move)
+        # print("AB Best Value: ",end='')
+        # print(evaluate, best_move)
         return best_move
 
         # find the action associated with eval
@@ -398,16 +398,16 @@ class MinimaxABUndo(object):
         evaluate = -inf
 
         if self.cutoff_test(node,depth):
-            print("MAX NODE VAL: ",end='')
-            val = self.evaluate_node(node)
-            print(val)
-            return val
-            # return self.evaluate_node(node)
+            #print("MAX NODE VAL: ",end='')
+            #val = self.evaluate_node(node)
+            #print(val)
+            #return val
+            return self.evaluate_node(node)
 
         # visit each available move
         #print("MAX MOVES: ",end='')
         #print(node.available_moves)
-        for action in node.available_moves[:2]:
+        for action in node.available_moves:
 
             '''
             if self.board.phase == constant.MOVING_PHASE:
@@ -433,20 +433,20 @@ class MinimaxABUndo(object):
                 #print("UNDO")
                 break
             '''
-            ''''
+            
             if evaluate >= beta:
                 node.minimax = evaluate
-                print("MAX Best Value: ",end='')
-                print(evaluate)
+                # print("MAX Best Value: ",end='')
+                # print(evaluate)
                 return evaluate
             alpha = max(evaluate,alpha)
             # undo the move so that we can apply the next board move to evaluate minimax value
             #print("UNDO 2")
             #self.board.print_board()
             #self.board.print_board()
-            '''
-        print("MAX Best Value: ",end='')
-        print(evaluate)
+            
+        # print("MAX Best Value: ",end='')
+        # print(evaluate)
         node.minimax = evaluate
         return evaluate
 
@@ -456,15 +456,15 @@ class MinimaxABUndo(object):
         evaluate = inf
 
         if self.cutoff_test(node, depth):
-            val = self.evaluate_node(node)
-            print("MIN NODE VAL: ",end='')
-            print(val)
-            return val
+            # val = self.evaluate_node(node)
+            # print("MIN NODE VAL: ",end='')
+            # print(val)
+            # return val
             # print(self.evaluate_node(node))
-            # return self.evaluate_node(node)
+            return self.evaluate_node(node)
         # print("MIN MOVES: ",end='')
         # print(node.available_moves)
-        for action in node.available_moves[:2]:
+        for action in node.available_moves:
             if self.board.phase == constant.MOVING_PHASE:
                 '''
                 if TranspositionTable.check_already_visited(self.transposition_table, self.board.board_state):
@@ -487,17 +487,17 @@ class MinimaxABUndo(object):
                 # when we break from the loop make sure to undo the move
                 break
             '''
-            '''
+            
             if evaluate <= alpha:
                 node.minimax = evaluate
-                print("MIN Best Value: ",end='')
-                print(evaluate)
+                # print("MIN Best Value: ",end='')
+                # print(evaluate)
                 return evaluate
 
             beta = min(beta, evaluate)
-            '''
-        print("MIN Best Value: ",end='')
-        print(evaluate)
+            
+        # print("MIN Best Value: ",end='')
+        # print(evaluate)
         node.minimax = evaluate
         return evaluate
 
@@ -589,6 +589,11 @@ class MinimaxABUndo(object):
 
         return False
 
+    '''
+    * NEED TO THINK ABOUT IF THIS FUNCTION JUST EVALUATES THE NODES AT THE ROOT STATE DUE TO THE UNDO MOVES 
+            -- NEED TO TEST THIS OUT SOMEHOW, because other than that the algorithm is working as intended 
+            -- Need to work out some optimisations of the algorithm though 
+    '''
     def evaluate_node(self, node):
         return Evaluation.basic_policy(self.board, node)
 
