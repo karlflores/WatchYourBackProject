@@ -71,4 +71,7 @@ class Node(object):
         # TODO -- NEED TO IMPLEMENT THIS FUNCTION
         # if all the actions have been tried then it has been
         # fully expanded
-        return
+        if len(self.untried_moves) == 0:
+            return True
+        else:
+            return False
