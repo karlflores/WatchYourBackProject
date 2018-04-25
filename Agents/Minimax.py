@@ -360,7 +360,7 @@ class MinimaxABUndo(object):
                 evaluate = ab_evaluate
 
             self.undo_move()
-
+            '''
             if evaluate >= beta:
                 # print(evaluate)
                 print("AB Best Value: ",end='')
@@ -368,7 +368,7 @@ class MinimaxABUndo(object):
                 return best_move
 
             alpha = max(alpha, evaluate)
-
+            '''
         # print(best_move)
         # print(evaluate)
         print("AB Best Value: ",end='')
@@ -398,7 +398,11 @@ class MinimaxABUndo(object):
         evaluate = -inf
 
         if self.cutoff_test(node,depth):
-            return self.evaluate_node(node)
+            print("MAX NODE VAL: ",end='')
+            val = self.evaluate_node(node)
+            print(val)
+            return val
+            # return self.evaluate_node(node)
 
         # visit each available move
         #print("MAX MOVES: ",end='')
@@ -414,6 +418,7 @@ class MinimaxABUndo(object):
             child = self.create_node(Board.get_opp_piece_type(node.colour), action)
             # update the board representation with the move
             self.update_minimax_board(action, child)
+            # self.board.print_board()
             #print(node.available_moves)
             #print(child.available_moves)
             # if self.check_symmetry(child.board.board_state) is True:
@@ -428,6 +433,7 @@ class MinimaxABUndo(object):
                 #print("UNDO")
                 break
             '''
+            ''''
             if evaluate >= beta:
                 node.minimax = evaluate
                 print("MAX Best Value: ",end='')
@@ -438,7 +444,7 @@ class MinimaxABUndo(object):
             #print("UNDO 2")
             #self.board.print_board()
             #self.board.print_board()
-
+            '''
         print("MAX Best Value: ",end='')
         print(evaluate)
         node.minimax = evaluate
@@ -450,8 +456,12 @@ class MinimaxABUndo(object):
         evaluate = inf
 
         if self.cutoff_test(node, depth):
+            val = self.evaluate_node(node)
+            print("MIN NODE VAL: ",end='')
+            print(val)
+            return val
             # print(self.evaluate_node(node))
-            return self.evaluate_node(node)
+            # return self.evaluate_node(node)
         # print("MIN MOVES: ",end='')
         # print(node.available_moves)
         for action in node.available_moves[:2]:
@@ -463,6 +473,7 @@ class MinimaxABUndo(object):
             # apply the move to the child node, this node is now the opposite colour
             child = self.create_node(Board.get_opp_piece_type(node.colour), action)
             self.update_minimax_board(action, child)
+            # self.board.print_board()
             # print("MIN UPDATE")
             # self.board.print_board()
             #print("\nMin Call")
@@ -476,6 +487,7 @@ class MinimaxABUndo(object):
                 # when we break from the loop make sure to undo the move
                 break
             '''
+            '''
             if evaluate <= alpha:
                 node.minimax = evaluate
                 print("MIN Best Value: ",end='')
@@ -483,7 +495,7 @@ class MinimaxABUndo(object):
                 return evaluate
 
             beta = min(beta, evaluate)
-
+            '''
         print("MIN Best Value: ",end='')
         print(evaluate)
         node.minimax = evaluate

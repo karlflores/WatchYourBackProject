@@ -10,6 +10,6 @@ root = agent.create_node(colour, None)
 
 agent.update_minimax_board(None, root, start_node=True)
 
-action = agent.alpha_beta_minimax(3, root)
+action = agent.alpha_beta_minimax(4, root)
 
 print(action)

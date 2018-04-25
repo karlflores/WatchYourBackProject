@@ -1,6 +1,7 @@
 from Board.Board import Board
 from math import sqrt, fabs
 from Agents.Minimax_Node import *
+from random import randint
 # Class to implement all the evaluation functions that we generate throughout
 # the development of this project
 
@@ -18,8 +19,9 @@ class Evaluation(object):
 
         # number of pieces of the opponent eliminated
         num_moves = len(node.available_moves)
+        return randint(0,5)
+        # return diff_pieces + 100/(1+10*dist_cent) + 0.3*num_moves
 
-        return diff_pieces + 100/(1+10*dist_cent) + 0.3*num_moves
         #print(dist_cent)
         #return diff_pieces
 
