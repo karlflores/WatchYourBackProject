@@ -98,7 +98,6 @@ class MonteCarloTreeSearch(object):
         while node is not None:
             node.visit_num += 1
             node.wins += value
-            value = -value
             node = node.parent
 
     def expand(self,node):

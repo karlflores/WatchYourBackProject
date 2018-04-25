@@ -308,7 +308,7 @@ class MinimaxABUndo(object):
         time_alloc = 1000
 
         # get time
-        start_time = Minimax.curr_millisecond_time()
+        start_time = MinimaxAB.curr_millisecond_time()
 
         # iterative deepening begins here
         for depth in range(1, MAX_ITER):
@@ -316,7 +316,7 @@ class MinimaxABUndo(object):
             move = self.alpha_beta_minimax(depth, root)
             sleep(0.05)
 
-            if Minimax.curr_millisecond_time() - start_time > time_alloc:
+            if MinimaxAB.curr_millisecond_time() - start_time > time_alloc:
                 break
         return move
 
@@ -341,7 +341,7 @@ class MinimaxABUndo(object):
         beta = inf
         i = 0
         
-        for action in root.available_moves:
+        for action in root.available_moves[:2]:
             # print("{} Action AB call".format(i))
             child = self.create_node(Board.get_opp_piece_type(root.colour), action)
             self.update_minimax_board(action, child)
@@ -363,12 +363,16 @@ class MinimaxABUndo(object):
 
             if evaluate >= beta:
                 # print(evaluate)
+                print("AB Best Value: ",end='')
+                print(evaluate, best_move)
                 return best_move
 
             alpha = max(alpha, evaluate)
 
         # print(best_move)
         # print(evaluate)
+        print("AB Best Value: ",end='')
+        print(evaluate, best_move)
         return best_move
 
         # find the action associated with eval
@@ -397,9 +401,9 @@ class MinimaxABUndo(object):
             return self.evaluate_node(node)
 
         # visit each available move
-        print("MAX MOVES: ",end='')
-        print(node.available_moves)
-        for action in node.available_moves:
+        #print("MAX MOVES: ",end='')
+        #print(node.available_moves)
+        for action in node.available_moves[:2]:
 
             '''
             if self.board.phase == constant.MOVING_PHASE:
@@ -426,12 +430,17 @@ class MinimaxABUndo(object):
             '''
             if evaluate >= beta:
                 node.minimax = evaluate
+                print("MAX Best Value: ",end='')
+                print(evaluate)
                 return evaluate
             alpha = max(evaluate,alpha)
             # undo the move so that we can apply the next board move to evaluate minimax value
             #print("UNDO 2")
             #self.board.print_board()
             #self.board.print_board()
+
+        print("MAX Best Value: ",end='')
+        print(evaluate)
         node.minimax = evaluate
         return evaluate
 
@@ -443,9 +452,9 @@ class MinimaxABUndo(object):
         if self.cutoff_test(node, depth):
             # print(self.evaluate_node(node))
             return self.evaluate_node(node)
-        print("MIN MOVES: ",end='')
-        print(node.available_moves)
-        for action in node.available_moves:
+        # print("MIN MOVES: ",end='')
+        # print(node.available_moves)
+        for action in node.available_moves[:2]:
             if self.board.phase == constant.MOVING_PHASE:
                 '''
                 if TranspositionTable.check_already_visited(self.transposition_table, self.board.board_state):
@@ -469,10 +478,14 @@ class MinimaxABUndo(object):
             '''
             if evaluate <= alpha:
                 node.minimax = evaluate
+                print("MIN Best Value: ",end='')
+                print(evaluate)
                 return evaluate
 
             beta = min(beta, evaluate)
 
+        print("MIN Best Value: ",end='')
+        print(evaluate)
         node.minimax = evaluate
         return evaluate
 
