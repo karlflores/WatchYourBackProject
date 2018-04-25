@@ -35,7 +35,7 @@ UP_2 = 7
 
 
 # search constants
-TIME_CUTOFF = 1000
+TIME_CUTOFF = 30000
 
 # IDDFS and DLS
 FAILURE = None

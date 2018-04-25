@@ -62,7 +62,7 @@ class Player:
         # update the board representation and the available moves
         self.minimax.update_minimax_board(None, root, start_node=True)
         # print(self.minimax.available_actions)
-        best_move = self.minimax.alpha_beta_minimax(3, root)
+        best_move = self.minimax.alpha_beta_minimax(4, root)
 
         # do an alpha beta search on this node
         # once we have found the best move we must apply it to the board representation

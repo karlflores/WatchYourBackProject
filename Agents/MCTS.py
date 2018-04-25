@@ -82,7 +82,7 @@ class MonteCarloTreeSearch(object):
             # actions of next player -- this is the player that will make the next move
             available_actions = board.update_actions(board, colour)
         end_time = time()
-        print((end_time - start_time))
+        # print((end_time - start_time))
         # now we are at a terminal state, we need to find out who has won
         #print(board.winner)
         #board.print_board()
@@ -206,15 +206,15 @@ class MonteCarloTreeSearch(object):
                 best_ucb = child.ucb_value
                 best_child = child
 
-        print("UCB: ",end='')
-        print(best_ucb)
-        print("WINS: ",end='')
-        print(best_child.wins)
+        #print("UCB: ",end='')
+        #print(best_ucb)
+        #print("WINS: ",end='')
+        #print(best_child.wins)
 
-        print("VISITED: ",end='')
-        print(best_child.visit_num)
-        print("PARENT VISITED: ",end='')
-        print(best_child.parent.visit_num)
+        #print("VISITED: ",end='')
+        #print(best_child.visit_num)
+        #print("PARENT VISITED: ",end='')
+        #print(best_child.parent.visit_num)
         return best_move
 
     def return_to_original_state(self):
