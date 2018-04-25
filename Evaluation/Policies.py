@@ -1,5 +1,6 @@
 from Board.Board import Board
 from math import sqrt, fabs
+from Agents.Minimax_Node import *
 # Class to implement all the evaluation functions that we generate throughout
 # the development of this project
 
@@ -10,18 +11,15 @@ class Evaluation(object):
     def basic_policy(board, node):
         colour = node.colour
         # assume that the board is in a byte string representation
-        diff_pieces = len(board.piece_pos[colour])-10*len(board.piece_pos[Board.get_opp_piece_type(colour)])
+        diff_pieces = len(board.piece_pos[node.colour])-3*len(board.piece_pos[Board.get_opp_piece_type(node.colour)])
         dist_cent = 0
-        for pieces in board.piece_pos[colour]:
+        for pieces in board.piece_pos[node.colour]:
             dist_cent += Evaluation.distance(pieces,(3,3))
 
         # number of pieces of the opponent eliminated
         num_moves = len(node.available_moves)
 
-        dist_pieces = 0
-
-        #return 10/(1+int(dist_cent))+diff_pieces
-        return diff_pieces + 100/(1+10*dist_cent)+ num_moves
+        return diff_pieces + 100/(1+10*dist_cent) + 0.3*num_moves
         #print(dist_cent)
         #return diff_pieces
 

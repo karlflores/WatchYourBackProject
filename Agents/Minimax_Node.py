@@ -47,7 +47,6 @@ class UndoNode(object):
         self.move_applied = None
         self.colour = colour
         self.eval = 0
-        self.evaluate(board)
         self.available_moves = []
 
     # it is a leaf node if terminal
@@ -58,9 +57,6 @@ class UndoNode(object):
     # set the next colour
     def next_colour(self):
         self.colour = Board.get_opp_piece_type(self.colour)
-
-    def evaluate(self,board):
-        self.eval = Evaluation.basic_policy(board,self.colour)
 
     def __lt__(self, other):
         if other is None:

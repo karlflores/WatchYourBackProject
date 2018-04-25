@@ -766,7 +766,7 @@ class Board(object):
         white_num = len(self.piece_pos[constant.WHITE_PIECE])
         black_num = len(self.piece_pos[constant.BLACK_PIECE])
 
-        if self.phase == constant.MOVING_PHASE:
+        if self.phase == constant.MOVING_PHASE or (self.phase == constant.PLACEMENT_PHASE and self.move_counter > 15):
             if black_num >= 2 and white_num >= 2:
                 return False
             elif black_num >= 2 and white_num < 2:
@@ -847,4 +847,51 @@ class Board(object):
         else:
             return False
 
+    '''
+    METHODS TO HELP GENERATE MOVES FROM A PARTICULAR BOARD STATE 
+    '''
+
+    # following methods are naive implementations just using lists and iterating through
+    # each piece on the board -- does not use information from their parents node as to
+    # what is different and what should be updated
+    @staticmethod
+    def update_actions(board,colour):
+        actions = []
+        if board.phase == constant.PLACEMENT_PHASE:
+            actions = Board.update_available_nodes_placement(board,colour)
+        elif board.phase == constant.MOVING_PHASE:
+            actions = Board.generate_moves(board,colour)
+
+        return actions
+
+    @staticmethod
+    def generate_moves(board,colour):
+        available_moves = []
+        if board.phase == constant.MOVING_PHASE:
+            for move in board.piece_pos[colour]:
+                for move_type in range(constant.MAX_MOVETYPE):
+                    if board.is_legal_move(move,move_type):
+                        available_moves.append((move,move_type))
+
+        return available_moves
+
+    @staticmethod
+    def update_available_nodes_placement(board,colour):
+        actions = Board.init_placable_area(colour)
+
+        for colour in (constant.BLACK_PIECE,constant.WHITE_PIECE):
+            for piece in board.piece_pos[colour]:
+                if piece in actions:
+                    actions.remove(piece)
+
+        return actions
+
+    @staticmethod
+    def init_placable_area(colour):
+        actions = []
+        for row in range(constant.BOARD_SIZE):
+            for col in range(constant.BOARD_SIZE):
+                if Board.within_starting_area((col,row), colour):
+                    actions.append((col,row))
+        return actions
 

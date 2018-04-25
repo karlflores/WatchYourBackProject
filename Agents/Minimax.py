@@ -354,7 +354,7 @@ class MinimaxABUndo(object):
                     continue
             '''
             ab_evaluate = self.min_value(child, depth-1, alpha, beta)
-            print(ab_evaluate)
+            # print(ab_evaluate)
             if ab_evaluate > evaluate:
                 best_move = child.move_applied
                 evaluate = ab_evaluate
@@ -362,13 +362,13 @@ class MinimaxABUndo(object):
             self.undo_move()
 
             if evaluate >= beta:
-                print(evaluate)
+                # print(evaluate)
                 return best_move
 
             alpha = max(alpha, evaluate)
 
-        print(best_move)
-        print(evaluate)
+        # print(best_move)
+        # print(evaluate)
         return best_move
 
         # find the action associated with eval
@@ -397,6 +397,8 @@ class MinimaxABUndo(object):
             return self.evaluate_node(node)
 
         # visit each available move
+        print("MAX MOVES: ",end='')
+        print(node.available_moves)
         for action in node.available_moves:
 
             '''
@@ -434,13 +436,15 @@ class MinimaxABUndo(object):
         return evaluate
 
     def min_value(self,node, depth, alpha, beta):
-        #print("CALLED MIN")
+        # print("CALLED MIN")
         # beginning evaluation value
         evaluate = inf
 
         if self.cutoff_test(node, depth):
+            # print(self.evaluate_node(node))
             return self.evaluate_node(node)
-
+        print("MIN MOVES: ",end='')
+        print(node.available_moves)
         for action in node.available_moves:
             if self.board.phase == constant.MOVING_PHASE:
                 '''
@@ -456,7 +460,7 @@ class MinimaxABUndo(object):
             #self.board.print_board()
 
             evaluate = min(evaluate, self.max_value(child, depth-1, alpha, beta))
-
+            # print(action, evaluate)
             self.undo_move()
             '''
             if beta <= alpha:
@@ -528,8 +532,6 @@ class MinimaxABUndo(object):
                 return
             '''
         elif self.board.phase == constant.MOVING_PHASE:
-            if self.board.move_counter == 24:
-                node.available_moves = []
             # generate the moves that you can apply to this node
             node.available_moves = self.generate_moves(node.colour)
             # this is the start to the search -- we don't want to update the available_moves list
@@ -984,11 +986,13 @@ class MinimaxUndo(object):
         return evaluate
 
     def min_value(self, node, depth):
-        # print("CALLED MIN")
+
+        print("CALLED MIN")
         # beginning evaluation value
         evaluate = inf
 
         if self.cutoff_test(node, depth):
+            self.evaluate_node(node)
             return self.evaluate_node(node)
 
         for action in node.available_moves:
@@ -997,6 +1001,7 @@ class MinimaxUndo(object):
             self.update_minimax_board(action, child)
 
             evaluate = min(evaluate, self.max_value(child, depth - 1))
+            print(evaluate)
             self.undo_move()
 
         node.minimax = evaluate
@@ -1058,8 +1063,6 @@ class MinimaxUndo(object):
                 return
             '''
         elif self.board.phase == constant.MOVING_PHASE:
-            if self.board.move_counter == 24:
-                node.available_moves = []
             # generate the moves that you can apply to this node
             node.available_moves = self.generate_moves(node.colour)
             # this is the start to the search -- we don't want to update the available_moves list

@@ -21,7 +21,6 @@ MOVING_PHASE = 1
 TERMINAL = 2
 
 # move types
-
 # to the get the reverse move add 2
 # to get a 2 square move -- add 4
 
@@ -36,6 +35,7 @@ UP_2 = 7
 
 
 # search constants
+TIME_CUTOFF = 2000
 
 # IDDFS and DLS
 FAILURE = None
