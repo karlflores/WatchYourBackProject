@@ -7,6 +7,12 @@ board = Board()
 
 colour = constant.WHITE_PIECE
 
+agent = MonteCarloTreeSearch(board,colour)
+
+node = agent.create_node(board,colour,None,None)
+agent.simulate(node)
+
+'''
 while(board.is_terminal() is False):
     agent = MonteCarloTreeSearch(board, colour)
     move = agent.MCTS()
@@ -14,4 +20,4 @@ while(board.is_terminal() is False):
     board.update_board(move,colour)
     board.print_board()
     colour = Board.get_opp_piece_type(colour)
-
+'''

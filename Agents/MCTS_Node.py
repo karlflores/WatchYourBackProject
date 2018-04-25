@@ -2,7 +2,6 @@ from Board import constant
 from copy import deepcopy
 from math import inf
 
-
 class Node(object):
     def __init__(self,board,colour,move,parent):
         self.board = deepcopy(board)

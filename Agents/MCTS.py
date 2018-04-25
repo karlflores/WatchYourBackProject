@@ -35,16 +35,15 @@ class MonteCarloTreeSearch(object):
 
         while (end_time - start_time) < constant.TIME_CUTOFF:
             # we traverse until we get to a child node
-
             node = self.UCB1_policy(root, explore_param)
 
             # we have expanded the leaf node and of all the actions, we have picked the action with
             # the highest UCB1
-            for i in range(100):
-                val = self.simulate(node)
 
-                # after simulation we will back-propagate the values of the simulation
-                self.value_backpropagation(self.current, val)
+            net_win = self.simulate(node)
+
+            # after simulation we will back-propagate the values of the simulation
+            self.value_backpropagation(node, net_win)
 
             end_time = time()*1000
         # after this we will make a move
@@ -52,12 +51,20 @@ class MonteCarloTreeSearch(object):
 
     # this is the default policy -- i.e from a given game state we simulate the game randomly
     def simulate(self, node):
+        start_time = time()
         # simulate the state based on the actions of the child
         # this is the board on which we do our simulation
         board = deepcopy(node.board)
-        available_actions = board.update_actions(board,node.colour)
+        #print(board.move_counter)
+        #print(board.phase)
+        #print(board.piece_pos)
+        available_actions = board.update_actions(board, node.colour)
+        #print("available_actions")
+        #print(available_actions)
+        #print(board.is_terminal())
         colour = node.colour
-        while board.is_terminal is False:
+
+        while board.is_terminal() is False:
             if len(available_actions) == 0:
                 # there are no actions to take and therefore it is a forfeit
                 action = None
@@ -68,13 +75,17 @@ class MonteCarloTreeSearch(object):
 
             # apply the action to the board
             board.update_board(action,colour)
+            #board.print_board()
             # update the colour of the piece
             colour = Board.get_opp_piece_type(colour)
             # update the new available actions list -- this action list represents the
             # actions of next player -- this is the player that will make the next move
-            available_actions = board.update_actions(board,colour)
-
+            available_actions = board.update_actions(board, colour)
+        end_time = time()
+        print((end_time - start_time))
         # now we are at a terminal state, we need to find out who has won
+        #print(board.winner)
+        #board.print_board()
         if board.winner == node.colour:
             return 1
         elif board.winner == Board.get_opp_piece_type(node.colour):
@@ -87,9 +98,11 @@ class MonteCarloTreeSearch(object):
         while node is not None:
             node.visit_num += 1
             node.wins += value
+            value = -value
             node = node.parent
 
     def expand(self,node):
+        # print("expanded")
         # call on an expandable node to create one more child node -- we add the child to the leaf
         # then we update the current node we are at to this leaf node
 
@@ -97,7 +110,9 @@ class MonteCarloTreeSearch(object):
         action_index = randint(0,len(node.untried_actions)-1)
         action = node.untried_actions[action_index]
         # remove that action from the untried action list
+       # print(node.untried_actions)
         node.untried_actions.remove(action)
+       # print(node.untried_actions)
         child = self.create_node(node.board,Board.get_opp_piece_type(node.colour), action, node)
 
         # apply the move to that child node
@@ -141,7 +156,6 @@ class MonteCarloTreeSearch(object):
             if node.is_fully_expanded() is False:
                 #print("check expanded")
                 child = self.expand(node)
-                self.current = child
                 return child
             else:
                 # choose the child with the best UCB1 score
@@ -163,7 +177,7 @@ class MonteCarloTreeSearch(object):
 
             # recursively go down the tree until we hit a child node
             # self.UCB1_traversal(best_child, explore_param)
-            self.current = select_node
+        print(select_node)
         return select_node
 
     def update_root(self,root):
@@ -184,12 +198,24 @@ class MonteCarloTreeSearch(object):
     def make_move(self,root):
         best_move = None
         best_ucb = -inf
-
+        best_child = None
         for child in root.children:
+            self.UCB1(child, sqrt(2))
+            # print(child.ucb_value)
             if child.ucb_value > best_ucb:
                 best_move = child.move
                 best_ucb = child.ucb_value
+                best_child = child
 
+        print("UCB: ",end='')
+        print(best_ucb)
+        print("WINS: ",end='')
+        print(best_child.wins)
+
+        print("VISITED: ",end='')
+        print(best_child.visit_num)
+        print("PARENT VISITED: ",end='')
+        print(best_child.parent.visit_num)
         return best_move
 
     def return_to_original_state(self):
