@@ -2,11 +2,11 @@ from math import inf,sqrt,log
 from Agents.MCTS_Node import Node
 from Board.Board import constant
 from Board.Board import Board
-from Evaluation.Policies import Evaluation
 from copy import deepcopy
 from time import time
 from random import randint
 # need to store untried moves
+
 
 # start this implementation with each node storing a copy of the board -- then change the implementation such that
 # we only use one board representation for the board state -- we just undo moves
@@ -18,38 +18,40 @@ class MonteCarloTreeSearch(object):
         # board it is original state
         self.board = deepcopy(board)
 
-        # this is the start of the search
-        self.root = self.create_node(self.board, colour, None, None)
-
-        # this tracks the current node we are at in the tree -- start at the root node
-        self.current = self.root
+        self.colour = colour
 
         # number of actions applied to the state of the board -- to return the board to its
         # original state we just need to undo until the actions are 0
         self.action_num = 0
 
-    def MCTS(self, explore_param =sqrt(2)):
+    def MCTS(self, explore_param=sqrt(2)):
         start_time = time()*1000
         end_time = start_time
         # is the root a child node -- if it is we need to look at its child nodes
+
+        # this is the start of the search
+        root = self.create_node(self.board, self.colour, None, None)
+        root.update_actions()
+
         while (end_time - start_time) < constant.TIME_CUTOFF:
             # we traverse until we get to a child node
 
-            node = self.UCB1_policy(self.root, explore_param)
+            node = self.UCB1_policy(root, explore_param)
 
             # we have expanded the leaf node and of all the actions, we have picked the action with
             # the highest UCB1
-            val = self.simulate(node)
+            for i in range(100):
+                val = self.simulate(node)
 
-            # after simulation we will back-propagate the values of the simulation
-            self.value_backpropagation(self.current, val)
+                # after simulation we will back-propagate the values of the simulation
+                self.value_backpropagation(self.current, val)
 
             end_time = time()*1000
         # after this we will make a move
-        return self.make_move()
+        return self.make_move(root)
 
     # this is the default policy -- i.e from a given game state we simulate the game randomly
-    def simulate(self,node):
+    def simulate(self, node):
         # simulate the state based on the actions of the child
         # this is the board on which we do our simulation
         board = deepcopy(node.board)
@@ -96,7 +98,7 @@ class MonteCarloTreeSearch(object):
         action = node.untried_actions[action_index]
         # remove that action from the untried action list
         node.untried_actions.remove(action)
-        child = self.create_node(Board.get_opp_piece_type(node.colour), action, node)
+        child = self.create_node(node.board,Board.get_opp_piece_type(node.colour), action, node)
 
         # apply the move to that child node
         # the parent applies its move to that board
@@ -127,14 +129,17 @@ class MonteCarloTreeSearch(object):
 
     # this is the selection and expansion phase of the algorithm
     # UCB1 selects the most urgent child, and expands it to an unvisited state - then returns this unvisited node
-    def UCB1_policy(self,root,explore_param):
-
+    def UCB1_policy(self,root, explore_param):
+        #print("UCB1")
+        #print(root)
         node = root
         select_node = None
 
         while node.is_terminal() is False:
+            #print("xxx")
             # test if the node we are on is a child node -- ie it has not been expanded before
             if node.is_fully_expanded() is False:
+                #print("check expanded")
                 child = self.expand(node)
                 self.current = child
                 return child
@@ -159,6 +164,7 @@ class MonteCarloTreeSearch(object):
             # recursively go down the tree until we hit a child node
             # self.UCB1_traversal(best_child, explore_param)
             self.current = select_node
+        return select_node
 
     def update_root(self,root):
         self.root = root
@@ -175,11 +181,11 @@ class MonteCarloTreeSearch(object):
         node.parent = parent
         return node
 
-    def make_move(self):
+    def make_move(self,root):
         best_move = None
         best_ucb = -inf
 
-        for child in self.root.children:
+        for child in root.children:
             if child.ucb_value > best_ucb:
                 best_move = child.move
                 best_ucb = child.ucb_value

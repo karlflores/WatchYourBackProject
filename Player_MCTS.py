@@ -1,6 +1,6 @@
 from Board import constant
 from Board.Board import Board
-from Agents.Minimax import MinimaxABUndo
+from Agents.MCTS import MonteCarloTreeSearch
 
 
 class Player:
@@ -18,7 +18,7 @@ class Player:
 
         # TODO -- need to see if this works correctly
 
-        self.minimax = MinimaxABUndo(self.board)
+        self.strategy = MonteCarloTreeSearch(self.board,self.colour)
 
         self.opponent = self.board.get_opp_piece_type(self.colour)
 
@@ -32,7 +32,6 @@ class Player:
             # update board also returns the pieces of the board that will be eliminated
             self.board.update_board(action, self.opponent)
             # self.board.eliminated_pieces[self.opponent]
-            self.minimax.update_board(self.board)
 
         elif self.board.phase == constant.MOVING_PHASE:
             if isinstance(action[0], tuple) is False:
@@ -43,10 +42,11 @@ class Player:
 
             # update the player board representation with the action
             self.board.update_board((action[0], move_type), self.opponent)
-            self.minimax.update_board(self.board)
+
 
     def action(self, turns):
-        self.minimax.update_board(self.board)
+
+        self.strategy.update_board(self.board)
         # if action is called first the board representation move counter will be zero
         # this indicates that this player is the first one to move
 
@@ -57,24 +57,13 @@ class Player:
             self.board.move_counter = 0
             self.board.phase = constant.MOVING_PHASE
 
-        # create the node to search on
-        root = self.minimax.create_node(self.colour, None)
-        # update the board representation and the available moves
-        self.minimax.update_minimax_board(None, root, start_node=True)
-        # print(self.minimax.available_actions)
-        best_move = self.minimax.alpha_beta_minimax(3, root)
-
+        best_move = self.strategy.MCTS()
+        self.board.update_board(best_move, self.colour)
         # do an alpha beta search on this node
         # once we have found the best move we must apply it to the board representation
         if self.board.phase == constant.PLACEMENT_PHASE:
-            # print(best_move)
-            self.board.update_board(best_move, self.colour)
-            self.minimax.update_board(self.board)
             return best_move
         else:
-            # (best_move is None)
-            # print(best_move[0],best_move[1])
+
             new_pos = Board.convert_move_type_to_coord(best_move[0], best_move[1])
-            self.board.update_board(best_move, self.colour)
-            self.minimax.update_board(self.board)
             return best_move[0], new_pos

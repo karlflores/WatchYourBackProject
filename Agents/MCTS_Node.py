@@ -1,8 +1,7 @@
 from Board import constant
-from Board.Board import Board
-from Agents.MCTS import MonteCarloTreeSearch
 from copy import deepcopy
 from math import inf
+
 
 class Node(object):
     def __init__(self,board,colour,move,parent):
@@ -49,7 +48,7 @@ class Node(object):
 
     # this updates the available actions that the child node can make
     def update_actions(self):
-        self.untried_actions = self.board.update_actions(self.board,self.colour)
+        self.untried_actions = self.board.update_actions(self.board, self.colour)
 
     def is_leaf(self):
         # if there are no child nodes at this node then it is a leaf node
@@ -71,7 +70,7 @@ class Node(object):
         # TODO -- NEED TO IMPLEMENT THIS FUNCTION
         # if all the actions have been tried then it has been
         # fully expanded
-        if len(self.untried_moves) == 0:
+        if len(self.untried_actions) == 0:
             return True
         else:
             return False
