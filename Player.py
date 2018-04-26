@@ -3,7 +3,6 @@ from Board.Board import Board
 from Agents.Random import Random
 from sys import getsizeof
 
-
 class Player:
 
     def __init__(self, colour):

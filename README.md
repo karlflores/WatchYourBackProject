@@ -38,4 +38,12 @@
 * Need to work out how to use a cache to store recent board-state-Minimax value pairs (possibly using an LRU cache or something similar such that we can limit the size of the cache -- keep recently used items and expell least used items -- these items will be added back to the cache if they are visited again)
     - For the LRU cache -- think about using a double ended linked list -- when we add to the cache we add to the head of the cache, but we only add until the cache is below a certain size, when we reach the size and we want to add more, we need to get rid an element at the tail of the cache -- these are the least frequently used items 
     - Or we can use a dictionary to store the entries of the items up until a fixed size, then we can get rid of elements of the dictionary that are old to reduce space in the dictionary 
-        - by doing so we limit the size of the cache 
+        - by doing so we limit the size of the cache
+    
+    - Restructure Minimax such that we dont use a child node to store the move applied to the board state -- instead we can use put that in the function call itself 
+        - therfore we should be able to use functools_lrucache to memoize minimax 
+        - for lrucache to work the arguments of a function have to be immutable 
+            -- prototype: min/max(board_state, depth, move, colour ) -- we need a way to store alpha and beta not in the function call but possibly as a static instance variable -- therefore when updates are being made 
+            -- we can just call self.alpha, self.beta to do the work 
+                -- therefore by doing so we get rid of the create node part in the min and max nodes -- because we are just using update_board, and undo_move to change the board state, therefore we would not need the node 
+         

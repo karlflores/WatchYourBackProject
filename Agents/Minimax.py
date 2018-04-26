@@ -10,7 +10,7 @@ from Evaluation.Policies import Evaluation
 from copy import deepcopy
 from time import time, sleep
 from Data_Structures.Transposition_Table import TranspositionTable
-
+from functools import lru_cache
 class MinimaxAB(object):
 
     def __init__(self):
