@@ -3,16 +3,14 @@
 * and the player file
 '''
 from math import inf
-from Agents.Minimax_Node import Node, UndoNode
 from Board.Board import constant
 from Board.Board import Board
 from Evaluation.Policies import Evaluation
 from copy import deepcopy
 from time import time, sleep
-from Data_Structures.Transposition_Table import TranspositionTable
 from functools import lru_cache
 
-class MinimaxABUndo(object):
+class MinimaxABOptimised(object):
 
     def __init__(self, board):
         # we want to create a node
@@ -36,7 +34,7 @@ class MinimaxABUndo(object):
 
         # defines the colours of min and max
         self.player = constant.WHITE_PIECE
-        self.opponent = Board.get_opp_piece_type(self.this_colour)
+        self.opponent = Board.get_opp_piece_type(self.player)
 
         # default depth
         self.depth = inf
@@ -75,7 +73,8 @@ class MinimaxABUndo(object):
         return int(time() * 1000)
 
     def alpha_beta_minimax(self, depth):
-
+        if self.board.phase == constant.MOVING_PHASE and self.board.move_counter == 0:
+            self.min_value.cache_clear()
         # print the available mvoes of the alpha beta call
         # print(root.available_moves)
         # generate the child nodes of the root node and run minimax  on these
@@ -98,6 +97,7 @@ class MinimaxABUndo(object):
         # we can generate the actions as we wish -- this can easily change -- TODO : OPTIMISATION/ PRUNING OF ACTION __ CAN BE GREEDY __ favoured moves and unfavoured moves
         available_actions = self.board.update_actions(self.board, self.player)
 
+
         for action in available_actions:
             # print("{} Action AB call".format(i))
             # update the minimax board representation with the action
@@ -115,8 +115,9 @@ class MinimaxABUndo(object):
             # decrease the depth counter
             self.depth -= 1
 
-            ab_evaluate = self.min_value(board_string, self.opponent)
+            ab_evaluate = self.min_value(board_string, self.opponent, self.board.phase)
             # print(ab_evaluate)
+            # print(self.min_value.cache_info())
 
             if ab_evaluate > evaluate:
                 best_move = action
@@ -140,13 +141,13 @@ class MinimaxABUndo(object):
         return best_move
 
     # memoize the function call -- opitimisation
-    @lru_cache(maxsize=100000)
-    def max_value(self,board_string, colour):
+    # @lru_cache(maxsize=100000)
+    def max_value(self,board_string, colour, phase):
 
         evaluate = -inf
 
         if self.cutoff_test(self.depth):
-            return self.evaluate_state()
+            return self.evaluate_state(self.board,colour)
 
         # visit each available move
         available_actions = self.board.update_actions(self.board, colour)
@@ -161,7 +162,7 @@ class MinimaxABUndo(object):
 
             # get the minimax value for this state
 
-            evaluate = max(evaluate, self.min_value(board_string, self.opponent))
+            evaluate = max(evaluate, self.min_value(board_string, self.opponent, self.board.phase))
             # print(self.board.action_applied)
 
             # undo the move so that we can apply another action
@@ -176,8 +177,8 @@ class MinimaxABUndo(object):
         return evaluate
 
     # memoize the min value results -- optimisation of its function call
-    @lru_cache(maxsize=100000)
-    def min_value(self, board_string, colour):
+    @lru_cache(maxsize=10000)
+    def min_value(self, board_string, colour, phase):
         # print("CALLED MIN")
         # beginning evaluation value
         evaluate = inf
@@ -188,7 +189,7 @@ class MinimaxABUndo(object):
             # print(val)
             # return val
             # print(self.evaluate_node(node))
-            return self.evaluate_state()
+            return self.evaluate_state(self.board,colour)
         # print("MIN MOVES: ",end='')
         # print(node.available_moves)
 
@@ -205,7 +206,7 @@ class MinimaxABUndo(object):
             board_string = self.board.board_state.decode("utf-8")
 
             # find the value of the max node
-            evaluate = min(evaluate, self.max_value(board_string, self.player))
+            evaluate = min(evaluate, self.max_value(board_string, self.player, self.board.phase))
 
             # undo the board move so that we can apply another move
             # -- we also go up a level therefore we need to increment depth
@@ -229,7 +230,6 @@ class MinimaxABUndo(object):
         return evaluate
 
     def update_minimax_board(self, move, node, start_node=False):
-
 
         # if the move is None -- this could be a forfeit of a move or it could be a start of a search
         # apply this move to the node
@@ -294,11 +294,11 @@ class MinimaxABUndo(object):
                         available_moves.append((move, move_type))
         return available_moves
 
-    def cutoff_test(self, node, depth):
+    def cutoff_test(self, depth):
         if depth == 0:
             return True
 
-        if self.is_terminal(node):
+        if self.is_terminal():
             return True
 
         return False
@@ -309,9 +309,9 @@ class MinimaxABUndo(object):
             -- Need to work out some optimisations of the algorithm though 
 
     '''
-
-    def evaluate_node(self, node):
-        return Evaluation.basic_policy(self.board, node)
+    @staticmethod
+    def evaluate_state(board, colour):
+        return Evaluation.basic_policy(board, colour)
 
     # update the available moves of the search algorithm after it has been instantiated
     #
@@ -321,8 +321,9 @@ class MinimaxABUndo(object):
     def update_board(self, board):
         self.board = deepcopy(board)
 
-    def is_terminal(self, node):
-        return node.is_leaf(self.board)
+
+    def is_terminal(self):
+        return self.board.is_terminal()
 
     def update_available_nodes_placement(self, node):
         MinimaxABUndo.init_placable_area(node)

@@ -1,6 +1,6 @@
 from Board import constant
 from Board.Board import Board
-from Agents.Minimax import MinimaxABUndo
+from Agents.AlphaBetaOptimised import MinimaxABOptimised
 
 
 class Player:
@@ -18,7 +18,7 @@ class Player:
 
         # TODO -- need to see if this works correctly
 
-        self.minimax = MinimaxABUndo(self.board)
+        self.minimax = MinimaxABOptimised(self.board)
 
         self.opponent = self.board.get_opp_piece_type(self.colour)
 
@@ -58,11 +58,9 @@ class Player:
             self.board.phase = constant.MOVING_PHASE
 
         # create the node to search on
-        root = self.minimax.create_node(self.colour, None)
         # update the board representation and the available moves
-        self.minimax.update_minimax_board(None, root, start_node=True)
         # print(self.minimax.available_actions)
-        best_move = self.minimax.alpha_beta_minimax(3, root)
+        best_move = self.minimax.alpha_beta_minimax(4)
 
         # do an alpha beta search on this node
         # once we have found the best move we must apply it to the board representation
