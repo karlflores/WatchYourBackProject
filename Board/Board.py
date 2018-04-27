@@ -895,3 +895,6 @@ class Board(object):
                     actions.append((col,row))
         return actions
 
+    # determines if a move is favourable or not
+    def favourable_move(self,move):
+        return True

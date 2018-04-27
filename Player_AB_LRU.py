@@ -18,7 +18,7 @@ class Player:
 
         # TODO -- need to see if this works correctly
 
-        self.minimax = MinimaxABOptimised(self.board)
+        self.minimax = MinimaxABOptimised(self.board,self.colour)
 
         self.opponent = self.board.get_opp_piece_type(self.colour)
 
@@ -60,7 +60,7 @@ class Player:
         # create the node to search on
         # update the board representation and the available moves
         # print(self.minimax.available_actions)
-        best_move = self.minimax.alpha_beta_minimax(4)
+        best_move = self.minimax.alpha_beta_minimax(3)
 
         # do an alpha beta search on this node
         # once we have found the best move we must apply it to the board representation

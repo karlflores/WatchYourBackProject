@@ -12,7 +12,7 @@ from functools import lru_cache
 
 class MinimaxABOptimised(object):
 
-    def __init__(self, board):
+    def __init__(self, board, colour):
         # we want to create a node
 
         self.transposition_table = set()
@@ -33,7 +33,7 @@ class MinimaxABOptimised(object):
         self.beta = inf
 
         # defines the colours of min and max
-        self.player = constant.WHITE_PIECE
+        self.player = colour
         self.opponent = Board.get_opp_piece_type(self.player)
 
         # default depth
@@ -68,6 +68,10 @@ class MinimaxABOptimised(object):
                 break
         return move
 
+    def set_player_colour(self,colour):
+        self.player = colour;
+        self.opponent = Board.get_opp_piece_type(colour)
+
     @staticmethod
     def curr_millisecond_time():
         return int(time() * 1000)
@@ -75,6 +79,7 @@ class MinimaxABOptimised(object):
     def alpha_beta_minimax(self, depth):
         if self.board.phase == constant.MOVING_PHASE and self.board.move_counter == 0:
             self.min_value.cache_clear()
+            # self.max_value.cache_clear()
         # print the available mvoes of the alpha beta call
         # print(root.available_moves)
         # generate the child nodes of the root node and run minimax  on these
@@ -141,13 +146,13 @@ class MinimaxABOptimised(object):
         return best_move
 
     # memoize the function call -- opitimisation
-    # @lru_cache(maxsize=100000)
+    # @lru_cache(maxsize=50000)
     def max_value(self,board_string, colour, phase):
 
         evaluate = -inf
 
         if self.cutoff_test(self.depth):
-            return self.evaluate_state(self.board,colour)
+            return self.evaluate_state(self.board)
 
         # visit each available move
         available_actions = self.board.update_actions(self.board, colour)
@@ -177,7 +182,7 @@ class MinimaxABOptimised(object):
         return evaluate
 
     # memoize the min value results -- optimisation of its function call
-    @lru_cache(maxsize=10000)
+    @lru_cache(maxsize=50000)
     def min_value(self, board_string, colour, phase):
         # print("CALLED MIN")
         # beginning evaluation value
@@ -189,7 +194,7 @@ class MinimaxABOptimised(object):
             # print(val)
             # return val
             # print(self.evaluate_node(node))
-            return self.evaluate_state(self.board,colour)
+            return self.evaluate_state(self.board)
         # print("MIN MOVES: ",end='')
         # print(node.available_moves)
 
@@ -309,9 +314,9 @@ class MinimaxABOptimised(object):
             -- Need to work out some optimisations of the algorithm though 
 
     '''
-    @staticmethod
-    def evaluate_state(board, colour):
-        return Evaluation.basic_policy(board, colour)
+
+    def evaluate_state(self, board):
+        return Evaluation.basic_policy(board, self.player)
 
     # update the available moves of the search algorithm after it has been instantiated
     #

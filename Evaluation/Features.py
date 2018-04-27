@@ -4,6 +4,7 @@
 * Therefore we need to investigate different features of the board game
 * whether this be through simulation via MCTS or by playing the games a number of time s
 '''
+from Board.Board import Board
 
 class Features(object):
     @staticmethod
@@ -46,3 +47,16 @@ class Features(object):
     def diff_pieces(board, colour):
         # this is the difference of the number of pieces relative to a specified colour on the board
         return len(board.piece_pos[colour]) - len(board.piece_pos[board.get_opp_piece_type(colour)])
+
+    @staticmethod
+    # board is the current board state
+    # colour is the current nodes player colour
+    def self_elim(board,colour):
+        # check if the move has eliminated its own piece therefore in the previous
+        elim = Board.eliminated_pieces_last_move(board, board.phase,board.move_counter, colour)
+
+        # if there are any eliminaed pieces last move that relate to this colour then return true, else return false
+        if len(elim) == 0:
+            return False
+        else:
+            return True
