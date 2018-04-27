@@ -43,29 +43,34 @@ class MinimaxABOptimised(object):
     * Alpha Beta - Minimax Driver Function 
     '''
 
-    def iterative_deepening_alpha_beta(self, root):
-        MAX_ITER = 20
+    def iterative_deepening_alpha_beta(self):
+        MAX_ITER = 10
 
         # default policy
-        if len(root.available_moves) == 0:
+        available_actions = self.board.update_actions(self.board,self.player)
+
+        if len(available_actions) == 0:
             return None
         else:
-            move = root.available_moves[0]
+            # lets just set the default to the first move
+            move = available_actions[0]
+
 
         # time allocated per move in ms
-        time_alloc = 1000
+        time_alloc = 10000
 
         # get time
-        start_time = MinimaxAB.curr_millisecond_time()
+        start_time = MinimaxABOptimised.curr_millisecond_time()
 
         # iterative deepening begins here
         for depth in range(1, MAX_ITER):
-            print(depth)
-            move = self.alpha_beta_minimax(depth, root)
-            sleep(0.05)
+            # print(depth)
+            move = self.alpha_beta_minimax(depth)
+            sleep(0.005)
 
-            if MinimaxAB.curr_millisecond_time() - start_time > time_alloc:
+            if MinimaxABOptimised.curr_millisecond_time() - start_time > time_alloc:
                 break
+
         return move
 
     def set_player_colour(self,colour):
