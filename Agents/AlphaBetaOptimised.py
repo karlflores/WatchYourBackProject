@@ -44,6 +44,12 @@ class MinimaxABOptimised(object):
     '''
 
     def iterative_deepening_alpha_beta(self):
+        '''
+        I dont think this is working correctly -- i believe when things are getting cached because it doesnt take in consideration the depth of the call of that minimax evaluation
+        we need to take into consideration the depth for it to call correctly
+
+        need to change this
+        '''
         MAX_ITER = 10
 
         # default policy
