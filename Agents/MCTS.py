@@ -7,7 +7,11 @@ from time import time
 from random import randint
 # need to store untried moves
 
+'''
+MCTS PLAYER DOES NOT WORK IF IT IS THE SECOND PLAYER TO MOVE 
 
+TODO -- this need to be fixed 
+'''
 # start this implementation with each node storing a copy of the board -- then change the implementation such that
 # we only use one board representation for the board state -- we just undo moves
 class MonteCarloTreeSearch(object):
