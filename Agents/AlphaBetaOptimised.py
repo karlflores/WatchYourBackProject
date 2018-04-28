@@ -63,16 +63,17 @@ class MinimaxABOptimised(object):
 
 
         # time allocated per move in ms
-        time_alloc = 10000
+        time_alloc = 500
 
         # get time
         start_time = MinimaxABOptimised.curr_millisecond_time()
 
         # iterative deepening begins here
         for depth in range(1, MAX_ITER):
-            # print(depth)
+            print(depth)
+            self.min_value.cache_clear()
             move = self.alpha_beta_minimax(depth)
-            sleep(0.005)
+            sleep(0.05)
 
             if MinimaxABOptimised.curr_millisecond_time() - start_time > time_alloc:
                 break
@@ -95,9 +96,6 @@ class MinimaxABOptimised(object):
         # print(root.available_moves)
         # generate the child nodes of the root node and run minimax  on these
         # nodes -- choose the node that has the best value
-        # initially the best move has not been found
-        # essentially we just need to do a min search on the child nodes
-        # of the root -- do this week alpha-beta pruning
 
         best_move = None
         alpha = -inf
@@ -113,25 +111,17 @@ class MinimaxABOptimised(object):
         # we can generate the actions as we wish -- this can easily change -- TODO : OPTIMISATION/ PRUNING OF ACTION __ CAN BE GREEDY __ favoured moves and unfavoured moves
         available_actions = self.board.update_actions(self.board, self.player)
 
-
         for action in available_actions:
             # print("{} Action AB call".format(i))
             # update the minimax board representation with the action
             self.board.update_board(action, self.player)
 
             board_string = self.board.board_state.decode("utf-8")
-            '''
-            if self.board.phase == constant.PLACEMENT_PHASE:
-                if TranspositionTable.check_placement_sym(self.transposition_table,self.board.board_state) is True:
-                    continue
-            elif self.board.phase == constant.MOVING_PHASE:
-                if TranspositionTable.check_already_visited(self.transposition_table, self.board.board_state):
-                    continue
-            '''
+
             # decrease the depth counter
             self.depth -= 1
 
-            ab_evaluate = self.min_value(board_string, self.opponent, self.board.phase)
+            ab_evaluate = self.min_value(board_string, self.opponent, self.board.phase, depth - 1)
             # print(ab_evaluate)
             # print(self.min_value.cache_info())
 
@@ -158,11 +148,11 @@ class MinimaxABOptimised(object):
 
     # memoize the function call -- opitimisation
     # @lru_cache(maxsize=50000)
-    def max_value(self,board_string, colour, phase):
+    def max_value(self,board_string, colour, phase, depth):
 
         evaluate = -inf
 
-        if self.cutoff_test(self.depth):
+        if self.cutoff_test(depth):
             return self.evaluate_state(self.board)
 
         # visit each available move
@@ -178,7 +168,7 @@ class MinimaxABOptimised(object):
 
             # get the minimax value for this state
 
-            evaluate = max(evaluate, self.min_value(board_string, self.opponent, self.board.phase))
+            evaluate = max(evaluate, self.min_value(board_string, self.opponent, self.board.phase, depth-1))
             # print(self.board.action_applied)
 
             # undo the move so that we can apply another action
@@ -194,12 +184,12 @@ class MinimaxABOptimised(object):
 
     # memoize the min value results -- optimisation of its function call
     @lru_cache(maxsize=50000)
-    def min_value(self, board_string, colour, phase):
+    def min_value(self, board_string, colour, phase, depth):
         # print("CALLED MIN")
         # beginning evaluation value
         evaluate = inf
 
-        if self.cutoff_test(self.depth):
+        if self.cutoff_test(depth):
             # val = self.evaluate_node(node)
             # print("MIN NODE VAL: ",end='')
             # print(val)
@@ -222,7 +212,7 @@ class MinimaxABOptimised(object):
             board_string = self.board.board_state.decode("utf-8")
 
             # find the value of the max node
-            evaluate = min(evaluate, self.max_value(board_string, self.player, self.board.phase))
+            evaluate = min(evaluate, self.max_value(board_string, self.player, self.board.phase, depth - 1))
 
             # undo the board move so that we can apply another move
             # -- we also go up a level therefore we need to increment depth

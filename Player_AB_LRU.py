@@ -60,7 +60,7 @@ class Player:
         # create the node to search on
         # update the board representation and the available moves
         # print(self.minimax.available_actions)
-        # best_move = self.minimax.alpha_beta_minimax(3)
+        # best_move = self.minimax.alpha_beta_minimax(1)
         best_move = self.minimax.iterative_deepening_alpha_beta()
         # do an alpha beta search on this node
         # once we have found the best move we must apply it to the board representation
