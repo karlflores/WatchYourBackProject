@@ -1,4 +1,5 @@
 from heapq import heapify, heappop, heappush
+import heapq
 
 class PriorityQueue:
     def __init__(self):
@@ -14,7 +15,7 @@ class PriorityQueue:
         if isinstance(pq,list) is False:
             return None
         if len(pq) > 0:
-            return pq.__h
+            return heapq
     @staticmethod
     def enqueue(pq,item):
         heappush(pq,item)
@@ -38,6 +39,10 @@ class PriorityQueue:
     def replace(pq,old,new):
         if len(pq) > 0:
             pass
+
+    @staticmethod
+    def heapmax(pq):
+        heapq._heapify_max(pq)
 
 
 
