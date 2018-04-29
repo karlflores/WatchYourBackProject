@@ -60,3 +60,8 @@ class Features(object):
             return False
         else:
             return True
+
+    @staticmethod
+    def piece_elim_pattern(self,piece):
+        pass
+

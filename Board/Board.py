@@ -898,3 +898,19 @@ class Board(object):
     # determines if a move is favourable or not
     def favourable_move(self,move):
         return True
+
+    # checks if a piece is in a position where it can eliminate an opponents piece
+    # essentially we can create a set of coordinate filters that we can compare against
+    def can_piece_eliminate(self, piece):
+
+        '''
+        in the form W             W
+                    BB     or    BB   or   WB        or   BW
+                     W           W          BW           WB
+        '''
+
+
+        curr_col, curr_row = piece
+
+        if (curr_col,curr_row+1) in self.piece_pos:
+            pass

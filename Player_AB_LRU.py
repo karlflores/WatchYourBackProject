@@ -25,6 +25,8 @@ class Player:
         # self.search_algorithm = Minimax(self.board,self.available_moves,self.colour)
 
         # print(self.opponent)
+        self.depth_eval = 0
+        self.minimax_val = 0
 
     def update(self, action):
         # update the board based on the action of the opponent
@@ -62,6 +64,9 @@ class Player:
         # print(self.minimax.available_actions)
         # best_move = self.minimax.alpha_beta_minimax(1)
         best_move = self.minimax.iterative_deepening_alpha_beta()
+        self.depth_eval = self.minimax.eval_depth
+        self.minimax_val = self.minimax.minimax_val
+
         # do an alpha beta search on this node
         # once we have found the best move we must apply it to the board representation
         if self.board.phase == constant.PLACEMENT_PHASE:

@@ -37,6 +37,12 @@ class MinimaxABOptimised(object):
         self.actions_evaluated = []
         self.actions_leftover = []
 
+
+        # data structures for machine learning
+        self.eval_depth = 0
+        self.minimax_val = 0
+        self.policy_vector = []
+
     '''
     * Alpha Beta - Minimax Driver Function 
     '''
@@ -48,7 +54,7 @@ class MinimaxABOptimised(object):
 
         need to change this
         '''
-        MAX_ITER = 10
+        MAX_ITER = 100
 
         # default policy
         available_actions = self.board.update_actions(self.board,self.player)
@@ -60,19 +66,18 @@ class MinimaxABOptimised(object):
             # lets just set the default to the first move
             move = available_actions[0]
 
-
         # time allocated per move in ms
-        time_alloc = 1500
+        time_alloc = constant.TIME_CUTOFF_AB
 
         # get time
         start_time = MinimaxABOptimised.curr_millisecond_time()
-
+        best_depth = 1
         # iterative deepening begins here
         for depth in range(1, MAX_ITER):
             print(depth)
             # invalidate / clear the cache when increasing the search depth cutoff
             self.min_value.cache_clear()
-
+            #self.max_value.cache_clear()
             # peform the search
             move = self.alpha_beta_minimax(depth, available_actions)
 
@@ -88,11 +93,12 @@ class MinimaxABOptimised(object):
             # update the available_actions list
             available_actions = available_actions + self.actions_leftover
 
-            sleep(0.05)
+            best_depth += 1
 
             if MinimaxABOptimised.curr_millisecond_time() - start_time > time_alloc:
                 break
 
+        self.eval_depth = best_depth
         return move
 
     def set_player_colour(self,colour):
@@ -108,39 +114,25 @@ class MinimaxABOptimised(object):
         if self.board.phase == constant.MOVING_PHASE and self.board.move_counter == 0:
             self.min_value.cache_clear()
             # self.max_value.cache_clear()
-        # print the available mvoes of the alpha beta call
-        # print(root.available_moves)
-        # generate the child nodes of the root node and run minimax  on these
-        # nodes -- choose the node that has the best value
 
         best_move = None
         alpha = -inf
         evaluate = -inf
         beta = inf
 
-        # update the minimax depth counter
-        self.depth = depth
-
-
-        i = 0
         # get the available moves of the board (based on the current board representation)
         # we can generate the actions as we wish -- this can easily change -- TODO : OPTIMISATION/ PRUNING OF ACTION __ CAN BE GREEDY __ favoured moves and unfavoured moves
         self.actions_leftover = self.board.update_actions(self.board, self.player)
         # self.actions_leftover = self.board.update_actions(self.board,self.player)
 
         for action in available_actions:
-            # print("{} Action AB call".format(i))
             # update the minimax board representation with the action
             self.board.update_board(action, self.player)
 
+            # get the board representation for caching
             board_string = self.board.board_state.decode("utf-8")
 
-            # decrease the depth counter
-            self.depth -= 1
-
             ab_evaluate = self.min_value(board_string, self.opponent, self.board.phase, depth - 1)
-            # print(ab_evaluate)
-            # print(self.min_value.cache_info())
 
             heapq.heappush(self.actions_evaluated, (ab_evaluate, action))
             self.actions_leftover.remove(action)
@@ -150,24 +142,18 @@ class MinimaxABOptimised(object):
                 evaluate = ab_evaluate
 
             self.undo_move()
-            self.depth += 1
 
             if evaluate >= beta:
-                # print(evaluate)
-                # print("AB Best Value: ",end='')
-                # rint(evaluate, best_move)
+                self.minimax_val = evaluate
                 return best_move
 
             alpha = max(alpha, evaluate)
 
-        # print(best_move)
-        # print(evaluate)
-        # print("AB Best Value: ",end='')
-        # print(evaluate, best_move)
+        self.minimax_val = evaluate
         return best_move
 
     # memoize the function call -- opitimisation
-    # @lru_cache(maxsize=50000)
+    #@lru_cache(maxsize=10000)
     def max_value(self,board_string, colour, phase, depth):
 
         evaluate = -inf
@@ -182,18 +168,15 @@ class MinimaxABOptimised(object):
 
             # update the board representation with the move
             self.board.update_board(action, colour)
-            self.depth -= 1
+
             # create an immutable object for board_string such that we can call lru_cache on the max function call
             board_string = self.board.board_state.decode("utf-8")
 
             # get the minimax value for this state
-
             evaluate = max(evaluate, self.min_value(board_string, self.opponent, self.board.phase, depth-1))
-            # print(self.board.action_applied)
 
             # undo the move so that we can apply another action
             self.undo_move()
-            self.depth += 1
 
             if evaluate >= self.beta:
                 return evaluate
@@ -203,21 +186,14 @@ class MinimaxABOptimised(object):
         return evaluate
 
     # memoize the min value results -- optimisation of its function call
-    @lru_cache(maxsize=10000)
+    @lru_cache(maxsize=100000)
     def min_value(self, board_string, colour, phase, depth):
-        # print("CALLED MIN")
+
         # beginning evaluation value
         evaluate = inf
 
         if self.cutoff_test(depth):
-            # val = self.evaluate_node(node)
-            # print("MIN NODE VAL: ",end='')
-            # print(val)
-            # return val
-            # print(self.evaluate_node(node))
             return self.evaluate_state(self.board)
-        # print("MIN MOVES: ",end='')
-        # print(node.available_moves)
 
         # generate the actions to search on
         available_actions = self.board.update_actions(self.board, colour)
@@ -226,8 +202,6 @@ class MinimaxABOptimised(object):
 
             # update the board representation -- this action is the min nodes's action
             self.board.update_board(action, colour)
-            # when we apply a move we do down a level so we have to decrease depth
-            self.depth -= 1
 
             board_string = self.board.board_state.decode("utf-8")
 
@@ -237,7 +211,6 @@ class MinimaxABOptimised(object):
             # undo the board move so that we can apply another move
             # -- we also go up a level therefore we need to increment depth
             self.undo_move()
-            self.depth += 1
 
             '''
             if beta <= alpha:
@@ -246,14 +219,12 @@ class MinimaxABOptimised(object):
             '''
 
             if evaluate <= self.alpha:
-
-                # print("MIN Best Value: ",end='')
-                # print(evaluate)
                 return evaluate
 
             self.beta = min(self.beta, evaluate)
 
         return evaluate
+
     def cutoff_test(self, depth):
         if depth == 0:
             return True

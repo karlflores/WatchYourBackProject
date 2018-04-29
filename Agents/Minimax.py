@@ -397,12 +397,12 @@ class MinimaxABUndo(object):
 
         evaluate = -inf
 
-        if self.cutoff_test(node,depth):
+        if self.cutoff_test(depth):
             #print("MAX NODE VAL: ",end='')
             #val = self.evaluate_node(node)
             #print(val)
             #return val
-            return self.evaluate_node(node)
+            return self.evaluate_node(node.colour)
 
         # visit each available move
         #print("MAX MOVES: ",end='')
@@ -455,13 +455,13 @@ class MinimaxABUndo(object):
         # beginning evaluation value
         evaluate = inf
 
-        if self.cutoff_test(node, depth):
+        if self.cutoff_test(depth):
             # val = self.evaluate_node(node)
             # print("MIN NODE VAL: ",end='')
             # print(val)
             # return val
             # print(self.evaluate_node(node))
-            return self.evaluate_node(node)
+            return self.evaluate_node(node.colour)
         # print("MIN MOVES: ",end='')
         # print(node.available_moves)
         for action in node.available_moves:
@@ -580,11 +580,11 @@ class MinimaxABUndo(object):
                         available_moves.append((move,move_type))
         return available_moves
 
-    def cutoff_test(self, node, depth):
+    def cutoff_test(self, depth):
         if depth == 0:
             return True
 
-        if self.is_terminal(node):
+        if self.is_terminal(self.board):
             return True
 
         return False
@@ -595,8 +595,8 @@ class MinimaxABUndo(object):
             -- Need to work out some optimisations of the algorithm though 
             
     '''
-    def evaluate_node(self, node):
-        return Evaluation.basic_policy(self.board, node)
+    def evaluate_node(self, colour):
+        return Evaluation.basic_policy(self.board, colour)
 
     # update the available moves of the search algorithm after it has been instantiated
     #
@@ -606,8 +606,8 @@ class MinimaxABUndo(object):
     def update_board(self, board):
         self.board = deepcopy(board)
 
-    def is_terminal(self,node):
-        return node.is_leaf(self.board)
+    def is_terminal(self, board):
+        return board.is_terminal(self.board)
 
     def update_available_nodes_placement(self, node):
         MinimaxABUndo.init_placable_area(node)
@@ -983,7 +983,7 @@ class MinimaxUndo(object):
         evaluate = -inf
 
         if self.cutoff_test(node, depth):
-            return self.evaluate_node(node)
+            return self.evaluate_node(node.colour)
 
         # visit each available move
         # print(node.available_moves)
