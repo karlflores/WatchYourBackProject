@@ -46,8 +46,19 @@
 * In order to improve efficency of the game we must improve the simulation algorithm of the game -- currently it takes 0.07s to simulate the game from move 0, and therefore in one second we would only be able to make 14 nodes in the tree. This is not good.
 * Maybe in the later phases of the game we can use this technique to inform us of good moves to play in the game, but not at the start of the game as the branching factor and the actual length of the game is too long and we can't build a good game tree to search on. 
 
+### Machine Learning 
+#### TD-Leaf(λ) 
+* Attempted to implement TD-Leaf(λ) to train our weight update function 
+* Need to confirm that the 'best leaf found at max depth' is equivalent to the minimax value of evaluating an action
+    * If this is the case we just need to return the best policy vector such that we can extract the weight component for the derivative of that evaluation 
+* Added various data structures in the minimax class and the board class to keep track of evaluation values, evaluation vectors for machine learning 
+* Added a method to simulate a game between two people, the first being the player we want to train. This returns lists which contain the evaluation values and the corresponding evaluation vector
+* Need to figure out what exactly the partial derivative is equal to -- because this is not an entirely differentiable function, hence we need to work out how we can approximate this 
+* Need to work out how to train our function 
+
 ### Evaluation 
 * Need to work out good evaluation functions so that minimax works efficently -- currently we do not have any evaluation functions.
+* Need to work out more features of the game -- we need at least 7 features of the game, including some clever heuristics 
 
 ### TODO 
 * Implement 3 types of roll outs for MCTS -- random rollout, light roll out (greedy), medium roll-out (2-ply negamax/ab-minimax)
