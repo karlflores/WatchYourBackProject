@@ -27,6 +27,7 @@ class Player:
         # print(self.opponent)
         self.depth_eval = 0
         self.minimax_val = 0
+        self.policy_vector = 0
 
     def update(self, action):
         # update the board based on the action of the opponent

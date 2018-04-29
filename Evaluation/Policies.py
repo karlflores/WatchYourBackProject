@@ -75,3 +75,4 @@ class Evaluation(object):
             evaluate += policy_vector[i]*weight_vector[i]
 
         return evaluate
+

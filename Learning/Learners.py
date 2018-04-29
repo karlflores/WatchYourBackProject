@@ -1,18 +1,16 @@
 from xml import etree as et
 from Board.Board import Board
-from copy import deepcopy,copy
+from copy import deepcopy, copy
 from Player import Player as rand_player
 from Player_AB_LRU import Player as ab_player
 from Player_MCTS import Player as mcts_player
 from Board import constant
 from math import *
-
+from XML.xml_helper import xml_helper as xml_save
 
 class Learner(object):
-    def __init__(self, name, feature, weights, learning_rate=0.7):
-        self.weights = weights
+    def __init__(self, name, learning_rate=0.7, new_func = False):
         self.learning_rate = learning_rate
-        self.weights_len = len(weights)
         self.eval_name = name
 
         self.game_state = []
@@ -31,8 +29,9 @@ class Learner(object):
         self.player = ab_player('white')
         self.opponent = rand_player('black')
 
-    def td_leaf_lambda(self, eval_value, result):
-        pass
+        # xml save object
+        self.xml = xml_save("./Evaluation","eval_weights_1")
+        self.weights = []
 
     def playgame(self, first_player=True):
         game = Board()
@@ -87,7 +86,12 @@ class Learner(object):
 
     # once we play a game we can call update weights to update the weight parameters
     # of the evaluation function according to the TDLead-Lambda formula
-    def update_weights(self,l_ambda=0.7,learning_rate=0.7):
+
+    def update_weights(self,l_ambda=0.7,learning_rate=0.1):
+        # load the weights
+        self.load_weights()
+
+        total_sum = 0
         for j in range(len(self.weights)):
             outer_sum = 0
             for i in range(len(self.game_state)-1):
@@ -101,4 +105,17 @@ class Learner(object):
                 state = self.game_state[i]
                 feature_val = state.feature_val[i]
 
-                outer_sum += Learner.reward_dx(self.minimax_eval[i],feature_val)
+                outer_sum += Learner.reward_dx(self.minimax_eval[i], feature_val)
+
+                outer_sum *= inner_sum
+
+            self.weights[j] = self.weights[j] + learning_rate*outer_sum
+
+        # save the weights
+        self.save_weights(self.weights)
+
+    def load_weights(self):
+        self.weights = self.xml.load()
+
+    def save_weights(self,weights):
+        self.xml.save(weights)
