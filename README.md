@@ -59,7 +59,7 @@
 ### Evaluation 
 * Need to work out good evaluation functions so that minimax works efficently -- currently we do not have any evaluation functions.
 * Need to work out more features of the game -- we need at least 7 features of the game, including some clever heuristics 
-
+* Instead of using ML to find the weights for our function -- or before we apply ML, we could create different players whos evaluation function weights are all randomised, we then face them off in a competition, whoever wins we keep their weights, and they verse each other. Ultimately we should end up with a rough idea of what the weights should be. Then we can apply ML to fine-tune those weights.
 ### TODO 
 * Implement 3 types of roll outs for MCTS -- random rollout, light roll out (greedy), medium roll-out (2-ply negamax/ab-minimax)
     - Need to speed up the simulation of the board game because this is the factor that is stopping us from creating a deep game tree in 1 second. 
