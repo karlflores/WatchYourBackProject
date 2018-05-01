@@ -7,9 +7,8 @@
 from Board import constant
 from copy import deepcopy
 import math
-
 from Data_Structures.Stack import Stack
-
+import heapq
 from sys import getsizeof
 
 
@@ -899,6 +898,14 @@ class Board(object):
     def favourable_move(self,move):
         return True
 
+        # work out the max
+
+    def dist_to_elim(self,):
+        pass
+    def iterative_depth_first_search(self):
+        pass
+    def depth_first_search(self,colour):
+        pass
     # checks if a piece is in a position where it can eliminate an opponents piece
     # essentially we can create a set of coordinate filters that we can compare against
     def can_piece_eliminate(self, piece):

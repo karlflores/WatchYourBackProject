@@ -64,13 +64,7 @@ class Player:
         # update the board representation and the available moves
         # print(self.minimax.available_actions)
         # best_move = self.minimax.alpha_beta_minimax(1)
-        best_move = self.minimax.iterative_deepening_alpha_beta()
-
-        # best_move = self.minimax.negamax(2)
-        # best_move = self.minimax.best_move_path[-1][0]
-        # print(self.minimax.best_move_path)
-
-        # best_move = self.minimax.alpha_beta_pv(4)
+        best_move = self.minimax.iterative_deepening_nega_scout()
         self.depth_eval = self.minimax.eval_depth
         self.minimax_val = self.minimax.minimax_val
 
