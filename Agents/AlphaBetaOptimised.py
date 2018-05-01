@@ -56,7 +56,7 @@ class MinimaxABOptimised(object):
 
         need to change this
         '''
-        MAX_ITER = 4
+        MAX_ITER = 10
 
         # default policy
         available_actions = self.board.update_actions(self.board, self.player)
