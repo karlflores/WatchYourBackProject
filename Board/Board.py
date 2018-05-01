@@ -409,12 +409,22 @@ class Board(object):
         # we no longer reset the eliminated moves dictionary
         # make the action
         if self.phase == constant.PLACEMENT_PHASE:
+            # check if the move passed in was a forfeit move
+            if move is None:
+                self.move_counter += 1
+                pass
+
             # make the placement -- this should take care of the update to the piece position list
             # as well as the move counter
             self.apply_placement(move, my_piece_type)
             Stack.push(self.action_applied,(move,my_piece_type))
 
         elif self.phase == constant.MOVING_PHASE:
+            # check if the move passed in was a forfeit move
+            if move is None:
+                self.move_counter += 1
+                pass
+
             # move is in the form (pos, move_type)
             pos = move[0]
             move_type = move[1]
@@ -441,8 +451,8 @@ class Board(object):
                 self.shrink_board()
 
             # check if the move passed in was a forfeit move
-            if move is None:
-                self.move_counter += 1
+            # if move is None:
+            #    self.move_counter += 1
 
             # the current player has made its move the we need to
             # set the next player to move to be the player to move on next update
