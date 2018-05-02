@@ -9,7 +9,7 @@ from math import *
 from XML.xml_helper import xml_helper as xml_save
 
 class Learner(object):
-    def __init__(self, name, learning_rate=0.7, new_func = False):
+    def __init__(self, name, learning_rate=0.7, new_func=False):
         self.learning_rate = learning_rate
         self.eval_name = name
 

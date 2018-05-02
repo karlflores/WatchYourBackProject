@@ -18,7 +18,7 @@ class MinimaxAB(object):
         self.visited = set()
 
     '''
-    * Alpha Beta - Minimax Driver Function 
+    * Alpha Beta - Minimax Driver Function
     '''
     def iterative_deepening_alpha_beta(self,root):
         MAX_ITER = 20
@@ -293,7 +293,7 @@ class MinimaxABUndo(object):
         # print(self.available_actions)
 
     '''
-    * Alpha Beta - Minimax Driver Function 
+    * Alpha Beta - Minimax Driver Function
     '''
     def iterative_deepening_alpha_beta(self,root):
         MAX_ITER = 20
@@ -340,7 +340,7 @@ class MinimaxABUndo(object):
         evaluate = -inf
         beta = inf
         i = 0
-        
+
         for action in root.available_moves:
             # print("{} Action AB call".format(i))
             child = self.create_node(Board.get_opp_piece_type(root.colour), action)
@@ -433,7 +433,7 @@ class MinimaxABUndo(object):
                 #print("UNDO")
                 break
             '''
-            
+
             if evaluate >= beta:
                 node.minimax = evaluate
                 # print("MAX Best Value: ",end='')
@@ -444,7 +444,7 @@ class MinimaxABUndo(object):
             #print("UNDO 2")
             #self.board.print_board()
             #self.board.print_board()
-            
+
         # print("MAX Best Value: ",end='')
         # print(evaluate)
         node.minimax = evaluate
@@ -487,7 +487,7 @@ class MinimaxABUndo(object):
                 # when we break from the loop make sure to undo the move
                 break
             '''
-            
+
             if evaluate <= alpha:
                 node.minimax = evaluate
                 # print("MIN Best Value: ",end='')
@@ -495,7 +495,7 @@ class MinimaxABUndo(object):
                 return evaluate
 
             beta = min(beta, evaluate)
-            
+
         # print("MIN Best Value: ",end='')
         # print(evaluate)
         node.minimax = evaluate
@@ -590,10 +590,10 @@ class MinimaxABUndo(object):
         return False
 
     '''
-    * NEED TO THINK ABOUT IF THIS FUNCTION JUST EVALUATES THE NODES AT THE ROOT STATE DUE TO THE UNDO MOVES 
-            -- NEED TO TEST THIS OUT SOMEHOW, because other than that the algorithm is working as intended 
-            -- Need to work out some optimisations of the algorithm though 
-            
+    * NEED TO THINK ABOUT IF THIS FUNCTION JUST EVALUATES THE NODES AT THE ROOT STATE DUE TO THE UNDO MOVES
+            -- NEED TO TEST THIS OUT SOMEHOW, because other than that the algorithm is working as intended
+            -- Need to work out some optimisations of the algorithm though
+
     '''
     def evaluate_node(self, colour):
         return Evaluation.basic_policy(self.board, colour)
@@ -880,7 +880,7 @@ class MinimaxUndo(object):
         # print(self.available_actions)
 
     '''
-    * Alpha Beta - Minimax Driver Function 
+    * Alpha Beta - Minimax Driver Function
     '''
 
     def iterative_deepening_alpha_beta(self, root):
@@ -1189,11 +1189,11 @@ class MinimaxUndo(object):
     '''
     #################################################################################
     # METHODS FOR THE DICTIONARY REPRESENTATION OF THE AVAILABLE MOVES ON THE BOARD #
-    #
-    #
-    #
-    #
-    ################################################################################
+    #                                                                               #
+    #                                                                               #
+    #                                                                               #
+    #                                                                               #
+    #################################################################################
     '''
 
     # we update the available actions when we update the board representation
