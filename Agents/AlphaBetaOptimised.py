@@ -310,8 +310,9 @@ class MinimaxABOptimised(object):
             self.init_available_placement_actions()
             self.start_available_actions_placement()
         elif self.board.phase == constant.MOVING_PHASE:
-            print(self.board.piece_pos)
-            print("dsfsf")
+
+            #print(self.board.piece_pos)
+            #print("dsfsf")
             self.init_available_moving_actions()
 
     def init_available_placement_actions(self):
@@ -326,18 +327,24 @@ class MinimaxABOptimised(object):
                         # print(temp)
                         self.available_actions[colour].update(temp)
 
+
     def start_available_actions_placement(self):
         # get rid of all pieces that exist on the board
         for colour in (constant.BLACK_PIECE,constant.WHITE_PIECE):
             for piece in self.board.piece_pos[colour]:
-                if piece in self.available_actions[colour]:
-                    if Board.within_starting_area(piece,colour):
-                        self.available_actions[colour].pop(piece)
+                if piece in self.available_actions[constant.WHITE_PIECE]:
+                    if Board.within_starting_area(piece,constant.WHITE_PIECE):
+                        self.available_actions[constant.WHITE_PIECE].pop(piece)
+                    if Board.within_starting_area(piece,constant.BLACK_PIECE):
+                        self.available_actions[constant.BLACK_PIECE].pop(piece)
+
 
     def init_available_moving_actions(self):
+        # clear the dictionary
+        self.available_actions = {constant.WHITE_PIECE: {}, constant.BLACK_PIECE: {}}
         for colour in (constant.WHITE_PIECE, constant.BLACK_PIECE):
             for piece in self.board.piece_pos[colour]:
-                print(piece)
+                #print(piece)
                 self.update_actions_dict_entry(piece, colour)
 
     # need to ensure that we call this after an update to the minimax board representation
@@ -362,14 +369,14 @@ class MinimaxABOptimised(object):
         # need to update the available moves of the piece at its new location
         # delete entry in the dictionary that corresponds to the old position
         old_pos = action[0]
-        print(old_pos)
-        print(action)
+        #print(old_pos)
+        #print(action)
         new_pos = Board.convert_move_type_to_coord(old_pos, action[1])
 
         # first we need to update the dictionary by removing the old piece from the
         # dictionary -- as this is not an available move anymore
         if old_pos in self.available_actions[colour]:
-            print("old")
+            #print("old")
             self.available_actions[colour].pop(old_pos)
         else:
             pass
@@ -466,7 +473,7 @@ class MinimaxABOptimised(object):
         for move_type in range(constant.MAX_MOVETYPE):
             if self.board.is_legal_move(piece, move_type):
                 available_moves.append(move_type)
-        print(available_moves)
+        #print(available_moves)
         return available_moves
 
     def update_available_placement(self, action):
@@ -476,10 +483,10 @@ class MinimaxABOptimised(object):
 
         elim = []
         eliminated_pieces = self.board.eliminated_pieces_last_move(self.board.phase,self.board.move_counter,pop=False)
-        print("ELIMINATED: ",end='')
-        print(eliminated_pieces)
-        print("AVAILABLE: ",end='')
-        print(self.available_actions)
+        #print("ELIMINATED: ",end='')
+        #print(eliminated_pieces)
+        #print("AVAILABLE: ",end='')
+        #print(self.available_actions)
         for colour in (constant.WHITE_PIECE, constant.BLACK_PIECE):
             if Board.within_starting_area(action, colour):
                 # remove the action from the entry of the dictionary
@@ -499,7 +506,10 @@ class MinimaxABOptimised(object):
         if self.board.phase == constant.PLACEMENT_PHASE:
             self.update_available_placement(action)
         elif self.board.phase == constant.MOVING_PHASE:
-            self.update_available_moves(action,colour)
+            if self.board.move_counter == 0:
+                self.update_available_placement(action)
+            else:
+                self.update_available_moves(action,colour)
 
     # return a list of actions corresponding to a particular board state
     def get_actions(self,colour):
@@ -511,6 +521,8 @@ class MinimaxABOptimised(object):
 
             return actions
         elif self.board.phase == constant.MOVING_PHASE:
+            if self.board.move_counter == 0:
+                self.init_available_moving_actions()
 
             for key in self.available_actions[colour].keys():
                 for move_type in self.available_actions[colour][key]:
@@ -562,10 +574,10 @@ class MinimaxABOptimised(object):
         # we just need to pop each piece from the undo_moves effected pieces
         while len(self.undo_effected) > 0:
             action = self.undo_effected.pop()
-            print("POP")
-            print(action)
+            #print("POP")
+            #print(action)
             loc = action[0]
-            print(loc)
+            #print(loc)
             colour = action[1]
             undo_type = action[2]
             opponent = Board.get_opp_piece_type(colour)
@@ -596,7 +608,7 @@ class MinimaxABOptimised(object):
     def undo_available_moves(self):
 
         for tup in self.undo_effected:
-            print(tup)
+            #print(tup)
             loc = tup[0]
             colour = tup[1]
             undo_type = tup[2]
@@ -609,7 +621,7 @@ class MinimaxABOptimised(object):
                 self.update_actions_dict_entry(loc,colour)
                 self.update_surrounding_pieces(loc)
             elif undo_type == constant.PIECE_NEW_LOC:
-                print(loc)
+                #print(loc)
                 # if it is a new location it currently exists in the dictionary, and we must remove it
                 if loc in self.available_actions[colour]:
                     self.available_actions[colour].pop(loc)
@@ -642,3 +654,110 @@ class MinimaxABOptimised(object):
         elif self.board.phase == constant.MOVING_PHASE:
             self.undo_available_moves()
 
+    def alpha_beta(self, depth):
+        self.generate_actions()
+        if self.board.phase == constant.MOVING_PHASE and self.board.move_counter == 0:
+            self.min_value.cache_clear()
+            # self.max_value.cache_clear()
+
+        best_move = None
+        alpha = -inf
+        evaluate = -inf
+        beta = inf
+
+        # get the available moves of the board (based on the current board representation)
+        # we can generate the actions as we wish -- this can easily change -- TODO : OPTIMISATION/ PRUNING OF ACTION __ CAN BE GREEDY __ favoured moves and unfavoured moves
+
+        # self.actions_leftover = self.board.update_actions(self.board,self.player)
+        available_actions = self.get_actions(self.player)
+        for action in available_actions:
+            # update the minimax board representation with the action
+            self.board.update_board(action, self.player)
+            self.update_available_actions(action, self.player)
+
+            # get the board representation for caching
+            board_string = self.board.board_state.decode("utf-8")
+            ab_evaluate = self.min_v(board_string, self.opponent, self.board.phase, depth - 1)
+            if ab_evaluate > evaluate:
+                best_move = action
+                evaluate = ab_evaluate
+            # undo the move
+            self.undo_effected = self.undo_move()
+            self.restore_available_actions()
+
+            if evaluate >= beta:
+                self.minimax_val = evaluate
+                return best_move
+
+            alpha = max(alpha, evaluate)
+
+        self.minimax_val = evaluate
+        return best_move
+
+    # memoize the function call -- opitimisation
+    #@lru_cache(maxsize=10000)
+    def max_v(self,board_string, colour, phase, depth):
+
+        evaluate = -inf
+
+        if self.cutoff_test(depth):
+            return self.evaluate_state(self.board)
+
+        # visit each available move
+        available_actions = self.get_actions(colour)
+        for action in available_actions:
+            #print(action)
+            #print(self.board.move_counter, self.board.phase)
+            # update the board representation with the move
+            self.board.update_board(action, colour)
+            self.update_available_actions(action, colour)
+            # create an immutable object for board_string such that we can call lru_cache on the max function call
+            board_string = self.board.board_state.decode("utf-8")
+
+            # get the minimax value for this state
+            evaluate = max(evaluate, self.min_v(board_string, self.opponent, self.board.phase, depth-1))
+
+            # undo the move so that we can apply another action
+            self.undo_effected = self.undo_move()
+            self.restore_available_actions()
+
+            if evaluate >= self.beta:
+                return evaluate
+
+            self.alpha = max(evaluate, self.alpha)
+
+        return evaluate
+
+    # memoize the min value results -- optimisation of its function call
+    @lru_cache(maxsize=1000)
+    def min_v(self, board_string, colour, phase, depth):
+
+        # beginning evaluation value
+        evaluate = inf
+
+        if self.cutoff_test(depth):
+            return self.evaluate_state(self.board)
+
+        # generate the actions to search on
+        available_actions = self.get_actions(colour)
+        for action in available_actions:
+
+            # update the board representation -- this action is the min nodes's action
+            self.board.update_board(action, colour)
+            self.update_available_actions(action,colour)
+            board_string = self.board.board_state.decode("utf-8")
+
+            # find the value of the max node
+            evaluate = min(evaluate, self.max_v(board_string, self.player, self.board.phase, depth - 1))
+
+            # undo the board move so that we can apply another move
+            # -- we also go up a level therefore we need to increment depth
+            self.undo_effected = self.undo_move()
+            self.restore_available_actions()
+
+            if evaluate <= self.alpha:
+                return evaluate
+
+            self.beta = min(self.beta, evaluate)
+
+        return evaluate
