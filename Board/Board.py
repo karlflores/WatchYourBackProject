@@ -502,7 +502,7 @@ class Board(object):
         return eliminated_pieces
 
     # when checking for a jump space need to check if there is a piece that is occupying the adjacent square
-    def can_jump_into_position(self,position,move_type):
+    def can_jump_into_position(self,position, move_type):
         # checks if pieces exixt at a jump length away anf if that piece can jump into this position
         # move_type must be greater than 4
         # get the adjacent movetype
@@ -528,6 +528,12 @@ class Board(object):
             return False
 
     def undo_move(self):
+
+        # return the pieces of the board that have been affected by the undo move
+        # these pieces being the new position of the piece, the old position of the piece
+        # any pieces positions where a piece has been eliminated
+        pieces_effected = []
+
         # print("undo")
         # print(self.move_counter)
         # print(self.phase)
@@ -537,7 +543,7 @@ class Board(object):
         # print(eliminated_pieces)
         if len(self.action_applied) == 0:
             # do nothing -- nothing to undo
-            return
+            return pieces_effected
         # print("CALLED UNDO MOVE")
         # print(self.eliminated_pieces)
         # first we need to get the most recent action applied to the board
@@ -572,9 +578,14 @@ class Board(object):
                     # print((col,row))
                     self.set_board(row,col,colour)
                     self.piece_pos[colour].append((col,row))
+
+                    # these pieces are affected by the change so then we can add these pieces to the
+                    # affected piece list
+                    pieces_effected.append(((col, row), colour))
             # self.print_board()
 
         elif self.move_counter == 192:
+            # reinitialise the board state then reset the corner pieces
             self.board_state = self.init_board_rep()
             # outer edges still invalid
             for i in range(constant.BOARD_SIZE):
@@ -600,6 +611,10 @@ class Board(object):
                     self.set_board(row,col,colour)
                     self.piece_pos[colour].append((col,row))
 
+                    # these pieces are affected by the change so then we can add these pieces to the
+                    # affected piece list
+                    pieces_effected.append(((col, row), colour, constant.ELIMINATED_PIECE))
+
         # now we just need to deal the with action applied to the board
 
         # if there was no action applied to the board, all we need to do
@@ -619,8 +634,15 @@ class Board(object):
                     self.set_board(row,col,colour)
                     self.piece_pos[colour].append((col,row))
 
+                    # these pieces are affected by the change so then we can add these pieces to the
+                    # affected piece list
+                    pieces_effected.append(((col, row), colour, constant.ELIMINATED_PIECE))
+
+
+
             # print("TEST")
             # self.print_board()
+
             # reverse the move that was placed on the board
             pos = action_applied[0]
             col,row = pos
@@ -630,9 +652,14 @@ class Board(object):
                 self.piece_pos[colour].remove(pos)
             self.set_board(row,col,constant.FREE_SPACE)
 
+            # this piece is affected by the change so then we can add these pieces to the
+            # affected piece list
+            pieces_effected.append(((col, row), colour, constant.PLACE_LOC))
+
+
             # decrease the moving counter
             self.move_counter-=1
-            return
+            return pieces_effected
 
         elif self.phase == constant.MOVING_PHASE:
             # need to check if it is the first move of moving phase
@@ -645,6 +672,10 @@ class Board(object):
                         self.set_board(row,col,colour)
                         self.piece_pos[colour].append((col,row))
 
+                        # these pieces are affected by the change so then we can add these pieces to the
+                        # affected piece list
+                        pieces_effected.append(((col, row), colour, constant.ELIMINATED_PIECE))
+
                 # reverse the move that was placed on the board
                 pos = action_applied[0]
                 col,row = pos
@@ -653,20 +684,28 @@ class Board(object):
                 if pos in self.piece_pos[colour]:
                     self.piece_pos[colour].remove(pos)
                 self.set_board(row,col,constant.FREE_SPACE)
+                # these pieces are affected by the change so then we can add these pieces to the
+                # affected piece list
+                pieces_effected.append(((col, row), colour, constant.PLACE_LOC))
 
                 # decrease the move counter
                 self.move_counter = 24
                 self.phase = constant.PLACEMENT_PHASE
-                return
+                return pieces_effected
             else:
                 # if the move counter was not 128,192 we need to place
                 # the eliminated pieces back on the board
                 # print("started here")
-                if self.move_counter not in (0,128,192):
+                if self.move_counter not in (0, 128, 192):
                     for colour in colour_tup:
                         for (col,row) in eliminated_pieces[colour]:
                             self.set_board(row,col,colour)
                             self.piece_pos[colour].append((col,row))
+
+                            # these pieces are affected by the change so then we can add these pieces to the
+                            # affected piece list
+                            pieces_effected.append(((col, row), colour, constant.ELIMINATED_PIECE))
+
                 # print("eliminated pieces")
                 # we just need to undo the move that was made
                 old_pos = action_applied[0][0]
@@ -674,18 +713,28 @@ class Board(object):
                 colour = action_applied[1][0]
 
                 curr_pos = self.convert_move_type_to_coord(old_pos, move_type)
-                # reset the old location to being free
+                # reset the new location to being free
                 self.set_board(curr_pos[1],curr_pos[0],constant.FREE_SPACE)
                 if curr_pos in self.piece_pos[colour]:
                     self.piece_pos[colour].remove(curr_pos)
+
+                    # these pieces are affected by the change so then we can add these pieces to the
+                    # affected piece list
+                    pieces_effected.append((curr_pos, colour, constant.PIECE_NEW_LOC))
 
                 # put the piece back to its old location
                 self.set_board(old_pos[1],old_pos[0], colour)
                 self.piece_pos[colour].append(old_pos)
 
+                # these pieces are affected by the change so then we can add these pieces to the
+                # affected piece list
+                #
+                pieces_effected.append((old_pos, colour, constant.PIECE_OLD_LOC))
                 # decrease the move counter
                 self.move_counter -= 1
-                return
+
+                # return the pieces_effected by the undo move
+                return pieces_effected
 
     # shrink the board
     def shrink_board(self):
@@ -826,7 +875,7 @@ class Board(object):
         return getsizeof(self)
 
     @staticmethod
-    def within_starting_area(move,colour):
+    def within_starting_area(move, colour):
         corner = [(0,0),(7,0),(0,7),(7,7)]
 
         # if the move is on the corner piece then this is not a valid move
@@ -840,7 +889,7 @@ class Board(object):
         elif colour == constant.BLACK_PIECE:
             min_row = 2
             max_row = 7
-        col,row = move
+        col, row = move
 
         if min_row <= row <= max_row:
             return True

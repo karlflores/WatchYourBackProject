@@ -7,6 +7,7 @@ INCLUDE IN Board.py
 BOARD_SIZE = 8
 MAX_MOVETYPE = 8
 MAX_NUM_PIECES = 12
+
 # space types
 FREE_SPACE = '-'
 CORNER_PIECE = 'X'
@@ -19,6 +20,14 @@ SPACE_NOT_EXIST = -1
 PLACEMENT_PHASE = 0
 MOVING_PHASE = 1
 TERMINAL = 2
+
+# UNDO ACTIONS CONSTANTS
+ELIMINATED_PIECE = 'E'
+PLACE_LOC = 'P'
+PIECE_OLD_LOC = 'O'
+PIECE_NEW_LOC = 'N'
+
+
 
 # move types
 # to the get the reverse move add 2
@@ -36,7 +45,7 @@ UP_2 = 7
 
 # search constants
 TIME_CUTOFF = 1500
-TIME_CUTOFF_AB = 6000
+TIME_CUTOFF_AB = 1000
 # IDDFS and DLS
 FAILURE = None
 CUTOFF = -2
