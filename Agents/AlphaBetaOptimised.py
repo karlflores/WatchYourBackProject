@@ -37,7 +37,6 @@ class MinimaxABOptimised(object):
         self.actions_evaluated = []
         self.actions_leftover = []
 
-
         # data structures for machine learning
         self.eval_depth = 0
         self.minimax_val = 0
@@ -50,6 +49,8 @@ class MinimaxABOptimised(object):
         # self.generate_actions()
 
         self.undo_effected = []
+        self.time_alloc = 0
+
     '''
     * Alpha Beta - Minimax Driver Function 
     '''
@@ -74,7 +75,11 @@ class MinimaxABOptimised(object):
             move = available_actions[0]
 
         # time allocated per move in ms
-        time_alloc = constant.TIME_CUTOFF_AB
+        self.time_alloc = 0
+        if self.board.phase == constant.PLACEMENT_PHASE:
+            self.time_alloc = (30000-self.time_alloc)/(24-self.board.move_counter)
+        else:
+            self.time_alloc = (30000-self.time_alloc)/(100-self.board.move_counter)
 
         # get time
         start_time = MinimaxABOptimised.curr_millisecond_time()
@@ -102,7 +107,7 @@ class MinimaxABOptimised(object):
 
             best_depth += 1
 
-            if MinimaxABOptimised.curr_millisecond_time() - start_time > time_alloc:
+            if MinimaxABOptimised.curr_millisecond_time() - start_time > self.time_alloc:
                 break
 
         self.eval_depth = best_depth

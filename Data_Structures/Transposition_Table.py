@@ -22,10 +22,10 @@ class TranspositionTable:
         pass
 
     @staticmethod
-    def add(tt,hash_bytearr,colour,minmax_val):
-        hash = hash_bytearr.decode("utf-8")
-        tup = (hash,colour)
-        temp_dict = {tup: minmax_val}
+    def add_entry(tt,bytearr, colour,tt_type,best_move,):
+        str_rep = bytearr.decode("utf-8")
+        tup = (hash, colour)
+        temp_dict = {tup: (minmax_val,tt_type,best_move)}
         tt.update(hash)
 
     @staticmethod

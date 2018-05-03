@@ -1,6 +1,6 @@
 from Board import constant
 from Board.Board import Board
-from Agents.AlphaBetaOptimised import MinimaxABOptimised
+from Agents.Negamax import Negamax
 # from Agents.GreedyAlphaBeta import GreedyAlphaBetaMinimax
 
 
@@ -19,7 +19,7 @@ class Player:
 
         # TODO -- need to see if this works correctly
 
-        self.minimax = MinimaxABOptimised(self.board,self.colour)
+        self.minimax = Negamax(self.board, self.colour)
 
         self.opponent = self.board.get_opp_piece_type(self.colour)
 
@@ -65,7 +65,7 @@ class Player:
         # update the board representation and the available moves
         # print(self.minimax.available_actions)
         # best_move = self.minimax.alpha_beta_minimax(3)
-        best_move = self.minimax.iterative_deepening_alpha_beta()
+        best_move = self.minimax.itr_negamax()
         # best_move = self.minimax.alpha_beta(3)
         self.depth_eval = self.minimax.eval_depth
         self.minimax_val = self.minimax.minimax_val

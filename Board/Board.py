@@ -24,6 +24,8 @@ class Board(object):
         self.piece_pos = {constant.WHITE_PIECE: [],
                           constant.BLACK_PIECE: []}
 
+        self.place_remaining = {constant.WHITE_PIECE: 12, constant.BLACK_PIECE: 12}
+
         # initialise the board representation
         # LT RT LB RB
         self.corner_pos = [(0, 0), (7, 0), (0, 7), (7, 7)]
@@ -403,6 +405,7 @@ class Board(object):
 
         # perform the elimination around the piece that has been placed
         self.perform_elimination(pos, my_piece_type)
+        self.place_remaining[my_piece_type] -= 1
 
     # went we want to update the board we call this function
     # move has to be in the form ((row,col),move_type)
@@ -414,6 +417,7 @@ class Board(object):
             # as well as the move counter
             self.apply_placement(move, my_piece_type)
             Stack.push(self.action_applied,(move,my_piece_type))
+
 
         elif self.phase == constant.MOVING_PHASE:
             # move is in the form (pos, move_type)
@@ -815,7 +819,8 @@ class Board(object):
         white_num = len(self.piece_pos[constant.WHITE_PIECE])
         black_num = len(self.piece_pos[constant.BLACK_PIECE])
 
-        if self.phase == constant.MOVING_PHASE or (self.phase == constant.PLACEMENT_PHASE and self.move_counter > 15):
+        if self.phase == constant.MOVING_PHASE:
+
             if black_num >= 2 and white_num >= 2:
                 return False
             elif black_num >= 2 and white_num < 2:

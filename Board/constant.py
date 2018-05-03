@@ -27,6 +27,13 @@ PLACE_LOC = 'P'
 PIECE_OLD_LOC = 'O'
 PIECE_NEW_LOC = 'N'
 
+# TRANSPOSITION ENTRY TABLE CONSTANTS
+# PV Nodes -
+TT_EXACT = 'E'
+# Cut-Nodes - Fail-high
+TT_UPPER = 'U'
+#All-Nodes - Fail-low
+TT_LOWER = 'L'
 
 
 # move types
@@ -45,7 +52,9 @@ UP_2 = 7
 
 # search constants
 TIME_CUTOFF = 1500
-TIME_CUTOFF_AB = 1000
+TIME_CUTOFF_AB_PLACE = 600
+TIME_CUTOFF_MOVING = 1500
+
 # IDDFS and DLS
 FAILURE = None
 CUTOFF = -2
