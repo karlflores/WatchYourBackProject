@@ -19,10 +19,6 @@ that have not been accessed recently, and therefore can be evicted from the cach
 class TranspositionTable:
     def __init__(self,MAX_SIZE=100000):
         self.empty = True
-        self.best_move = None
-        self.value = 0
-        self.depth = 0
-        self.type = None
         self.size = 0
         self.tt = {}
         self.keys = {}
@@ -38,20 +34,67 @@ class TranspositionTable:
         self.tt.update(temp_dict)
         self.size += 1
 
-    def contains(self, boardstr, colour):
-        key = (boardstr,colour)
+    def contains(self, board, colour,phase=constant.MOVING_PHASE):
+        boardstr = copy(board)
+        key = (boardstr, colour)
         if key in self.tt:
-            return True
-        else:
-            return None
+            # print("TRUE")
+            return key
+
+        # turn board string into
+        temp = bytearray(boardstr, "utf-8")
+
+        '''
+                CHECK FOR ROTATIONS/SYMMETRIES AND SHIT 
+        '''
+
+        rotation_arr = []
+        # check horizontal and vertical symmetry
+
+        rotation_arr.append(TranspositionTable.apply_horizontal_reflection(temp))
+        if phase == constant.MOVING_PHASE:
+            # check vertical reflection
+            rotation_arr.append(TranspositionTable.apply_vertical_reflection(temp))
+            # check rotation 90L
+            rotation1 = TranspositionTable.apply_90l_rot(temp)
+            rotation_arr.append(rotation1)
+            # check rotation 180l
+            rotation2 = TranspositionTable.apply_90l_rot(rotation1)
+            rotation_arr.append(rotation2)
+            # check rotation 270L
+            rotation3 = TranspositionTable.apply_90l_rot(rotation2)
+            rotation_arr.append(rotation3)
+
+            # go back to original rotation
+            temp = TranspositionTable.apply_90r_rot(rotation3)
+            # check rotation 90R
+            rotation1 = TranspositionTable.apply_90r_rot(temp)
+            rotation_arr.append(rotation1)
+            # check rotation 180R
+            rotation2 = TranspositionTable.apply_90r_rot(rotation1)
+            rotation_arr.append(rotation2)
+            # check rotation 270R
+            rotation3 = TranspositionTable.apply_90r_rot(rotation2)
+            rotation_arr.append(rotation3)
+
+        # check all rotations first
+        for board in rotation_arr:
+            key = (board.decode("utf-8"), colour)
+            if key in self.tt:
+                print("FOUND ROTATION")
+                return key
+            else:
+                return None
+
+        # if there are no rotations in the TT and the original key is not in the TT therefore
+        # this entry does not exist in the TT
+        return None
+
 
     def get_entry(self, boardstr, colour):
         tup = (boardstr, colour)
-        if self.contains(boardstr, colour):
-            self.value = self.tt[tup][0]
-            self.type = self.tt[tup][1]
-            self.best_move = self.tt[tup][2]
-            self.depth = self.tt[tup][3]
+        key = self.contains(boardstr, colour)
+        if key is not None:
             return self.tt[tup]
 
     def remove(self,tt, tup):
@@ -63,47 +106,12 @@ class TranspositionTable:
     def clear(self):
         self.tt.clear()
         self.empty = True
-        self.best_move = None
-        self.value = 0
-        self.type = None
         self.size = 0
         self.tt = {}
 
     @staticmethod
-    def check_placement_sym(tt, board_state):
-        # check two transformations for now
-        transformation_1 = TranspositionTable.apply_horizontal_reflection(board_state)
-
-        board = copy(board_state)
-
-        if transformation_1.decode("utf-8") in tt:
-            return True
-        else:
-            tt.add(board.decode("utf-8"))
-            return False
-
-    @staticmethod
-    def check_already_visited(tt,board_state):
-        # check two transformations for now
-        transformation_1 = TranspositionTable.apply_horizontal_reflection(board_state)
-        transformation_2 = TranspositionTable.apply_vertical_reflection(board_state)
-
-        board = copy(board_state)
-
-        if transformation_1.decode("utf-8") in tt or transformation_2.decode("utf-8") in tt:
-            return True
-        elif board.decode("utf-8") in tt:
-            return True
-
-        tt.add(board.decode("utf-8"))
-        return False
-
-    @staticmethod
     def apply_horizontal_reflection(board_state):
-        temp = ''
-        for index in range(constant.BOARD_SIZE ** 2):
-            temp += constant.FREE_SPACE
-
+        temp = '-'*64
         temp = bytearray(temp, 'utf-8')
 
         for row in range(constant.BOARD_SIZE):
@@ -116,10 +124,7 @@ class TranspositionTable:
 
     @staticmethod
     def apply_vertical_reflection(board_state):
-        temp = ''
-        for index in range(constant.BOARD_SIZE ** 2):
-            temp += constant.FREE_SPACE
-
+        temp = '-'*64
         temp = bytearray(temp, 'utf-8')
 
         for row in range(constant.BOARD_SIZE):
@@ -128,3 +133,50 @@ class TranspositionTable:
                                      Board.get_array_element(board_state, row, col))
 
         return temp
+
+    @staticmethod
+    def apply_90r_rot(board_state):
+        temp = copy(board_state)
+        TranspositionTable.transpose_arr(temp)
+        for row in range(constant.BOARD_SIZE):
+            TranspositionTable.reverse_row(temp,row)
+        return temp
+
+
+    @staticmethod
+    def apply_90l_rot(board_state):
+        temp = copy(board_state)
+        TranspositionTable.transpose_arr(temp)
+        for col in range(constant.BOARD_SIZE):
+            TranspositionTable.reverse_col(temp, col)
+        return temp
+
+    @staticmethod
+    def transpose_arr(arr):
+        for row in range(constant.BOARD_SIZE):
+            for col in range(constant.BOARD_SIZE):
+                temp_ij = Board.get_array_element(arr,row,col)
+                temp_ji = Board.get_array_element(arr,col,row)
+                Board.set_array_char(arr,row,col,temp_ji)
+                Board.set_array_char(arr,col,row,temp_ij)
+        return arr
+
+    @staticmethod
+    def reverse_row(arr,row):
+        for col in range(constant.BOARD_SIZE):
+            temp_start = Board.get_array_element(arr,row,col)
+            temp_end = Board.get_array_element(arr,row,7-col)
+            # swap
+            Board.set_array_char(arr, row, col, temp_end)
+            Board.set_array_char(arr, row, 7-col, temp_start)
+        return arr
+
+    @staticmethod
+    def reverse_col(arr, col):
+        for row in range(constant.BOARD_SIZE):
+            temp_start = Board.get_array_element(arr, row, col)
+            temp_end = Board.get_array_element(arr, 7-row, col)
+            # swap
+            Board.set_array_char(arr, row, col, temp_end)
+            Board.set_array_char(arr, 7-row, col, temp_start)
+        return arr
