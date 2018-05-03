@@ -17,33 +17,57 @@ that have not been accessed recently, and therefore can be evicted from the cach
 
 # we treat a dictionary as a transposition table
 class TranspositionTable:
-    def __init__(self):
+    def __init__(self,MAX_SIZE=100000):
+        self.empty = True
+        self.best_move = None
+        self.value = 0
+        self.depth = 0
+        self.type = None
+        self.size = 0
+        self.tt = {}
+        self.keys = {}
+        self.MAX_SIZE = MAX_SIZE
 
-        pass
+    def add_entry(self,bytearr, colour, val, tt_type, best_move, depth):
+        if self.empty:
+            self.empty = False
 
-    @staticmethod
-    def add_entry(tt,bytearr, colour,tt_type,best_move,):
         str_rep = bytearr.decode("utf-8")
-        tup = (hash, colour)
-        temp_dict = {tup: (minmax_val,tt_type,best_move)}
-        tt.update(hash)
+        tup = (str_rep, colour)
+        temp_dict = {tup: (val,tt_type,best_move, depth)}
+        self.tt.update(temp_dict)
+        self.size += 1
 
-    @staticmethod
-    def contains(tt,tup):
-        if tup in tt:
+    def contains(self, boardstr, colour):
+        key = (boardstr,colour)
+        if key in self.tt:
             return True
         else:
             return None
 
-    @staticmethod
-    def get_val(tt,tup):
-        if TranspositionTable.contains(tt,tup):
-            return tt[tup]
+    def get_entry(self, boardstr, colour):
+        tup = (boardstr, colour)
+        if self.contains(boardstr, colour):
+            self.value = self.tt[tup][0]
+            self.type = self.tt[tup][1]
+            self.best_move = self.tt[tup][2]
+            self.depth = self.tt[tup][3]
+            return self.tt[tup]
 
-    @staticmethod
-    def remove(tt, tup):
-        if TranspositionTable.contains(tt,tup):
+    def remove(self,tt, tup):
+        if self.contains(tt,tup):
             tt.pop(tup)
+            self.size -= 1
+
+    # clear the dict
+    def clear(self):
+        self.tt.clear()
+        self.empty = True
+        self.best_move = None
+        self.value = 0
+        self.type = None
+        self.size = 0
+        self.tt = {}
 
     @staticmethod
     def check_placement_sym(tt, board_state):

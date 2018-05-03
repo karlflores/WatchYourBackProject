@@ -6,6 +6,7 @@ from math import inf
 from Board.Board import constant
 from Board.Board import Board
 from Evaluation.Policies import Evaluation
+from Data_Structures.Transposition_Table import TranspositionTable
 from copy import deepcopy
 from time import time, sleep
 from functools import lru_cache
@@ -17,7 +18,7 @@ class Negamax(object):
     def __init__(self, board, colour):
         # we want to create a node
 
-        self.transposition_table = set()
+        self.tt = TranspositionTable()
 
         # only use this board to complete the search
         # save memory
@@ -57,13 +58,10 @@ class Negamax(object):
     '''
 
     def itr_negamax(self):
+        # clear the transposition table every time we make a new move -- this is to ensure that it doesn't grow too big
+        if self.board.phase == constant.MOVING_PHASE and self.board.move_counter == 0:
+            self.tt.clear()
 
-        '''
-        I dont think this is working correctly -- i believe when things are getting cached because it doesnt take in consideration the depth of the call of that minimax evaluation
-        we need to take into consideration the depth for it to call correctly
-
-        need to change this
-        '''
         MAX_ITER = 10
 
         # default policy
@@ -92,8 +90,7 @@ class Negamax(object):
         best_depth = 1
         # iterative deepening begins here
         for depth in range(1, MAX_ITER):
-            #print(self.board.piece_pos)
-            #print(self.board.update_actions(self.board,self.player))
+            print(self.tt.size)
             print(depth)
 
             val, move = self.negamax(depth,-inf,inf,self.player)
@@ -114,9 +111,36 @@ class Negamax(object):
     def curr_millisecond_time():
         return int(time() * 1000)
 
-    def negamax(self,depth,alpha,beta,colour,return_move=False):
+    def negamax(self,depth,alpha,beta,colour):
         opponent = Board.get_opp_piece_type(colour)
+        original_alpha = alpha
         dic = {self.player: 1, self.opponent: -1}
+
+
+        # check if the current board state is in the transposition table
+        board_str = self.board.board_state.decode("utf-8")
+
+        if self.tt.contains(board_str,colour):
+            entry = self.tt.get_entry(board_str,colour)
+            tt_value = entry[0]
+            tt_type = entry[1]
+            tt_best_move = entry[2]
+            tt_depth = entry[3]
+            print("FOUND ENTRY IN TT")
+            if tt_depth >= depth:
+                if tt_type == constant.TT_EXACT:
+                    print("FOUND PV")
+                    return tt_value, tt_best_move
+                elif tt_type == constant.TT_LOWER:
+                    if tt_value > alpha:
+                        print("FOUND FAIL SOFT")
+                        alpha = tt_value
+                elif tt_type == constant.TT_UPPER:
+                    if tt_value < beta:
+                        print("FOUND FAIL HARD")
+                        beta = tt_value
+                if alpha >= beta:
+                    return tt_value, tt_best_move
 
         if self.cutoff_test(depth):
             val = self.evaluate_state(self.board, self.player)*dic[colour]
@@ -141,14 +165,25 @@ class Negamax(object):
                 best_val = score
                 best_action = action
 
-            if best_val > alpha:
+            if score > alpha:
                 alpha = score
 
             self.undo_move()
 
             if alpha >= beta:
-                return alpha, best_action
+                break
 
+        # store the values in the transposition table
+        if best_val <= original_alpha:
+            # then this is an upperbound -FAILHARD
+            tt_type = constant.TT_UPPER
+        elif best_val >= beta:
+            tt_type = constant.TT_LOWER
+        else:
+            tt_type = constant.TT_EXACT
+
+        # add the entry to the transposition table
+        self.tt.add_entry(self.board.board_state,colour,best_val,tt_type,best_action, depth)
         return best_val, best_action
 
     def cutoff_test(self, depth):
@@ -179,31 +214,6 @@ class Negamax(object):
 
     def is_terminal(self):
         return self.board.is_terminal()
-
-    def check_symmetry(self, board_state):
-        transformation = MinimaxABUndo.apply_horizontal_reflection(board_state)
-        board = deepcopy(board_state)
-        if transformation.decode("utf-8") in self.visited:
-            return True
-        else:
-            self.visited.add(board.decode("utf-8"))
-            return False
-
-    @staticmethod
-    def apply_horizontal_reflection(board_state):
-        temp = ''
-        for index in range(constant.BOARD_SIZE ** 2):
-            temp += constant.FREE_SPACE
-
-        temp = bytearray(temp, 'utf-8')
-
-        for row in range(constant.BOARD_SIZE):
-            for col in range(constant.BOARD_SIZE):
-                Board.set_array_char(temp, 7 - row, 7 - col,
-                                     Board.get_array_element(board_state, row, col))
-        # print(temp)
-        # print(board_state)
-        return temp
 
     def undo_move(self):
         return self.board.undo_move()
@@ -567,111 +577,3 @@ class Negamax(object):
             self.undo_available_placement()
         elif self.board.phase == constant.MOVING_PHASE:
             self.undo_available_moves()
-
-    def alpha_beta(self, depth):
-        self.generate_actions()
-        if self.board.phase == constant.MOVING_PHASE and self.board.move_counter == 0:
-            self.min_value.cache_clear()
-            # self.max_value.cache_clear()
-
-        best_move = None
-        alpha = -inf
-        evaluate = -inf
-        beta = inf
-
-        # get the available moves of the board (based on the current board representation)
-        # we can generate the actions as we wish -- this can easily change -- TODO : OPTIMISATION/ PRUNING OF ACTION __ CAN BE GREEDY __ favoured moves and unfavoured moves
-
-        # self.actions_leftover = self.board.update_actions(self.board,self.player)
-        available_actions = self.get_actions(self.player)
-        for action in available_actions:
-            # update the minimax board representation with the action
-            self.board.update_board(action, self.player)
-            self.update_available_actions(action, self.player)
-
-            # get the board representation for caching
-            board_string = self.board.board_state.decode("utf-8")
-            ab_evaluate = self.min_v(board_string, self.opponent, self.board.phase, depth - 1)
-            if ab_evaluate > evaluate:
-                best_move = action
-                evaluate = ab_evaluate
-            # undo the move
-            self.undo_effected = self.undo_move()
-            self.restore_available_actions()
-
-            if evaluate >= beta:
-                self.minimax_val = evaluate
-                return best_move
-
-            alpha = max(alpha, evaluate)
-
-        self.minimax_val = evaluate
-        return best_move
-
-    # memoize the function call -- opitimisation
-    # @lru_cache(maxsize=10000)
-    def max_v(self, board_string, colour, phase, depth):
-
-        evaluate = -inf
-
-        if self.cutoff_test(depth):
-            return self.evaluate_state(self.board)
-
-        # visit each available move
-        available_actions = self.get_actions(colour)
-        for action in available_actions:
-            # print(action)
-            # print(self.board.move_counter, self.board.phase)
-            # update the board representation with the move
-            self.board.update_board(action, colour)
-            self.update_available_actions(action, colour)
-            # create an immutable object for board_string such that we can call lru_cache on the max function call
-            board_string = self.board.board_state.decode("utf-8")
-
-            # get the minimax value for this state
-            evaluate = max(evaluate, self.min_v(board_string, self.opponent, self.board.phase, depth - 1))
-
-            # undo the move so that we can apply another action
-            self.undo_effected = self.undo_move()
-            self.restore_available_actions()
-
-            if evaluate >= self.beta:
-                return evaluate
-
-            self.alpha = max(evaluate, self.alpha)
-
-        return evaluate
-
-    # memoize the min value results -- optimisation of its function call
-    @lru_cache(maxsize=1000)
-    def min_v(self, board_string, colour, phase, depth):
-
-        # beginning evaluation value
-        evaluate = inf
-
-        if self.cutoff_test(depth):
-            return self.evaluate_state(self.board)
-
-        # generate the actions to search on
-        available_actions = self.get_actions(colour)
-        for action in available_actions:
-
-            # update the board representation -- this action is the min nodes's action
-            self.board.update_board(action, colour)
-            self.update_available_actions(action, colour)
-            board_string = self.board.board_state.decode("utf-8")
-
-            # find the value of the max node
-            evaluate = min(evaluate, self.max_v(board_string, self.player, self.board.phase, depth - 1))
-
-            # undo the board move so that we can apply another move
-            # -- we also go up a level therefore we need to increment depth
-            self.undo_effected = self.undo_move()
-            self.restore_available_actions()
-
-            if evaluate <= self.alpha:
-                return evaluate
-
-            self.beta = min(self.beta, evaluate)
-
-        return evaluate
