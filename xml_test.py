@@ -1,6 +1,6 @@
 from XML.xml_helper import xml_helper
-weights = [0,1.2342342,2,3,4,5]
-test = xml_helper("./XML","/test")
+weights = [100,100,10]
+test = xml_helper("./XML","/eval_weights")
 test.save(weights)
 w = test.load()
 for ws in w:

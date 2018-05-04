@@ -10,7 +10,7 @@ from copy import deepcopy
 from time import time, sleep
 from functools import lru_cache
 import heapq
-
+from Error_Handling.Errors import *
 class MinimaxABOptimised(object):
 
     def __init__(self, board, colour):
@@ -50,6 +50,11 @@ class MinimaxABOptimised(object):
 
         self.undo_effected = []
         self.time_alloc = 0
+        self.time_rem = 0
+        self.time_start = 0
+        self.time_end = 0
+
+        self.evaluation = Evaluation("./XML","/eval_weights")
 
     '''
     * Alpha Beta - Minimax Driver Function 
@@ -77,9 +82,9 @@ class MinimaxABOptimised(object):
         # time allocated per move in ms
         self.time_alloc = 0
         if self.board.phase == constant.PLACEMENT_PHASE:
-            self.time_alloc = (30000-self.time_alloc)/(24-self.board.move_counter)
+            self.time_alloc = 500
         else:
-            self.time_alloc = (30000-self.time_alloc)/(100-self.board.move_counter)
+            self.time_alloc = 1000
 
         # get time
         start_time = MinimaxABOptimised.curr_millisecond_time()
@@ -89,23 +94,33 @@ class MinimaxABOptimised(object):
             print(depth)
             # invalidate / clear the cache when increasing the search depth cutoff
             self.min_value.cache_clear()
-            #self.max_value.cache_clear()
-            # peform the search
-            move = self.alpha_beta_minimax(depth, available_actions)
 
-            # after one iteration of ab search we can order the moves based on the actions that
-            # the previous depth evaluated the actions at
-            available_actions = []
-            while len(self.actions_evaluated) > 0:
-                (val, action) = heapq._heappop_max(self.actions_evaluated)
-                available_actions.append(action)
-            # transform the heap into a max heap
-            heapq._heapify_max(self.actions_evaluated)
+            try:
+                #self.max_value.cache_clear()
+                # peform the search
+                self.time_rem = self.time_alloc
+                self.time_start = self.curr_millisecond_time()
+                move = self.alpha_beta_minimax(depth, available_actions)
+                print(move)
+                self.time_end = self.curr_millisecond_time()
+                self.time_rem = self.time_alloc - (self.time_end-self.time_start)
+                # after one iteration of ab search we can order the moves based on the actions that
+                # the previous depth evaluated the actions at
+                available_actions = []
+                while len(self.actions_evaluated) > 0:
+                    (val, action) = heapq._heappop_max(self.actions_evaluated)
+                    available_actions.append(action)
+                # transform the heap into a max heap
+                heapq._heapify_max(self.actions_evaluated)
 
-            # update the available_actions list
-            available_actions = available_actions + self.actions_leftover
+                # update the available_actions list
+                available_actions = available_actions + self.actions_leftover
 
-            best_depth += 1
+                best_depth += 1
+
+            except TimeOut:
+                print("TIMEOUT")
+                break
 
             if MinimaxABOptimised.curr_millisecond_time() - start_time > self.time_alloc:
                 break
@@ -122,6 +137,12 @@ class MinimaxABOptimised(object):
         return int(time() * 1000)
 
     def alpha_beta_minimax(self, depth, available_actions):
+
+        # Timeout handling
+        self.time_end = self.curr_millisecond_time()
+        if self.time_end - self.time_start > self.time_rem:
+            raise TimeOut
+
         self.actions_evaluated = []
         if self.board.phase == constant.MOVING_PHASE and self.board.move_counter == 0:
             self.min_value.cache_clear()
@@ -143,8 +164,10 @@ class MinimaxABOptimised(object):
 
             # get the board representation for caching
             board_string = self.board.board_state.decode("utf-8")
-
-            ab_evaluate = self.min_value(board_string, self.opponent, self.board.phase, depth - 1)
+            try:
+                ab_evaluate = self.min_value(board_string, self.opponent, self.board.phase, depth - 1)
+            except TimeOut:
+                raise TimeOut
 
             heapq.heappush(self.actions_evaluated, (ab_evaluate, action))
             self.actions_leftover.remove(action)
@@ -169,6 +192,11 @@ class MinimaxABOptimised(object):
     #@lru_cache(maxsize=10000)
     def max_value(self,board_string, colour, phase, depth):
 
+        # Timeout handling
+        self.time_end = self.curr_millisecond_time()
+        if self.time_end - self.time_start > self.time_rem:
+            raise TimeOut
+
         evaluate = -inf
 
         if self.cutoff_test(depth):
@@ -186,7 +214,10 @@ class MinimaxABOptimised(object):
             board_string = self.board.board_state.decode("utf-8")
 
             # get the minimax value for this state
-            evaluate = max(evaluate, self.min_value(board_string, self.opponent, self.board.phase, depth-1))
+            try:
+                evaluate = max(evaluate, self.min_value(board_string, self.opponent, self.board.phase, depth-1))
+            except TimeOut:
+                raise TimeOut
 
             # undo the move so that we can apply another action
             self.undo_effected = self.undo_move()
@@ -201,6 +232,11 @@ class MinimaxABOptimised(object):
     # memoize the min value results -- optimisation of its function call
     @lru_cache(maxsize=100000)
     def min_value(self, board_string, colour, phase, depth):
+
+        # Timeout handling
+        self.time_end = self.curr_millisecond_time()
+        if self.time_end - self.time_start > self.time_rem:
+            raise TimeOut
 
         # beginning evaluation value
         evaluate = inf
@@ -219,8 +255,10 @@ class MinimaxABOptimised(object):
             board_string = self.board.board_state.decode("utf-8")
 
             # find the value of the max node
-            evaluate = min(evaluate, self.max_value(board_string, self.player, self.board.phase, depth - 1))
-
+            try:
+                evaluate = min(evaluate, self.max_value(board_string, self.player, self.board.phase, depth - 1))
+            except TimeOut:
+                raise TimeOut
             # undo the board move so that we can apply another move
             # -- we also go up a level therefore we need to increment depth
             self.undo_effected = self.undo_move()
@@ -255,7 +293,8 @@ class MinimaxABOptimised(object):
     '''
 
     def evaluate_state(self, board):
-        return Evaluation.basic_policy(board, self.player)
+        #return Evaluation.basic_policy(board, self.player)
+        return self.evaluation.evaluate(board,self.player)
 
     # update the available moves of the search algorithm after it has been instantiated
     #

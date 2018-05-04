@@ -65,23 +65,11 @@ class TranspositionTable:
             rotation3 = TranspositionTable.apply_90l_rot(rotation2)
             rotation_arr.append(rotation3)
 
-            # go back to original rotation
-            temp = TranspositionTable.apply_90r_rot(rotation3)
-            # check rotation 90R
-            rotation1 = TranspositionTable.apply_90r_rot(temp)
-            rotation_arr.append(rotation1)
-            # check rotation 180R
-            rotation2 = TranspositionTable.apply_90r_rot(rotation1)
-            rotation_arr.append(rotation2)
-            # check rotation 270R
-            rotation3 = TranspositionTable.apply_90r_rot(rotation2)
-            rotation_arr.append(rotation3)
-
         # check all rotations first
         for board in rotation_arr:
             key = (board.decode("utf-8"), colour)
             if key in self.tt:
-                print("FOUND ROTATION")
+                # print("FOUND ROTATION")
                 return key
             else:
                 return None
@@ -89,7 +77,6 @@ class TranspositionTable:
         # if there are no rotations in the TT and the original key is not in the TT therefore
         # this entry does not exist in the TT
         return None
-
 
     def get_entry(self, boardstr, colour):
         tup = (boardstr, colour)

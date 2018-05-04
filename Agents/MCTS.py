@@ -67,8 +67,8 @@ class MonteCarloTreeSearch(object):
         #print(available_actions)
         #print(board.is_terminal())
         colour = node.colour
-
-        while board.is_terminal() is False:
+        num_moves = 0
+        while board.is_terminal() is False or num_moves > 80:
             if len(available_actions) == 0:
                 # there are no actions to take and therefore it is a forfeit
                 action = None
@@ -90,12 +90,18 @@ class MonteCarloTreeSearch(object):
         # now we are at a terminal state, we need to find out who has won
         #print(board.winner)
         #board.print_board()
-        if board.winner == node.colour:
-            return 1
-        elif board.winner == Board.get_opp_piece_type(node.colour):
-            return -1
-        elif board.winner is None:
-            return 0
+        if num_moves < 80:
+            if board.winner == node.colour:
+                return 1
+            elif board.winner == Board.get_opp_piece_type(node.colour):
+                return -1
+            elif board.winner is None:
+                return 0
+        else:
+            net_pieces = len(board.piece_pos[node.colour])-len(board.piece_pos[Board.get_opp_piece_type(node.colour)])
+
+            prob = net_pieces/(len(board.piece_pos[node.colour])+len(board.piece_pos[Board.get_opp_piece_type(node.colour)]))
+            return prob
 
     @staticmethod
     def value_backpropagation(node,value):
@@ -159,6 +165,7 @@ class MonteCarloTreeSearch(object):
             if node.is_fully_expanded() is False:
                 #print("check expanded")
                 child = self.expand(node)
+                # print(child)
                 return child
             else:
                 # choose the child with the best UCB1 score
