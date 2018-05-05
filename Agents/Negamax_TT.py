@@ -250,9 +250,9 @@ class Negamax(object):
 
     '''
 
-    def evaluate_state(self, board, colour):
+    def evaluate_state(self, board, colour, actions):
         #return Evaluation.basic_policy(board,colour)
-        return self.evaluation.evaluate(board,self.player)
+        return self.evaluation.evaluate(board,colour,actions)
 
     # update the available moves of the search algorithm after it has been instantiated
     #
