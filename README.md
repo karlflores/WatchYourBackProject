@@ -64,18 +64,29 @@
 * Implement 3 types of roll outs for MCTS -- random rollout, light roll out (greedy), medium roll-out (2-ply negamax/ab-minimax)
     - Need to speed up the simulation of the board game because this is the factor that is stopping us from creating a deep game tree in 1 second. 
     - Currently it takes 0.07s to do one game iteration, this is bad because we can theoretically only create 14 nodes in one move iteration. This is not good. 
-* We could switch up the search strategy for each phase of the game -- e.g. MCTS for moving phase and AB-Minimax for Placement phase. 
-* Implement negamax
+* We could switch up the search strategy for each phase of the game -- e.g. MCTS for moving phase and AB-Minimax for Placement phase.  
 * Need to work out how to use Machine Learning to train the evaluation function 
 * Need to work out what the dominant feature of the game are 
-
+* Features to implement:                    
+    - Guaranteed capture position patters 
+    ```
+            W     :----|
+            B B   :----|{ this is an example of a guaranteed capture position -- need to scan the entire board for this kind of thing }
+              W   :----|
+    ```
+    - "heat map" of the board -- each location on the board has a weight associated with it -- when our piece is on that position the weight is positive
+                - when the enemy is on that position the weight is negative
+                - therefore we can get a single number that represents the overall net-state of the board 
+* Could implement a different strategy for moving phase vs placing 
+    - in placing phase we could put ourselves in a position that is more defensive -- right now we are striving for the middle of the board
+* Need to work out if a piece is in an attacking position or defending position 
+    - this is important to our evaluation function -- need to classify our pieces into attacking and defending 
 
 ### COMPLETED TODO's
 * Need to work out how to use a cache to store recent board-state-Minimax value pairs (possibly using an LRU cache or something similar such that we can limit the size of the cache -- keep recently used items and expell least used items -- these items will be added back to the cache if they are visited again)
     - For the LRU cache -- think about using a double ended linked list -- when we add to the cache we add to the head of the cache, but we only add until the cache is below a certain size, when we reach the size and we want to add more, we need to get rid an element at the tail of the cache -- these are the least frequently used items 
     - Or we can use a dictionary to store the entries of the items up until a fixed size, then we can get rid of elements of the dictionary that are old to reduce space in the dictionary 
         - by doing so we limit the size of the cache
-    
     - Restructure Minimax such that we dont use a child node to store the move applied to the board state -- instead we can use put that in the function call itself 
         - therfore we should be able to use functools_lrucache to memoize minimax 
         - for lrucache to work the arguments of a function have to be immutable 
@@ -84,3 +95,4 @@
                 -- therefore by doing so we get rid of the create node part in the min and max nodes -- because we are just using update_board, and undo_move to change the board state, therefore we would not need the node 
 * Need to work out a way to use the available moves function I wrote earlier with the undo moves functionality 
 * Implement Monte Carlo Tree Search ----- THIS IS MOST IMPORTANT (first we will do it with a random rollout)
+* Implemented negamax and transposition tables within negamax 
