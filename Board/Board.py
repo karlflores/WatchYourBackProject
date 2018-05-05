@@ -969,7 +969,7 @@ class Board(object):
             # get the min manhattan distance of a piece -- if the distance is large we want to append a small value --
                 # max distance will be 14
 
-            weights[i] += (MAX_DIST - Features.min_manhattan_dist(self, action, colour))
+            weights[i] += (MAX_DIST - Features.min_manhattan_dist(self, action, colour))*10
             if self.phase == constant.PLACEMENT_PHASE:
                 weights[i] += 4 - Features.dist_to_center(action)
             else:
