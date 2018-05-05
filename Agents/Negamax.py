@@ -75,6 +75,7 @@ class Negamax(object):
         # default policy
         available_actions = self.board.update_actions(self.board, self.player)
         print(len(available_actions))
+        action_set = set(available_actions)
         # self.actions_leftover = self.board.update_actions(self.board, self.player)
 
         if len(available_actions) == 0:
@@ -123,8 +124,10 @@ class Negamax(object):
                 print(move)
                 best_depth += 1
 
-                # if we have a move that is not none lets always pick that move
-                if move is not None:
+                # if we have a move that is not none lets always pick that move that is legal
+                # becuase we are doing a greedy search -- it sometimes returns an illegal move, not too sure why
+                # therefore here we check if a move is legal as well
+                if move is not None and move in action_set:
                     best_move = move
             except TimeOut:
                 print("TIMEOUT")
@@ -175,15 +178,16 @@ class Negamax(object):
         # 5 'favourable' actions that we see right now
         # if the length of actions is less than X, then we can just evaluate all possible actions we have
         # THIS IS A GREEDY APPROACH TO MINIMAX THAT LIMITS OUR BRANCHING FACTOR OF THE GAME
-        if len(actions) > 5:
-            favourable = actions[:5]
+        if len(actions) > 8:
+            favourable = actions[:8]
         else:
             favourable = actions
         # got here
         #print("got here")
         # depth reduction
         R = 2
-
+        #print(favourable)
+        #self.board.print_board()
         for action in favourable:
 
             self.board.update_board(action, colour)
