@@ -1,6 +1,6 @@
 from math import inf,sqrt,log
 from Agents.MCTS_Node import Node
-from Board.Board import constant
+from Board import constant
 from Board.Board import Board
 from copy import deepcopy
 from time import time
@@ -86,7 +86,7 @@ class MonteCarloTreeSearch(object):
             # actions of next player -- this is the player that will make the next move
             available_actions = board.update_actions(board, colour)
         end_time = time()
-        # print((end_time - start_time))
+        print((end_time - start_time))
         # now we are at a terminal state, we need to find out who has won
         #print(board.winner)
         #board.print_board()

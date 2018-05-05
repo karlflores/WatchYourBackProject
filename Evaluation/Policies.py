@@ -24,7 +24,7 @@ class Evaluation(object):
             pass
 
     @staticmethod
-    def return_policy_vector(board,colour):
+    def return_policy_vector(board,colour,available_moves):
 
         # assume that the board is in a byte string representation
         diff_pieces = len(board.piece_pos[colour])-3*len(board.piece_pos[Board.get_opp_piece_type(colour)])
@@ -33,13 +33,13 @@ class Evaluation(object):
             dist_cent += Evaluation.distance(pieces, (3.5,3.5) )
 
         # number of pieces of the opponent eliminated
-        available_actions = board.update_actions(board,colour)
+        # available_actions = board.update_actions(board,colour)
 
-        num_moves = len(available_actions)
+        # num_moves = len(available_actions)
 
         # RANDOM MOVES FOR TESTING IF MINIMAX IS WORKING CORRECTLY
         # return randint(0,5)
-        return diff_pieces, 1/(1+dist_cent), num_moves
+        return diff_pieces, 1/(1+dist_cent), len(available_moves)
 
     # get the dot product between the weight and policy vectors -- this is the evaluation value
     @staticmethod
@@ -54,6 +54,6 @@ class Evaluation(object):
 
         return evaluate
 
-    def evaluate(self,board,colour):
-        policy_vector = self.return_policy_vector(board,colour)
+    def evaluate(self,board,colour,available_moves):
+        policy_vector = self.return_policy_vector(board,colour,available_moves)
         return self.dot_prod(self.weights,policy_vector)

@@ -51,6 +51,7 @@ class Player:
 
     def action(self, turns):
         self.minimax.update_board(self.board)
+        # print(self.board.piece_pos)
         # if action is called first the board representation move counter will be zero
         # this indicates that this player is the first one to move
 

@@ -5,7 +5,7 @@
 '''
 
 from Board import constant
-from copy import deepcopy
+from copy import deepcopy, copy
 import math
 
 from Data_Structures.Stack import Stack
@@ -109,10 +109,19 @@ class Board(object):
             return constant.INVALID_SPACE
         if row < row_min or row > row_max:
             return constant.INVALID_SPACE
-
+        '''
+        if my_piece_pos in self.corner_pos:
+            return constant.CORNER_PIECE
+        elif my_piece_pos in self.piece_pos[constant.BLACK_PIECE]:
+            return constant.BLACK_PIECE
+        elif my_piece_pos in self.piece_pos[constant.WHITE_PIECE]:
+            return constant.WHITE_PIECE
+        else:
+            return constant.INVALID_SPACE
+        '''
         # piece is in the playable bounds of the game
         # we can return this piece
-        return self.get_board_piece(row,col)
+        return self.get_board_piece(row, col)
 
     # helper method for the moving phase of the game
     @staticmethod
@@ -299,7 +308,7 @@ class Board(object):
     # elimination helper function
     def check_one_piece_elimination(self,my_piece_pos,my_piece_type):
         pos_col, pos_row = my_piece_pos
-        my_piece_pos_list = deepcopy(self.piece_pos[my_piece_type])
+        my_piece_pos_list = copy(self.piece_pos[my_piece_type])
         opp_piece_type = self.get_opp_piece_type(my_piece_type)
         # append the corner pieces to the list as these act as your own piece
         for corner in self.corner_pos:
@@ -312,15 +321,15 @@ class Board(object):
         # check left
         if (pos_col-1,pos_row) in self.piece_pos[opp_piece_type] and\
                 (pos_col-2,pos_row) in my_piece_pos_list:
-            return pos_col-1,pos_row
+            return pos_col-1, pos_row
         # check right
         if (pos_col+1,pos_row) in self.piece_pos[opp_piece_type] and\
                 (pos_col+2,pos_row) in my_piece_pos_list:
-            return pos_col+1,pos_row
+            return pos_col+1, pos_row
         # check up
         if (pos_col,pos_row-1) in self.piece_pos[opp_piece_type] and\
                 (pos_col,pos_row-2) in my_piece_pos_list:
-            return pos_col,pos_row-1
+            return pos_col, pos_row-1
         # check down
         if (pos_col,pos_row+1) in self.piece_pos[opp_piece_type] and\
                 (pos_col,pos_row+2) in my_piece_pos_list:
@@ -339,7 +348,7 @@ class Board(object):
 
         opp_piece_type = self.get_opp_piece_type(my_piece_type)
 
-        opp_piece_pos_list = deepcopy(self.piece_pos[opp_piece_type])
+        opp_piece_pos_list = copy(self.piece_pos[opp_piece_type])
         # add the location of the corners to the location list of the opponent piece
         for corner in self.corner_pos:
             opp_piece_pos_list.append(corner)
@@ -746,7 +755,7 @@ class Board(object):
         offset = self.num_shrink
         for i in range(offset, constant.BOARD_SIZE - offset):
             # list storing the row and column we need to shrink
-            shrink = [(i,offset), (offset,i), (i,7-offset), (7-offset,i)]
+            shrink = [(i, offset), (offset, i), (i, 7-offset), (7-offset, i)]
             for (col,row) in shrink:
                 # update the board representation
                 # set the row to invalid spaces
@@ -850,7 +859,7 @@ class Board(object):
         # we assume that the string array is n x n in dimension
 
         # get the dimension
-        dimension = int(math.sqrt(len(byte_array)))
+        dimension = constant.BOARD_SIZE
         # check if row and col are valid
         if row > dimension - 1 or col > dimension - 1:
             return None
@@ -858,7 +867,7 @@ class Board(object):
         elif row < 0 or col < 0:
             return None
         # get the index to access in the string
-        index = row*dimension + col;
+        index = row*dimension + col
 
         # return the char at position index
         return chr(byte_array[index])
@@ -900,6 +909,7 @@ class Board(object):
             return True
         else:
             return False
+
 
     '''
     METHODS TO HELP GENERATE MOVES FROM A PARTICULAR BOARD STATE 
@@ -947,6 +957,7 @@ class Board(object):
             for col in range(constant.BOARD_SIZE):
                 if Board.within_starting_area((col,row), colour):
                     actions.append((col,row))
+
         return actions
 
     # determines if a move is favourable or not

@@ -5,7 +5,7 @@
 '''
 
 from Board import constant
-from copy import deepcopy
+from copy import deepcopy, copy
 import math
 
 from Data_Structures.Stack import Stack
@@ -21,8 +21,8 @@ class Board(object):
 
         # self.piece_pos = {constant.BLACK_PIECE: {-1:}, constant.WHITE_PIECE: []}
         # store the current position of pieces on the board
-        self.piece_pos = {constant.WHITE_PIECE: [],
-                          constant.BLACK_PIECE: []}
+        self.piece_pos = {constant.WHITE_PIECE: {},
+                          constant.BLACK_PIECE: {}}
 
         self.place_remaining = {constant.WHITE_PIECE: 12, constant.BLACK_PIECE: 12}
 
@@ -177,7 +177,7 @@ class Board(object):
             return constant.UP_2
 
     # check if a move is legal
-    def is_legal_move(self,my_piece_pos,move_type):
+    def is_legal_move(self, my_piece_pos, move_type):
         # print("MOVE: " + str(my_piece_pos))
         # apply the move to the piece
         new_pos = self.convert_move_type_to_coord(my_piece_pos, move_type)
@@ -211,7 +211,7 @@ class Board(object):
         # check the two space move
         elif 4 <= move_type < 8:
             # get the intermediate position piece_type
-            inter_pos = self.convert_move_type_to_coord(my_piece_pos,move_type-4)
+            inter_pos = self.convert_move_type_to_coord(my_piece_pos, move_type-4)
             inter_pos_piece_type = self.return_cell_type(inter_pos)
             # print("INTERMEDIATE SPACE " + inter_pos_piece_type)
 
@@ -275,10 +275,10 @@ class Board(object):
             # want to eliminate about the opposition's piece
             if piece in self.piece_pos[opp_piece_type]:
                 # update the opponents piece_pos_list
-                self.piece_pos[opp_piece_type].remove(piece)
+                self.piece_pos[opp_piece_type].pop(piece)
 
                 # update the string board representation
-                remove_col,remove_row = piece
+                remove_col, remove_row = piece
                 self.set_board(remove_row, remove_col, constant.FREE_SPACE)
 
                 # update the eliminated piece dict
@@ -288,7 +288,7 @@ class Board(object):
         piece = self.check_self_elimination(my_piece_pos,my_piece_type)
         if piece is not None:
             # removes item from the board and list
-            self.piece_pos[my_piece_type].remove(piece)
+            self.piece_pos[my_piece_type].pop(piece)
 
             remove_col, remove_row = piece
             self.set_board(remove_row, remove_col, constant.FREE_SPACE)
@@ -299,11 +299,12 @@ class Board(object):
     # elimination helper function
     def check_one_piece_elimination(self,my_piece_pos,my_piece_type):
         pos_col, pos_row = my_piece_pos
-        my_piece_pos_list = deepcopy(self.piece_pos[my_piece_type])
+        my_piece_pos_list = copy(self.piece_pos[my_piece_type])
         opp_piece_type = self.get_opp_piece_type(my_piece_type)
         # append the corner pieces to the list as these act as your own piece
         for corner in self.corner_pos:
-            my_piece_pos_list.append(corner)
+            temp = {corner: 1}
+            my_piece_pos_list.update(temp)
 
         # test all the 4 cases for this type of elimination
         # don't need to test for negative indices and positions outside the boundary of the board because there should
@@ -339,20 +340,21 @@ class Board(object):
 
         opp_piece_type = self.get_opp_piece_type(my_piece_type)
 
-        opp_piece_pos_list = deepcopy(self.piece_pos[opp_piece_type])
+        opp_piece_pos = copy(self.piece_pos[opp_piece_type])
         # add the location of the corners to the location list of the opponent piece
         for corner in self.corner_pos:
-            opp_piece_pos_list.append(corner)
+            temp = {corner: 1}
+            opp_piece_pos.update(temp)
         
         # now just need to check horizontal and vertical positions to see if they are in the piecePos list
         # horizontal check
-        if ((pos_col+1,pos_row) in opp_piece_pos_list) and \
-                ((pos_col-1,pos_row) in opp_piece_pos_list):
-            return pos_col,pos_row
+        if ((pos_col+1,pos_row) in opp_piece_pos) and \
+                ((pos_col-1,pos_row) in opp_piece_pos):
+            return pos_col, pos_row
         # vertical piece position check for self elimination
-        elif ((pos_col,pos_row+1) in opp_piece_pos_list) and \
-                ((pos_col,pos_row-1) in opp_piece_pos_list):
-            return pos_col,pos_row
+        elif ((pos_col,pos_row+1) in opp_piece_pos) and \
+                ((pos_col,pos_row-1) in opp_piece_pos):
+            return pos_col, pos_row
         else:
             return None
 
@@ -375,14 +377,13 @@ class Board(object):
         self.set_board(new_row,new_col,my_piece_type)
 
         # then we can update the dictionaries
-        self.piece_pos[my_piece_type].remove(old_pos)
+        self.piece_pos[my_piece_type].pop(old_pos)
         # create a new entry in the dictionary containing the piece on the board
-        self.piece_pos[my_piece_type].append(new_pos)
+        new_entry = {new_pos: 1}
+        self.piece_pos[my_piece_type].update(new_entry)
 
         # now we can test for elimination at the new position on the board
-        self.perform_elimination(new_pos,my_piece_type)
-        # increase the number of moves made on the board
-        # self.move_counter += 1
+        self.perform_elimination(new_pos, my_piece_type)
         # success
 
     def apply_placement(self,pos, my_piece_type):
@@ -398,7 +399,8 @@ class Board(object):
         self.set_board(row,col,my_piece_type)
 
         # then we update the position list of that player on the board
-        self.piece_pos[my_piece_type].append(pos)
+        new_entry = {pos: 1}
+        self.piece_pos[my_piece_type].update(new_entry)
 
         # increment the move counter
         # self.move_counter += 1
@@ -460,6 +462,7 @@ class Board(object):
     def eliminated_pieces_last_move(self,curr_phase,curr_move_count,pop=True):
 
         eliminated_pieces = {constant.WHITE_PIECE: [], constant.BLACK_PIECE: []}
+
         eliminated_pieces_tup = {constant.WHITE_PIECE: [], constant.BLACK_PIECE: []}
 
         # generally speaking
@@ -501,12 +504,12 @@ class Board(object):
             for colour in (constant.WHITE_PIECE, constant.BLACK_PIECE):
                 # push each piece back to the respective queues
                 for piece_tup in eliminated_pieces_tup[colour]:
-                    Stack.push(self.eliminated_pieces[colour],piece_tup)
+                    Stack.push(self.eliminated_pieces[colour], piece_tup)
 
         return eliminated_pieces
 
     # when checking for a jump space need to check if there is a piece that is occupying the adjacent square
-    def can_jump_into_position(self,position, move_type):
+    def can_jump_into_position(self, position, move_type):
         # checks if pieces exixt at a jump length away anf if that piece can jump into this position
         # move_type must be greater than 4
         # get the adjacent movetype
@@ -567,13 +570,13 @@ class Board(object):
             self.board_state = self.init_board_rep()
             # put the original corners back on the board
             self.corner_pos = [(0,0),(7,0),(0,7),(7,7)]
-            for (col,row) in self.corner_pos:
+            for (col, row) in self.corner_pos:
                 self.set_board(row,col,constant.CORNER_PIECE)
 
             # place all the pieces back on the board
             for colour in colour_tup:
-                for i in range(len(self.piece_pos[colour])):
-                    col, row = self.piece_pos[colour][i]
+                for pos in self.piece_pos[colour].keys():
+                    col, row = pos
                     self.set_board(row,col,colour)
 
             # place all the eliminated pieces back on the board
@@ -581,7 +584,8 @@ class Board(object):
                 for (col,row) in eliminated_pieces[colour]:
                     # print((col,row))
                     self.set_board(row,col,colour)
-                    self.piece_pos[colour].append((col,row))
+                    entry = {(col,row): 1}
+                    self.piece_pos[colour].update(entry)
 
                     # these pieces are affected by the change so then we can add these pieces to the
                     # affected piece list
@@ -613,7 +617,8 @@ class Board(object):
             for colour in colour_tup:
                 for (col,row) in eliminated_pieces[colour]:
                     self.set_board(row,col,colour)
-                    self.piece_pos[colour].append((col,row))
+                    entry = {(col,row): 1}
+                    self.piece_pos[colour].update(entry)
 
                     # these pieces are affected by the change so then we can add these pieces to the
                     # affected piece list
@@ -636,7 +641,8 @@ class Board(object):
             for colour in colour_tup:
                 for (col,row) in eliminated_pieces[colour]:
                     self.set_board(row,col,colour)
-                    self.piece_pos[colour].append((col,row))
+                    entry = {(col, row): 1}
+                    self.piece_pos[colour].update(entry)
 
                     # these pieces are affected by the change so then we can add these pieces to the
                     # affected piece list
@@ -653,7 +659,7 @@ class Board(object):
             colour = action_applied[1]
             # print(pos)
             if pos in self.piece_pos[colour]:
-                self.piece_pos[colour].remove(pos)
+                self.piece_pos[colour].pop(pos)
             self.set_board(row,col,constant.FREE_SPACE)
 
             # this piece is affected by the change so then we can add these pieces to the
@@ -672,9 +678,10 @@ class Board(object):
                 # this is the first move, then the action applied to the
                 # board is a placement
                 for colour in colour_tup:
-                    for (col,row) in eliminated_pieces[colour]:
+                    for (col, row) in eliminated_pieces[colour]:
                         self.set_board(row,col,colour)
-                        self.piece_pos[colour].append((col,row))
+                        entry = {(col, row): 1}
+                        self.piece_pos[colour].update(entry)
 
                         # these pieces are affected by the change so then we can add these pieces to the
                         # affected piece list
@@ -686,7 +693,7 @@ class Board(object):
                 colour = action_applied[1]
                 # print(pos)
                 if pos in self.piece_pos[colour]:
-                    self.piece_pos[colour].remove(pos)
+                    self.piece_pos[colour].pop(pos)
                 self.set_board(row,col,constant.FREE_SPACE)
                 # these pieces are affected by the change so then we can add these pieces to the
                 # affected piece list
@@ -704,7 +711,8 @@ class Board(object):
                     for colour in colour_tup:
                         for (col,row) in eliminated_pieces[colour]:
                             self.set_board(row,col,colour)
-                            self.piece_pos[colour].append((col,row))
+                            entry = {(col,row): 1}
+                            self.piece_pos[colour].update(entry)
 
                             # these pieces are affected by the change so then we can add these pieces to the
                             # affected piece list
@@ -720,7 +728,7 @@ class Board(object):
                 # reset the new location to being free
                 self.set_board(curr_pos[1],curr_pos[0],constant.FREE_SPACE)
                 if curr_pos in self.piece_pos[colour]:
-                    self.piece_pos[colour].remove(curr_pos)
+                    self.piece_pos[colour].pop(curr_pos)
 
                     # these pieces are affected by the change so then we can add these pieces to the
                     # affected piece list
@@ -728,7 +736,8 @@ class Board(object):
 
                 # put the piece back to its old location
                 self.set_board(old_pos[1],old_pos[0], colour)
-                self.piece_pos[colour].append(old_pos)
+                entry = {old_pos: 1}
+                self.piece_pos[colour].update(entry)
 
                 # these pieces are affected by the change so then we can add these pieces to the
                 # affected piece list
@@ -754,10 +763,10 @@ class Board(object):
 
                 # remove any piece that is eliminated from the position lists
                 if (col, row) in self.piece_pos[constant.BLACK_PIECE]:
-                    self.piece_pos[constant.BLACK_PIECE].remove((col, row))
+                    self.piece_pos[constant.BLACK_PIECE].pop((col, row))
                     self.eliminated_pieces[constant.BLACK_PIECE].append(((col,row),self.phase,self.move_counter))
                 elif (col,row) in self.piece_pos[constant.WHITE_PIECE]:
-                    self.piece_pos[constant.WHITE_PIECE].remove((col, row))
+                    self.piece_pos[constant.WHITE_PIECE].pop((col, row))
                     self.eliminated_pieces[constant.WHITE_PIECE].append(((col,row),self.phase,self.move_counter))
 
                 # set the column to invalid spaces
@@ -775,8 +784,8 @@ class Board(object):
         for corner in self.corner_pos:
             for player in (constant.BLACK_PIECE, constant.WHITE_PIECE):
                 if corner in self.piece_pos[player]:
-                    self.piece_pos[player].remove(corner)
-                    self.eliminated_pieces[player].append((corner,self.phase,self.move_counter))
+                    self.piece_pos[player].pop(corner)
+                    self.eliminated_pieces[player].append((corner, self.phase, self.move_counter))
 
         # update the board representations
         for corner_col,corner_row in self.corner_pos:
@@ -806,9 +815,9 @@ class Board(object):
 
                 # remove from the oppenent players piece pos list
                 # print("ELIMINATED: " + str(eliminated_piece))
-                self.piece_pos[opp_player].remove(eliminated_piece)
+                self.piece_pos[opp_player].pop(eliminated_piece)
                 col, row = eliminated_piece
-                self.eliminated_pieces[opp_player].append((eliminated_piece,self.phase,self.move_counter))
+                self.eliminated_pieces[opp_player].append((eliminated_piece,self.phase, self.move_counter))
                 # update the board representation
                 self.set_board(row, col, constant.FREE_SPACE)
 
@@ -922,7 +931,7 @@ class Board(object):
     def generate_moves(board,colour):
         available_moves = []
         if board.phase == constant.MOVING_PHASE:
-            for move in board.piece_pos[colour]:
+            for move in board.piece_pos[colour].keys():
                 for move_type in range(constant.MAX_MOVETYPE):
                     if board.is_legal_move(move,move_type):
                         available_moves.append((move,move_type))
@@ -934,7 +943,7 @@ class Board(object):
         actions = Board.init_placable_area(colour)
 
         for colour in (constant.BLACK_PIECE,constant.WHITE_PIECE):
-            for piece in board.piece_pos[colour]:
+            for piece in board.piece_pos[colour].keys():
                 if piece in actions:
                     actions.remove(piece)
 

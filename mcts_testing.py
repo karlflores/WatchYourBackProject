@@ -1,17 +1,20 @@
 from Agents.MCTS import MonteCarloTreeSearch
+from Agents.Negamax import Negamax
 from Board.Board import Board
 from Board import constant
+from math import inf
 # create a new board
 
 board = Board()
 
 colour = constant.WHITE_PIECE
 
-agent = MonteCarloTreeSearch(board,colour)
+#agent = MonteCarloTreeSearch(board,colour)
 
-node = agent.create_node(board,colour,None,None)
-agent.simulate(node)
-
+agent2 = Negamax(board,colour)
+#node = agent.create_node(board,colour,None,None)
+#agent.simulate(node)
+agent2.itr_negamax()
 '''
 while(board.is_terminal() is False):
     agent = MonteCarloTreeSearch(board, colour)
