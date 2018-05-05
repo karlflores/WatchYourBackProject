@@ -12,9 +12,12 @@ colour = constant.WHITE_PIECE
 #agent = MonteCarloTreeSearch(board,colour)
 
 agent2 = Negamax(board,colour)
+actions = agent2.board.update_actions(agent2.board,agent2.player)
+print(actions)
+print(agent2.board.sort_actions(actions,agent2.player))
 #node = agent.create_node(board,colour,None,None)
 #agent.simulate(node)
-agent2.itr_negamax()
+# agent2.itr_negamax()
 '''
 while(board.is_terminal() is False):
     agent = MonteCarloTreeSearch(board, colour)

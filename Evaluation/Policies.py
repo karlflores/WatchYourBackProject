@@ -6,6 +6,7 @@ from XML.xml_helper import xml_helper
 # Class to implement all the evaluation functions that we generate throughout
 # the development of this project
 from Board.Board import Board
+from Evaluation.Features import Features
 
 class Evaluation(object):
     def __init__(self,path,filename):
@@ -26,20 +27,15 @@ class Evaluation(object):
     @staticmethod
     def return_policy_vector(board,colour,available_moves):
 
-        # assume that the board is in a byte string representation
-        diff_pieces = len(board.piece_pos[colour])-3*len(board.piece_pos[Board.get_opp_piece_type(colour)])
-        dist_cent = 0
-        for pieces in board.piece_pos[colour]:
-            dist_cent += Evaluation.distance(pieces, (3.5,3.5) )
+        diff_pieces = Features.diff_pieces(board,colour)
+        dist_cent = Features.total_dist_to_center(board, colour)
+        num_actions = Features.num_actions(available_moves)
+        self_surrounded = Features.check_board_surrounded_my_piece(board,colour)
+        opp_surrounded = Features.check_board_surround_opponent(board,colour)
+        middle_occupy = Features.check_middle(board,colour)
+        num_cluster = Features.cluster_exists(board,colour)
 
-        # number of pieces of the opponent eliminated
-        # available_actions = board.update_actions(board,colour)
-
-        # num_moves = len(available_actions)
-
-        # RANDOM MOVES FOR TESTING IF MINIMAX IS WORKING CORRECTLY
-        # return randint(0,5)
-        return diff_pieces, 1/(1+dist_cent), len(available_moves)
+        return diff_pieces, dist_cent, num_actions, self_surrounded, opp_surrounded, middle_occupy, num_cluster
 
     # get the dot product between the weight and policy vectors -- this is the evaluation value
     @staticmethod
@@ -49,11 +45,11 @@ class Evaluation(object):
 
         evaluate = 0
 
-        for i in range(len(policy_vector)):
+        for i,feature in enumerate(policy_vector):
             evaluate += policy_vector[i]*weight_vector[i]
 
         return evaluate
 
     def evaluate(self,board,colour,available_moves):
         policy_vector = self.return_policy_vector(board,colour,available_moves)
-        return self.dot_prod(self.weights,policy_vector)
+        return self.dot_prod(self.weights, policy_vector)

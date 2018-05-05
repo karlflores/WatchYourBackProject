@@ -3,8 +3,8 @@
 * and the player file
 '''
 from math import inf
-from Board.Board import constant
-from Board.GameBoard_Dict import Board
+from Board import constant
+from Board.Board import Board
 from Evaluation.Policies import Evaluation
 from Data_Structures.Transposition_Table import TranspositionTable
 from copy import deepcopy
@@ -156,7 +156,9 @@ class Negamax(object):
 
         # generate legal actions
         actions = self.board.update_actions(self.board, colour)
-        print(len(actions))
+        # print(len(actions))
+        actions = self.board.sort_actions(actions, colour)
+
         # terminal test -- default case
         if self.cutoff_test(depth):
             val = self.evaluate_state(self.board, self.player, actions)*dic[colour]
@@ -168,11 +170,28 @@ class Negamax(object):
 
         # generate legal actions
         #actions = self.board.update_actions(self.board, colour)
+        # split the actions into favourable an unfavourable
+        # if the length of actions is greater than X, then we can just choose to look through the first
+        # 5 'favourable' actions that we see right now
+        # if the length of actions is less than X, then we can just evaluate all possible actions we have
+        # THIS IS A GREEDY APPROACH TO MINIMAX THAT LIMITS OUR BRANCHING FACTOR OF THE GAME
+        if len(actions) > 5:
+            favourable = actions[:5]
+        else:
+            favourable = actions
+        # got here
+        #print("got here")
+        # depth reduction
+        R = 2
 
-        for action in actions:
+        for action in favourable:
 
             self.board.update_board(action, colour)
-            score, temp = self.negamax(depth-1, -beta, -alpha, opponent)
+            if action in favourable:
+                score, temp = self.negamax(depth-1, -beta, -alpha, opponent)
+            else:
+                score, temp = self.negamax(depth-1-R, -beta, -alpha, opponent)
+
             score = -score
 
             if score > best_val:

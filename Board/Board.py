@@ -11,7 +11,7 @@ import math
 from Data_Structures.Stack import Stack
 
 from sys import getsizeof
-
+from Evaluation.Features import Features
 
 class Board(object):
 
@@ -357,11 +357,11 @@ class Board(object):
         # horizontal check
         if ((pos_col+1,pos_row) in opp_piece_pos_list) and \
                 ((pos_col-1,pos_row) in opp_piece_pos_list):
-            return pos_col,pos_row
+            return pos_col, pos_row
         # vertical piece position check for self elimination
         elif ((pos_col,pos_row+1) in opp_piece_pos_list) and \
                 ((pos_col,pos_row-1) in opp_piece_pos_list):
-            return pos_col,pos_row
+            return pos_col, pos_row
         else:
             return None
 
@@ -389,7 +389,7 @@ class Board(object):
         self.piece_pos[my_piece_type].append(new_pos)
 
         # now we can test for elimination at the new position on the board
-        self.perform_elimination(new_pos,my_piece_type)
+        self.perform_elimination(new_pos, my_piece_type)
         # increase the number of moves made on the board
         # self.move_counter += 1
         # success
@@ -960,6 +960,56 @@ class Board(object):
 
         return actions
 
-    # determines if a move is favourable or not
-    def favourable_move(self,move):
-        return True
+    # return a list of favourable and unfavourable moves
+    def sort_actions(self,actions,colour):
+        # lets sort the list using another list of weights
+        weights = [0]*len(actions)
+        MAX_DIST = 14
+        for i, action in enumerate(actions):
+            # get the min manhattan distance of a piece -- if the distance is large we want to append a small value --
+                # max distance will be 14
+
+            weights[i] += (MAX_DIST - Features.min_manhattan_dist(self, action, colour))
+            if self.phase == constant.PLACEMENT_PHASE:
+                weights[i] += 4 - Features.dist_to_center(action)
+            else:
+                pos = self.convert_move_type_to_coord(action[0],action[1])
+                weights[i] += 4 - Features.dist_to_center(pos)
+
+            # if an action is able to capture a piece then we need to increase the weight of this action
+            if Features.can_action_capture(self,action,colour) is True:
+                weights[i] += 1000
+
+            # if an action is going to self eliminate itself then we need to decrease the weight of this action
+            if Features.check_self_elimination(self,action,colour) is True:
+                weights[i] -= 200
+
+            # if a piece is able to surround an enemy piece increase the weight
+            if Features.can_action_surround(self,action,colour) is True:
+                weights[i] += 20
+
+            # if a piece is able to form a cluster then this is a good move to make
+            if Features.can_form_cluster(self,action,colour) is True:
+                weights[i] += 50
+
+            # is a middle square free
+            if Features.occupy_middle(self,action,colour) is True:
+                weights[i] += 50
+
+            # if we are already in a middle square we don't really want to move this piece
+            if self.phase == constant.MOVING_PHASE:
+                if Features.in_middle(self,action) is True:
+                    weights[i] -= 50
+
+        # sort the list based on the weights found
+        # print(weights)
+        # print(actions)
+        return [action for _, action in sorted(zip(weights,actions), reverse=True)]
+
+    def favourable_actions(self):
+
+        favourable = []
+        unfavourable = []
+
+
+        return favourable, unfavourable
