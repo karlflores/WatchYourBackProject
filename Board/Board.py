@@ -109,16 +109,7 @@ class Board(object):
             return constant.INVALID_SPACE
         if row < row_min or row > row_max:
             return constant.INVALID_SPACE
-        '''
-        if my_piece_pos in self.corner_pos:
-            return constant.CORNER_PIECE
-        elif my_piece_pos in self.piece_pos[constant.BLACK_PIECE]:
-            return constant.BLACK_PIECE
-        elif my_piece_pos in self.piece_pos[constant.WHITE_PIECE]:
-            return constant.WHITE_PIECE
-        else:
-            return constant.INVALID_SPACE
-        '''
+
         # piece is in the playable bounds of the game
         # we can return this piece
         return self.get_board_piece(row, col)
@@ -220,7 +211,7 @@ class Board(object):
         # check the two space move
         elif 4 <= move_type < 8:
             # get the intermediate position piece_type
-            inter_pos = self.convert_move_type_to_coord(my_piece_pos,move_type-4)
+            inter_pos = self.convert_move_type_to_coord(my_piece_pos, move_type-4)
             inter_pos_piece_type = self.return_cell_type(inter_pos)
             # print("INTERMEDIATE SPACE " + inter_pos_piece_type)
 
@@ -963,6 +954,7 @@ class Board(object):
     # return a list of favourable and unfavourable moves
     def sort_actions(self,actions,colour):
         # lets sort the list using another list of weights
+        # iterating + sorting + reconstructing -- nlog(n) + 2n : this is not good enough
         weights = [0]*len(actions)
         MAX_DIST = 14
         for i, action in enumerate(actions):
@@ -1001,15 +993,4 @@ class Board(object):
                 if Features.in_middle(self,action) is True:
                     weights[i] -= 50
 
-        # sort the list based on the weights found
-        # print(weights)
-        # print(actions)
         return [action for _, action in sorted(zip(weights,actions), reverse=True)]
-
-    def favourable_actions(self):
-
-        favourable = []
-        unfavourable = []
-
-
-        return favourable, unfavourable

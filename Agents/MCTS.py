@@ -116,12 +116,11 @@ class MonteCarloTreeSearch(object):
         # then we update the current node we are at to this leaf node
 
         # choose an action -- choose randomly
-        action_index = randint(0,len(node.untried_actions)-1)
+        action_index = randint(0, len(node.untried_actions)-1)
         action = node.untried_actions[action_index]
         # remove that action from the untried action list
-       # print(node.untried_actions)
         node.untried_actions.remove(action)
-       # print(node.untried_actions)
+
         child = self.create_node(node.board,Board.get_opp_piece_type(node.colour), action, node)
 
         # apply the move to that child node
@@ -135,6 +134,7 @@ class MonteCarloTreeSearch(object):
 
     # evaluate the UCB1 value of a particular node -- this is what we use to explore
     # the tree until we get to a child node
+
     def UCB1(self,node,explore_param):
         # check if the parent exists
         if node.parent is None:
