@@ -182,23 +182,30 @@ class Negamax(object):
                 if alpha >= beta:
                     return tt_value, None
 
+        actions_1 = self.board.update_actions(self.board, colour)
+
+        actions = self.board.sort_actions(actions_1,colour)
+
         # terminal test -- default case
         if self.cutoff_test(depth):
-            val = self.evaluate_state(self.board, self.player)*dic[colour]
+            val = self.evaluate_state(self.board, self.player, actions_1)*dic[colour]
             return val, None
 
         # do the minimax search
         best_val = -inf
         best_action = None
-        actions = self.board.update_actions(self.board, colour)
 
         if move_to_try is not None and move_to_try in actions:
             #print("MOVE ORDERING")
             # put the move to try at the first position -- therefore it will be searched first
             actions = [move_to_try] + actions
         i = 0
+        if len(actions) <= 8:
+            favourable = actions
+        else:
+            favourable = actions[:8]
         # print(len(actions))
-        for action in actions:
+        for action in favourable:
             # skip over the best action in the tt table
             if action == move_to_try and i!= 0:
                 continue
@@ -252,7 +259,7 @@ class Negamax(object):
 
     def evaluate_state(self, board, colour, actions):
         #return Evaluation.basic_policy(board,colour)
-        return self.evaluation.evaluate(board,colour,actions)
+        return self.evaluation.evaluate(board, colour, actions)
 
     # update the available moves of the search algorithm after it has been instantiated
     #
