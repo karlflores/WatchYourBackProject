@@ -16,3 +16,11 @@ class NoFavourableMoves(Error):
 
 class ReturnUnfavourableMove(Error):
     pass
+
+
+class PieceOutofBound(Error):
+    pass
+
+
+class IllegalPlacement(Error):
+    pass

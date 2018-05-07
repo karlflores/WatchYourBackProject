@@ -48,7 +48,7 @@ class Node(object):
     # this updates the available actions that the child node can make
     def update_actions(self):
         self.untried_actions = self.board.update_actions(self.board, self.colour)
-        self.untried_actions = self.board.sort_actions(self.board,self.)
+
 
     def is_leaf(self):
         # if there are no child nodes at this node then it is a leaf node

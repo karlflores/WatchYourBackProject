@@ -865,7 +865,7 @@ class Board(object):
 
     @staticmethod
     def set_array_char(byte_array, row, col, new_char):
-        dimension = constant.BOARD_SIZE
+        dimension = int(math.sqrt(len(byte_array)))
 
         if row > dimension - 1 or col > dimension - 1:
             return
