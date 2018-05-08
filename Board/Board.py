@@ -974,7 +974,7 @@ class Board(object):
 
             # if an action is going to self eliminate itself then we need to decrease the weight of this action
             if Features.check_self_elimination(self,action,colour) is True:
-                weights[i] -= 200
+                weights[i] -= 2000
 
             # if a piece is able to surround an enemy piece increase the weight
             if Features.can_action_surround(self,action,colour) is True:
@@ -986,7 +986,7 @@ class Board(object):
 
             # is a middle square free
             if Features.occupy_middle(self,action,colour) is True:
-                weights[i] += 50
+                weights[i] += 100
 
             # if we are already in a middle square we don't really want to move this piece
             if self.phase == constant.MOVING_PHASE:

@@ -62,7 +62,7 @@ class Piece(object):
     def set_valid_neighbours(self):
         # check all directions, and see if they are occupying a free square
         for direction in range(constant.MAX_MOVETYPE):
-            new_pos = self.board.convert_move_type_to_coord(self.pos,direction)
+            new_pos = self.board.convert_direction_to_coord(self.pos, direction)
 
             # check if the new position is within the bounds of the board -- uses the current dimensions of the board
             # this is because when the board is shrinking, the boards dimensions change
@@ -121,12 +121,12 @@ class Piece(object):
         for direction in range(constant.MAX_MOVETYPE):
             # this represents a one step move
             if self.is_legal_move(direction):
-                actions.append((self.pos,direction))
+                actions.append((self.pos, direction))
 
         return actions
 
     # tests if a piece is able to move in a given direction
-    def is_legal_move(self,direction):
+    def is_legal_move(self, direction):
         if direction < 4:
             if self.get_neighbour(direction):
                 # then this is a free square, hence we can move into it
@@ -138,6 +138,7 @@ class Piece(object):
             # then this is a jump move, need to see if the adjacent square is occupied
             # NOTE: direction - 4 converts a move of 2 step into a 1 step equivalent
             adj_square = self.get_neighbour(direction - 4)
+            print(adj_square)
             if adj_square is False and self.get_neighbour(direction) is True:
                 return True
             else:
@@ -165,6 +166,9 @@ class Piece(object):
 
         # if we get here we can set the position of the piece
         self.pos = pos
+
+    def get_colour(self):
+        return self.colour
 
     # print a string representation of this piece
     def __str__(self):
