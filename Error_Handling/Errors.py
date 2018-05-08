@@ -33,3 +33,6 @@ class MoveNotApplied(Error):
 
 class IllegalPosition(Error):
     pass
+
+class InvalidAction(Error):
+    pass

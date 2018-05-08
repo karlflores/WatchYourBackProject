@@ -68,9 +68,11 @@ class Piece(object):
             # this is because when the board is shrinking, the boards dimensions change
             col, row = new_pos
             if col < self.board.get_min_dim() or col > self.board.get_max_dim():
-                self.set_neighbour(direction,False)
-            elif row < self.board.get_min_dim() or col > self.board.get_max_dim():
                 self.set_neighbour(direction, False)
+                continue
+            elif row < self.board.get_min_dim() or row > self.board.get_max_dim():
+                self.set_neighbour(direction, False)
+                continue
 
             # check if neighbouring squares are already occupied by another piece
             if new_pos in self.board.white_pieces:
@@ -138,7 +140,7 @@ class Piece(object):
             # then this is a jump move, need to see if the adjacent square is occupied
             # NOTE: direction - 4 converts a move of 2 step into a 1 step equivalent
             adj_square = self.get_neighbour(direction - 4)
-            print(adj_square)
+            # print(adj_square)
             if adj_square is False and self.get_neighbour(direction) is True:
                 return True
             else:
@@ -160,8 +162,10 @@ class Piece(object):
     def set_position(self,pos):
         col, row = pos
         if row < self.board.min_dim or row > self.board.max_dim:
+            print("ILLEGAL POSITION AT: " + str(pos))
             raise IllegalPosition
         if col < self.board.min_dim or col > self.board.max_dim:
+            print("ILLEGAL POSITION AT: " + str(pos))
             raise IllegalPosition
 
         # if we get here we can set the position of the piece
@@ -185,7 +189,7 @@ class Piece(object):
 
         return "PIECE AT Position: " + str(self.pos) + "\n" + "Colour: " + colour + "\n" + neighbours + "\n"
 
-        # print a string representation of this piece
+    # print a string representation of this piece
     def __repr__(self):
         if self.colour == constant.WHITE_PIECE:
             colour = "WHITE"

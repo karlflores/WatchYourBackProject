@@ -179,10 +179,8 @@ class Board(object):
     def apply_move(self, pos, direction, colour):
         if colour == constant.WHITE_PIECE:
             my_pieces = self.white_pieces
-            opponent_pieces = self.black_pieces
         else:
             my_pieces = self.black_pieces
-            opponent_pieces = self.white_pieces
 
         # get the piece we are trying to move
         try:
@@ -201,38 +199,41 @@ class Board(object):
         new_col, new_row = new_pos
         old_col, old_row = pos
 
-        # update the pieces position
-        piece.set_position(new_pos)
+        # then we can update the dictionaries
+        piece = my_pieces.pop(pos)
 
-        # update the pieces neighbours
-        piece.set_valid_neighbours()
-
-        # update the neighbours of that piece to False as these pieces can no longer move into this square
-        self.update_neighbouring_squares(pos,False)
+        # map it to the new position of the board
+        new_loc = {new_pos: piece}
+        my_pieces.update(new_loc)
 
         # update the board representation
         self.set_board(old_row, old_col, constant.FREE_SPACE)
         self.set_board(new_row, new_col, colour)
 
-        # then we can update the dictionaries
-        piece = my_pieces.pop(pos)
-
-        # map it to the new position of the board
-        new_piece = {new_pos: piece}
-        my_pieces.update(new_piece)
-
         # now we can test for elimination at the new position on the board
         eliminated_pieces = self.perform_elimination(new_pos, colour)
+
+        # update the pieces position
+        piece.set_position(new_pos)
+        # update the pieces neighbours
+        piece.set_valid_neighbours()
+
+        # update the neighbours of that piece to False as these pieces
+        # can no longer move into this square that the piece is now occupying
+        self.update_neighbouring_squares(new_pos, False)
+
+        # neighbouring pieces are able to move into the old location of the moved piece as this
+        # square is now free
+        self.update_neighbouring_squares(pos, True)
 
         if len(eliminated_pieces) > 0:
             # then there are pieces that have been eliminated, therefore we must update the
             # neighbouring pieces free neighbour list
             for piece in eliminated_pieces:
                 elim_pos = piece.get_position()
-                self.update_neighbouring_squares(elim_pos,True)
-        # increase the number of moves made on the board
-        # self.move_counter += 1
-        # success
+                self.update_neighbouring_squares(elim_pos, True)
+
+        # return eliminated pieces
         return eliminated_pieces
 
     # place a piece on the board and return the eliminated piece if there are any
@@ -240,10 +241,8 @@ class Board(object):
         col, row = pos
         if colour == constant.WHITE_PIECE:
             my_pieces = self.white_pieces
-            opponent_pieces = self.black_pieces
         else:
             my_pieces = self.black_pieces
-            opponent_pieces = self.white_pieces
 
         # add the piece to the board
         try:
@@ -253,14 +252,9 @@ class Board(object):
             # update the free squares of the game
             entry = {pos: False}
             self.free_squares.update(entry)
-
-            # for this position we must check if there are any pieces that are neighbouring this piece
-            # if there are, we must update those pieces free neighbours
-            # since we have placed a piece on the board, this location is no longer free
-            self.update_neighbouring_squares(pos,False)
-
         except IllegalPlacement:
             print("Piece created at illegal position on board")
+            exit(0)
             return
 
         # first we update the board representation
@@ -269,7 +263,12 @@ class Board(object):
         # perform the elimination around the piece that has been placed
         eliminated_pieces = self.perform_elimination(pos, colour)
 
-        # for each eliminated piece we must update the neighbouring sqaures of that piece
+        # for this position we must check if there are any pieces that are neighbouring this piece
+        # if there are, we must update those pieces free neighbours
+        # since we have placed a piece on the board, this location is no longer free
+        self.update_neighbouring_squares(pos, False)
+
+        # for each eliminated piece we must update the neighbouring squares of that piece
         if len(eliminated_pieces) > 0:
             for piece in eliminated_pieces:
                 elim_pos = piece.get_position()
@@ -288,9 +287,9 @@ class Board(object):
     # if we are wanting to indicate that the current square that we are on is no longer free we set the
     # value to False,
     # if the sqaure we are currently on is free, we set the value to true, indicating that this is a possible
-    # square that the neighboring sqaure can possibly move int o
+    # square that the neighboring sqaure can possibly move into
     def update_neighbouring_squares(self,pos, bool_value):
-        print(pos)
+        # print(pos)
         # for the eliminated piece we must also update any neighboutrs
         for direction in range(constant.MAX_MOVETYPE):
             # get the position of any possible neighbouring squares
@@ -301,16 +300,16 @@ class Board(object):
 
             # if a neighbouring square is occupied by this piece, we must update its free-neighbour list
             if neighbour_pos in self.white_pieces:
-                print(neighbour_pos)
-                print(opp_dir)
+                # print(neighbour_pos)
+                # print(opp_dir)
                 neighbour = self.white_pieces[neighbour_pos]
                 neighbour.set_neighbour(opp_dir, bool_value)
                 # print(neighbour)
 
             # if a neighbour is occupied by the opponent piece, we need to update its free-neighbour list
             elif neighbour_pos in self.black_pieces:
-                print(neighbour_pos)
-                print(opp_dir)
+                # print(neighbour_pos)
+                # print(opp_dir)
                 neighbour = self.black_pieces[neighbour_pos]
                 neighbour.set_neighbour(opp_dir, bool_value)
                 # print(neighbour)
@@ -353,7 +352,7 @@ class Board(object):
             # check if the move passed in was a forfeit move
             if move is None:
                 self.move_counter += 1
-
+        print(eliminated_pieces)
         return eliminated_pieces
 
     # check if there is a winner terminal states can only occur in the final phase
@@ -387,11 +386,10 @@ class Board(object):
             return False
 
     # elimination checkers -- TODO: need to change this to work with this board representation
+    # perform elimination only eliminates the pieces from the board -- it changes the dictionary
+    # it does not update the neighbours of the pieces -- NEED TO DO THIS AFTER YOU CALL IT
     def perform_elimination(self, my_piece_pos, colour):
         eliminated_pieces = []
-
-        # get the opponent piece type
-        opponent = self.get_opp_piece_type(colour)
 
         if colour == constant.WHITE_PIECE:
             my_pieces = self.white_pieces
@@ -399,9 +397,9 @@ class Board(object):
             opponent_pieces = self.black_pieces
             opp_elim_pieces = self.black_eliminate_pieces
         elif colour == constant.BLACK_PIECE:
-            my_pieces = copy(self.black_pieces)
+            my_pieces = self.black_pieces
             my_elim_pieces = self.black_eliminate_pieces
-            opponent_pieces = copy(self.white_pieces)
+            opponent_pieces = self.white_pieces
             opp_elim_pieces = self.white_eliminate_pieces
 
         while self.check_one_piece_elimination(my_piece_pos, colour) is not None:
@@ -426,23 +424,6 @@ class Board(object):
                 # update the eliminated piece list
                 eliminated_pieces.append(elim_piece)
 
-                # for the eliminated piece we must also update any neighboutrs
-                for direction in range(constant.MAX_MOVETYPE):
-                    neighbour_pos = self.convert_direction_to_coord(elim_pos,direction)
-                    opp_dir = self.get_opposite_direction(direction)
-
-                    # if a neighbouring square is occupied by this piece, we must update its free-neighbour list
-                    if neighbour_pos in my_pieces:
-                        neighbour = my_pieces[neighbour_pos]
-                        neighbour.set_neighbour(opp_dir, True)
-                        # print(neighbour)
-
-                    # if a neighbour is occupied by the opponent piece, we need to update its free-neighbour list
-                    elif neighbour_pos in opponent_pieces:
-                        neighbour = opponent_pieces[neighbour_pos]
-                        neighbour.set_neighbour(opp_dir, True)
-                        # print(neighbour)
-
         # check for self elimination if there is not opponent piece to be eliminated
         elim_pos = self.check_self_elimination(my_piece_pos, colour)
         if elim_pos is not None:
@@ -459,27 +440,6 @@ class Board(object):
             # update the eliminated piece dictionary
             eliminated_pieces.append(elim_piece)
 
-            # for the eliminated piece we must also update any neighbour
-            for direction in range(constant.MAX_MOVETYPE):
-                neighbour_pos = self.convert_direction_to_coord(elim_pos, direction)
-                opp_dir = self.get_opposite_direction(direction)
-
-                # if a neighbouring square is occupied by this piece, we must update its free-neighbour list
-                if neighbour_pos in my_pieces:
-                    neighbour = my_pieces[neighbour_pos]
-                    neighbour.set_neighbour(opp_dir, True)
-                    print(neighbour)
-
-                # if a neighbour is occupied by the opponent piece, we need to update its free-neighbour list
-                elif neighbour_pos in opponent_pieces:
-                    neighbour = opponent_pieces[neighbour_pos]
-                    neighbour.set_neighbour(opp_dir, True)
-                    print(neighbour)
-
-        print(eliminated_pieces)
-        print(my_elim_pieces)
-        print(opp_elim_pieces)
-        print(self)
         return eliminated_pieces
 
     # elimination helper function
@@ -488,10 +448,10 @@ class Board(object):
 
         if colour == constant.WHITE_PIECE:
             my_pieces = copy(self.white_pieces)
-            opponent_pieces = copy(self.black_pieces)
-        elif colour == constant.BLACK_PIECE:
+            opponent_pieces = self.black_pieces
+        else:
             my_pieces = copy(self.black_pieces)
-            opponent_pieces = copy(self.white_pieces)
+            opponent_pieces = self.white_pieces
 
         # append the corner pieces to the list as these act as your own piece
         for corner in self.corner_pos:
@@ -528,7 +488,7 @@ class Board(object):
         if colour == constant.WHITE_PIECE:
             opponent_pieces = copy(self.black_pieces)
             my_pieces = self.white_pieces
-        elif colour == constant.BLACK_PIECE:
+        else:
             opponent_pieces = copy(self.white_pieces)
             my_pieces = self.black_pieces
 
@@ -629,7 +589,8 @@ class Board(object):
         elif direction == constant.RIGHT_2:
             return constant.LEFT_2
 
-    # shrink the board
+    # shrink the board -- this does not update any neighbouring squares apart from squares that are
+    # neighbouring the corner positions
     def shrink_board(self):
         eliminated_pieces = []
 
@@ -668,23 +629,29 @@ class Board(object):
 
         # if a corner is on top of a piece , eliminate that piece
         for corner in self.corner_pos:
-
+            # eliminate the white piece
             if corner in self.white_pieces:
                 piece = self.white_pieces.pop(corner)
                 piece.eliminate()
                 self.white_eliminate_pieces.append(piece)
                 eliminated_pieces.append(piece)
             elif corner in self.black_pieces:
+                # eliminate the black piece
                 piece = self.black_pieces.pop(corner)
                 piece.eliminate()
                 self.black_eliminate_pieces.append(piece)
                 eliminated_pieces.append(piece)
 
-        # update the board representations
-        for corner_col, corner_row in self.corner_pos:
+            # also update any neighbouring pieces to the corners -- they are not able to move into
+            # this position anymore
+            self.update_neighbouring_squares(corner, False)
+
+            # set the board
+            corner_col, corner_row = corner
             self.set_board(corner_row, corner_col, constant.CORNER_PIECE)
 
-        # check for one space eliminations about the corner pieces
+        # check for one space eliminations about the corner pieces in the specific order
+        # according to the rule sheet -- [U.L -> L.L -> L.R -> U.R]
         for i in (0, 2, 3, 1):
             corner = self.corner_pos[i]
             pieces = self.corner_elimination(corner)
@@ -695,8 +662,10 @@ class Board(object):
         # set the min and max dimensions of the board
         self.min_dim += 1
         self.max_dim -= 1
+        return eliminated_pieces
 
-    # un shrink the board representation -- this method does not replace any
+    # un shrink the board representation -- this method does not replace any eliminated pieces
+    # this will be taken care of in the undo function
     def unshrink_board(self):
         print("UNSHRINK")
         if self.min_dim < 1 or self.max_dim > constant.BOARD_SIZE - 1:
@@ -736,6 +705,7 @@ class Board(object):
         self.corner_pos = new_corners
 
     # helper function for elimination of pieces at a corner -- for board shrinks
+    # this does not update any neighbouring squares -- need to do this after the call
     def corner_elimination(self, corner):
         eliminated_pieces = []
         # print("CALLED CORNER ELIMINATION")
@@ -752,12 +722,12 @@ class Board(object):
             if player == constant.WHITE_PIECE:
                 opponent_pieces = self.black_pieces
                 opp_elim_pieces = self.black_eliminate_pieces
-            elif player == constant.BLACK_PIECE:
+            else:
 
                 opponent_pieces = self.white_pieces
                 opp_elim_pieces = self.white_eliminate_pieces
 
-            opp_player = self.get_opp_piece_type(player)
+            oppponent = self.get_opp_piece_type(player)
             # there can be more than one elimination or there can be None
             while self.check_one_piece_elimination(corner, player) is not None:
                 eliminated_pos = self.check_one_piece_elimination(corner, player)
@@ -767,8 +737,6 @@ class Board(object):
                 elim_piece = opponent_pieces.pop(eliminated_pos)
                 elim_piece.eliminate()
                 opp_elim_pieces.append(elim_piece)
-
-                eliminated_pieces[opp_player].append(elim_piece)
                 col, row = eliminated_pos
                 # update the board representation
                 self.set_board(row, col, constant.FREE_SPACE)
@@ -817,10 +785,8 @@ class Board(object):
 
         if colour == constant.WHITE_PIECE:
             my_pieces = self.white_pieces
-            opponent_pieces = self.black_pieces
         elif colour == constant.BLACK_PIECE:
             my_pieces = self.black_pieces
-            opponent_pieces = self.white_pieces
 
         # then we need to update the board to being in the state where it originally was in
         # first we need to see if the board has just recently been shrunk
@@ -1026,4 +992,4 @@ class Board(object):
                 board+=char + " "
             board+="\n"
 
-        return "THIS BOARD: \n" + board + "\n"
+        return board
