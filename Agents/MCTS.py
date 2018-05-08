@@ -17,8 +17,8 @@ THIS CLASS IMPLEMENTED MONTE CARLO TREE SEARCH FOR WATCH YOUR BACK
 IT WAS FOUND THAT DUE TO TIME RESTRICTIONS OF MAKING A MOVE THAT WE WERE NOT ABLE TO GENERATE 
 A BIG ENOUGH GAME TREE SUCH THAT THE MOVE WE WERE GOING TO MAKE WAS GOING TO BE SOMEWHAT 'GOOD'
 
-THIS IS BECAUSE THE TIME TO SIMULATE A COMPLETELY RANDOM GAME WAS ~0.07s ON AVERAGE, MEANING THAT IN
-A 1sec EVALUATION, WE COULD ONLY CREATE 14 NODES TO A SEARCH TREE 
+THIS IS BECAUSE THE TIME TO SIMULATE A COMPLETELY RANDOM GAME WAS ~0.08s ON AVERAGE, MEANING THAT IN
+A 1sec EVALUATION, WE COULD ONLY CREATE 12 NODES TO A SEARCH TREE 
 
 THE GAME HAS A BRANCHING FACTOR OF ~46 MOVES AT THE START OF THE GAME, HENCE WE COULD NOT GENERATE 
 A GAME TREE OF AT LEAST ONE WHOLE SET OF AVAILABLE MOVES, THEREFORE WE DECIDED AGAINST USING THIS
@@ -26,6 +26,13 @@ AGENT IN OUR FINAL IMPLEMENTATION
 
 THAT BEING SAID, THIS AGENT, GIVEN ENOUGH TIME, IS ABLE TO PICK INFORMED MOVES, BUT THE TIME IT TAKES
 TO CONVERGE IS MUCH TOO SLOW... (HOURS UPON HOURS...)
+
+note: with the reimplemented board mechanisms -- the simulation time was cut from ~0.08s to ~0.04s, this is still
+very inefficient
+Running some tests -- in a 2 min evaluation roughly 200 nodes are able to be created, therefore if we assume
+a branching factor of ~44 the game tree that is constructed is roughly 2-ply deep. Although this is not entirely the 
+case as the tree actually grows asymmetrically. 
+
 '''
 # start this implementation with each node storing a copy of the board -- then change the implementation such that
 # we only use one board representation for the board state -- we just undo moves
@@ -226,19 +233,20 @@ class MonteCarloTreeSearch(object):
         best_child = None
         for child in root.children:
             self.UCB1(child, sqrt(2))
-            # print(child.ucb_value)
+            print(child.ucb_value)
+
             if child.ucb_value > best_ucb:
                 best_move = child.move
                 best_ucb = child.ucb_value
                 best_child = child
 
-        #print("UCB: ",end='')
-        #print(best_ucb)
-        #print("WINS: ",end='')
-        #print(best_child.wins)
+        print("UCB: ",end='')
+        print(best_ucb)
+        print("WINS: ",end='')
+        print(best_child.wins)
 
-        #print("VISITED: ",end='')
-        #print(best_child.visit_num)
-        #print("PARENT VISITED: ",end='')
-        #print(best_child.parent.visit_num)
+        print("VISITED: ",end='')
+        print(best_child.visit_num)
+        print("PARENT VISITED: ",end='')
+        print(best_child.parent.visit_num)
         return best_move

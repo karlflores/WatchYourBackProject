@@ -3,6 +3,29 @@ from BoardOOP.Piece import Piece
 from Error_Handling.Errors import *
 from copy import copy
 
+'''
+THIS CLASS IMPLEMENTS THE BOARD GAME AND ITS MECHANISMS 
+
+THIS USES AN OBJECT ORIENTED APPROACH TO REPRESENTING THE BOARD AND THE PIECE 
+WE TRY TO ACHIEVE EFFICIENCY IN THIS CLASS MY MAKING USE OF DICTIONARIES, SETS AND ONLY UPDATING THE ATTRIBUTES OF 
+PIECES ON THE BOARD THAT HAVE BEEN AFFECTED BY APPLYING A MOVE TO THE BOARD. 
+
+WE TRY TO MINIMISE THE USE OF LISTS TO MINIMISE THE NUMBER OF O(N) CALLS WE ARE MAKING TO THE BOARD THROUGH THE USE 
+OF REMOVING/TESTING FOR 
+
+THIS BOARD ALSO SUPPORTS AN UNDO-MOVE FUNCTIONALITY -- THIS WORKS BY CALLING IT DIRECTLY AFTER AN UPDATE_BOARD CALL IS 
+MADE. THIS ASSUMES THAT WHEN UPDATE_BOARD IS CALLED, THE ELIMINATED PIECES FOR THAT UPDATE IS STORED THEN PASSED 
+STRAIGHT BACK INTO THIS UNDO FUNCTION. THIS MEANS THAT WE CAN ONLY UNDO THE BOARD ONCE AN UPDATE TO THE BOARD IS MADE,
+THEREFORE THIS DOES NOT SUPPORT MULTIPLY UNDO CALLS IN A SEQUENTIAL FASHION AS WE REQUIRE THE MOVE APPLIED AND THE 
+ELIMINATED PIECES TO BE STORED. 
+
+NOTE: BOARD/BOARD.PY ALSO HAS UNDO-FUNCTIONALITY BUT IT STORES ALL ELIMINATED PIECES FOR THE ENTIRE GAME IN A STACK
+AND THE ACTIONS APPLIED TO THE GAME IN A STACK, SUCH THAT WHEN WE UNDO A MOVE, WE JUST POP THE MOST RECENT ITEM OFF 
+THE STACK AND REVERT THOSE CHANGES. DUE TO MORE OVERHEAD FROM CREATING A STACK, PUSHING/POPPING TO/FROM THE STACK AND 
+ADDITIONAL CHECKS FOR RECENTLY AVAILABLE MOVES WE BELIEVE THAT THIS MORE LOCAL IMPLEMENTATION OF UNDO-MOVE IS MORE 
+EFFICIENT.
+'''
+
 
 class Board(object):
 
@@ -778,6 +801,7 @@ class Board(object):
             elim_pos = elim_piece.get_position()
             col, row = elim_pos
 
+            # get the relevant piece dictionary
             if elim_piece.get_colour() == constant.WHITE_PIECE:
                 my_pieces = self.white_pieces
             else:
@@ -790,8 +814,8 @@ class Board(object):
             entry = {elim_piece.get_position(): elim_piece}
             my_pieces.update(entry)
 
-    def undo_move(self, action_applied,colour, eliminated_pieces):
-
+    def undo_action(self, action_applied, colour, eliminated_pieces):
+        # get the relavent piece dictionary
         if colour == constant.WHITE_PIECE:
             my_pieces = self.white_pieces
         elif colour == constant.BLACK_PIECE:
@@ -799,13 +823,20 @@ class Board(object):
 
         # then we need to update the board to being in the state where it originally was in
         # first we need to see if the board has just recently been shrunk
-
         if self.move_counter in (128, 192):
             # the board has just been shrunk once
-            # clear the board
+            # restore the invalid piece positions to being free squares
             self.unshrink_board()
             # place all the eliminated pieces back on the board
             self.reverse_eliminated_pieces(eliminated_pieces)
+
+            # need to re-evaluate all pieces neighbours on the board
+            for pos in self.white_pieces:
+                piece = my_pieces[pos]
+                piece.set_valid_neighbours()
+            for pos in self.black_pieces:
+                piece = my_pieces[pos]
+                piece.set_valid_neighbours()
 
         if action_applied is None:
             self.move_counter -= 1
@@ -822,9 +853,9 @@ class Board(object):
             # print(pos)
 
             if action_applied in my_pieces:
-                print("POP----------------------------------------------")
+                # print("POP----------------------------------------------")
                 piece = my_pieces.pop(action_applied)
-                print("POPPED PIECE")
+                # print("POPPED PIECE")
 
                 self.set_board(row, col, constant.FREE_SPACE)
 
@@ -832,11 +863,13 @@ class Board(object):
                 entry = {action_applied: True}
                 self.free_squares.update(entry)
 
+                # reset the valid neighbours of this piece
+                piece.set_valid_neighbours()
+
                 # update any neighbouring pieces -- we have remove the piece, therefore the neighbouring
                 # square values should be set to True since they can now move into this square
                 self.update_neighbouring_squares(action_applied, True)
-                # reset the valid neighbours of this piece
-                piece.set_valid_neighbours()
+
                 # for any eliminated piece we must update their valid positoin and also the neighbouring positions
                 for elim_piece in eliminated_pieces:
 
@@ -899,35 +932,36 @@ class Board(object):
                     self.reverse_eliminated_pieces(eliminated_pieces)
 
                 # we just need to undo the move that was made
-                old_pos = action_applied[0]
-                direction = action_applied[1]
+                from_pos = action_applied[0]
+                direction = self.get_opposite_direction(action_applied[1])
 
-                curr_pos = self.convert_direction_to_coord(old_pos, direction)
+                to_pos = self.convert_direction_to_coord(from_pos, direction)
 
                 # reset the new location to being free
-                self.set_board(curr_pos[1], curr_pos[0], constant.FREE_SPACE)
+                self.set_board(from_pos[1], from_pos[0], constant.FREE_SPACE)
+                # put the piece back to its old location
+                self.set_board(to_pos[1], to_pos[0], colour)
 
                 # get the old piece
-                if curr_pos in my_pieces:
-                    piece = my_pieces.pop(curr_pos)
+                if from_pos in my_pieces:
+                    piece = my_pieces.pop(from_pos)
 
                     # change the location of this piece to its old location
-                    piece.set_position(old_pos)
+                    piece.set_position(to_pos)
+
                     # add this piece back to the piece dictionary
-                    entry = {old_pos: piece}
+                    entry = {to_pos: piece}
                     my_pieces.update(entry)
 
                     # reset the valid neighbours of this piece
                     piece.set_valid_neighbours()
+
                     # the old_pos is now occypied by this piece -- therefore we set
                     # the neighbouring square to false
-                    self.update_neighbouring_squares(old_pos,False)
+                    self.update_neighbouring_squares(to_pos,False)
 
                     # the position before the undo is now FREE
-                    self.update_neighbouring_squares(curr_pos,True)
-
-                    # put the piece back to its old location
-                    self.set_board(old_pos[1],old_pos[0], colour)
+                    self.update_neighbouring_squares(from_pos,True)
 
                     # reset the valid neigbours of the neighbours of
 
@@ -977,7 +1011,7 @@ class Board(object):
         if colour == constant.WHITE_PIECE:
             min_row = 0
             max_row = 5
-        elif colour == constant.BLACK_PIECE:
+        else:
             min_row = 2
             max_row = 7
         col, row = move
