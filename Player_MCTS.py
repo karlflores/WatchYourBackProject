@@ -43,9 +43,8 @@ class Player:
             # update the player board representation with the action
             self.board.update_board((action[0], move_type), self.opponent)
 
-
     def action(self, turns):
-
+        self.strategy.num_nodes = 0
         self.strategy.update_board(self.board)
         # if action is called first the board representation move counter will be zero
         # this indicates that this player is the first one to move
@@ -58,12 +57,14 @@ class Player:
             self.board.phase = constant.MOVING_PHASE
 
         best_move = self.strategy.MCTS()
-        self.board.update_board(best_move, self.colour)
+        print("NUM NODE IN THIS TREE: " + str(self.strategy.num_nodes))
         # do an alpha beta search on this node
         # once we have found the best move we must apply it to the board representation
         if self.board.phase == constant.PLACEMENT_PHASE:
+            self.board.update_board(best_move, self.colour)
             return best_move
         else:
 
             new_pos = Board.convert_move_type_to_coord(best_move[0], best_move[1])
+            self.board.update_board(best_move, self.colour)
             return best_move[0], new_pos

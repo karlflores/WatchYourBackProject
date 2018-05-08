@@ -29,9 +29,9 @@ class Player:
 
             direction = self.board.convert_coord_to_direction(action[0], action[1])
             self.board.update_board((action[0], direction), self.opponent)
-        print("UPDATE BOARD _______________________________")
-        print(self.board)
-        print("UPDATE BOARD _______________________________")
+        # print("UPDATE BOARD _______________________________")
+        # print(self.board)
+        # print("UPDATE BOARD _______________________________")
 
     def action(self, turns):
         available_actions = self.board.update_actions(self.colour)
@@ -40,12 +40,12 @@ class Player:
         if self.board.phase == constant.PLACEMENT_PHASE:
             # making moves during the placement phase
             self.board.update_board(next_action, self.colour)
-            print(next_action)
+            # print(next_action)
             return next_action
         else:
             new_pos = self.board.convert_direction_to_coord(next_action[0],next_action[1])
             # making moves during the placement phase
-            print(next_action)
+            # print(next_action)
             self.board.update_board(next_action, self.colour)
             #print(next_action)
             return next_action[0], new_pos

@@ -349,10 +349,19 @@ class Board(object):
                 # add the eliminated pieces from the shrink board to this
                 eliminated_pieces += self.shrink_board()
 
+                # we need to re-evaluate the piece neighbours
+                for pos in self.white_pieces:
+                    piece = self.white_pieces[pos]
+                    piece.set_valid_neighbours()
+
+                for pos in self.black_pieces:
+                    piece = self.black_pieces[pos]
+                    piece.set_valid_neighbours()
+
             # check if the move passed in was a forfeit move
             if move is None:
                 self.move_counter += 1
-        print(eliminated_pieces)
+        # print(eliminated_pieces)
         return eliminated_pieces
 
     # check if there is a winner terminal states can only occur in the final phase

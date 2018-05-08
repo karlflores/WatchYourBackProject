@@ -1,7 +1,8 @@
 from math import inf,sqrt,log
 from Agents.MCTS_Node import Node
 from Constants import constant
-from Board.Board import Board
+# from Board.Board import Board
+from BoardOOP.Board import Board
 from copy import deepcopy
 from time import time
 from random import randint
@@ -42,6 +43,8 @@ class MonteCarloTreeSearch(object):
         # original state we just need to undo until the actions are 0
         self.action_num = 0
 
+        self.num_nodes = 0
+
     def MCTS(self, explore_param=sqrt(2)):
         start_time = time()*1000
         end_time = start_time
@@ -57,7 +60,6 @@ class MonteCarloTreeSearch(object):
 
             # we have expanded the leaf node and of all the actions, we have picked the action with
             # the highest UCB1
-
             net_win = self.simulate(node)
 
             # after simulation we will back-propagate the values of the simulation
@@ -82,7 +84,8 @@ class MonteCarloTreeSearch(object):
         #print(board.is_terminal())
         colour = node.colour
         num_moves = 0
-        while board.is_terminal() is False or num_moves > 80:
+
+        while board.is_terminal() is False:
             if len(available_actions) == 0:
                 # there are no actions to take and therefore it is a forfeit
                 action = None
@@ -100,22 +103,18 @@ class MonteCarloTreeSearch(object):
             # actions of next player -- this is the player that will make the next move
             available_actions = board.update_actions(board, colour)
         end_time = time()
-        print((end_time - start_time))
+
+        # print((end_time - start_time))
         # now we are at a terminal state, we need to find out who has won
         #print(board.winner)
-        #board.print_board()
-        if num_moves < 80:
-            if board.winner == node.colour:
-                return 1
-            elif board.winner == Board.get_opp_piece_type(node.colour):
-                return -1
-            elif board.winner is None:
-                return 0
-        else:
-            net_pieces = len(board.piece_pos[node.colour])-len(board.piece_pos[Board.get_opp_piece_type(node.colour)])
 
-            prob = net_pieces/(len(board.piece_pos[node.colour])+len(board.piece_pos[Board.get_opp_piece_type(node.colour)]))
-            return prob
+        if board.winner == node.colour:
+            return 1
+        elif board.winner == Board.get_opp_piece_type(node.colour):
+            return -1
+        elif board.winner is None:
+            return 0
+
 
     @staticmethod
     def value_backpropagation(node,value):
@@ -131,6 +130,7 @@ class MonteCarloTreeSearch(object):
 
         # choose an action -- choose randomly
         action_index = randint(0, len(node.untried_actions)-1)
+
         action = node.untried_actions[action_index]
         # remove that action from the untried action list
         node.untried_actions.remove(action)
@@ -144,6 +144,7 @@ class MonteCarloTreeSearch(object):
 
         # add this child to the parents child list
         node.add_child(child)
+        self.num_nodes+=1
         return child
 
     # evaluate the UCB1 value of a particular node -- this is what we use to explore
@@ -201,7 +202,7 @@ class MonteCarloTreeSearch(object):
 
             # recursively go down the tree until we hit a child node
             # self.UCB1_traversal(best_child, explore_param)
-        print(select_node)
+        # print(select_node)
         return select_node
 
     def update_root(self,root):
@@ -241,8 +242,3 @@ class MonteCarloTreeSearch(object):
         #print("PARENT VISITED: ",end='')
         #print(best_child.parent.visit_num)
         return best_move
-
-    def return_to_original_state(self):
-        for i in range(self.action_num):
-            self.board.undo_move()
-
