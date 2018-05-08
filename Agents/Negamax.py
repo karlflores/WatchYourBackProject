@@ -3,14 +3,12 @@
 * and the player file
 '''
 from math import inf
-from Board import constant
+from Constants import constant
 from Board.Board import Board
 from Evaluation.Policies import Evaluation
 from Data_Structures.Transposition_Table import TranspositionTable
 from copy import deepcopy
-from time import time, sleep
-from functools import lru_cache
-import heapq
+from time import time
 from Error_Handling.Errors import *
 
 

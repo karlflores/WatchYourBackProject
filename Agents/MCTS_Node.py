@@ -1,4 +1,4 @@
-from Board import constant
+from Constants import constant
 from copy import deepcopy
 from math import inf
 

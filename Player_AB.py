@@ -1,6 +1,6 @@
-from Board import constant
+from Constants import constant
 from Board.Board import Board
-from Agents.Minimax import MinimaxAB, MinimaxABUndo
+from Agents.Minimax import MinimaxABUndo
 
 class Player:
 
@@ -36,7 +36,7 @@ class Player:
 
         if self.colour == constant.WHITE_PIECE:
             # set the white pieces available moves
-            for row in range(0,constant.BOARD_SIZE-2):
+            for row in range(0, constant.BOARD_SIZE - 2):
                 for col in range(constant.BOARD_SIZE):
                     if (row, col) not in self.board.corner_pos:
                         self.available_moves.append((col, row))

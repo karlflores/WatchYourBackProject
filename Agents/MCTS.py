@@ -1,6 +1,6 @@
 from math import inf,sqrt,log
 from Agents.MCTS_Node import Node
-from Board import constant
+from Constants import constant
 from Board.Board import Board
 from copy import deepcopy
 from time import time

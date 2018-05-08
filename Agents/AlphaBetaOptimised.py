@@ -3,11 +3,11 @@
 * and the player file
 '''
 from math import inf
-from Board.Board import constant
+from Constants import constant
 from Board.Board import Board
 from Evaluation.Policies import Evaluation
 from copy import deepcopy
-from time import time, sleep
+from time import time
 from functools import lru_cache
 import heapq
 from Error_Handling.Errors import *
@@ -374,12 +374,12 @@ class MinimaxABOptimised(object):
 
     def start_available_actions_placement(self):
         # get rid of all pieces that exist on the board
-        for colour in (constant.BLACK_PIECE,constant.WHITE_PIECE):
+        for colour in (constant.BLACK_PIECE, constant.WHITE_PIECE):
             for piece in self.board.piece_pos[colour]:
                 if piece in self.available_actions[constant.WHITE_PIECE]:
-                    if Board.within_starting_area(piece,constant.WHITE_PIECE):
+                    if Board.within_starting_area(piece, constant.WHITE_PIECE):
                         self.available_actions[constant.WHITE_PIECE].pop(piece)
-                    if Board.within_starting_area(piece,constant.BLACK_PIECE):
+                    if Board.within_starting_area(piece, constant.BLACK_PIECE):
                         self.available_actions[constant.BLACK_PIECE].pop(piece)
 
 
@@ -688,9 +688,9 @@ class MinimaxABOptimised(object):
             if potential_piece in self.available_actions[constant.WHITE_PIECE]:
                 # then it is a piece on the board
                 # update this piece
-                self.update_actions_dict_entry(potential_piece,constant.WHITE_PIECE)
+                self.update_actions_dict_entry(potential_piece, constant.WHITE_PIECE)
             elif potential_piece in self.available_actions[constant.BLACK_PIECE]:
-                self.update_actions_dict_entry(potential_piece,constant.BLACK_PIECE)
+                self.update_actions_dict_entry(potential_piece, constant.BLACK_PIECE)
 
     def restore_available_actions(self):
         if self.board.phase == constant.PLACEMENT_PHASE:

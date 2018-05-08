@@ -1,5 +1,6 @@
-from Agents.Minimax import MinimaxABUndo, MinimaxUndo
-from Board.Board import constant, Board
+from Agents.Minimax import MinimaxABUndo
+from Board.Board import Board
+from Constants import constant
 
 board = Board()
 colour = constant.WHITE_PIECE

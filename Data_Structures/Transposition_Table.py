@@ -1,5 +1,5 @@
 from copy import copy
-from Board import constant
+from Constants import constant
 from Board.Board import Board
 '''
 We can use a dictionary to store any visited node in the search -- just store the board representation 
@@ -34,7 +34,7 @@ class TranspositionTable:
         self.tt.update(temp_dict)
         self.size += 1
 
-    def contains(self, board, colour,phase=constant.MOVING_PHASE):
+    def contains(self, board, colour, phase=constant.MOVING_PHASE):
         boardstr = copy(board)
         key = (boardstr, colour)
         if key in self.tt:

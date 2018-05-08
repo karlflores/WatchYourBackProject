@@ -1,8 +1,7 @@
-from Agents.MCTS import MonteCarloTreeSearch
 from Agents.Negamax import Negamax
 from Board.Board import Board
-from Board import constant
-from math import inf
+from Constants import constant
+
 # create a new board
 
 board = Board()

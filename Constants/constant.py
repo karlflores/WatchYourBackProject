@@ -7,6 +7,7 @@ INCLUDE IN Board.py
 BOARD_SIZE = 8
 MAX_MOVETYPE = 8
 MAX_NUM_PIECES = 12
+START_BOARD_STR = 'X------X------------------------------------------------X------X'
 
 # space types
 FREE_SPACE = '-'

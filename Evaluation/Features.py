@@ -6,7 +6,9 @@
 '''
 # from Board.Board import Board
 from math import fabs, inf, sqrt
-from Board import constant
+from Constants import constant
+
+
 # from copy import copy
 
 class Features(object):

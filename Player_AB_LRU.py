@@ -1,4 +1,4 @@
-from Board import constant
+from Constants import constant
 from Board.Board import Board
 from Agents.AlphaBetaOptimised import MinimaxABOptimised
 # from Agents.GreedyAlphaBeta import GreedyAlphaBetaMinimax

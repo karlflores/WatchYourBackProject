@@ -4,13 +4,13 @@
 '''
 from math import inf
 from Agents.Minimax_Node import Node, UndoNode
-from Board.Board import constant
+from Constants import constant
 from Board.Board import Board
 from Evaluation.Policies import Evaluation
 from copy import deepcopy
 from time import time, sleep
-from Data_Structures.Transposition_Table import TranspositionTable
-from functools import lru_cache
+
+
 class MinimaxAB(object):
 
     def __init__(self):
@@ -230,7 +230,7 @@ class MinimaxAB(object):
     def update_available_nodes_placement(node):
         Minimax.init_placable_area(node)
 
-        for colour in (constant.BLACK_PIECE,constant.WHITE_PIECE):
+        for colour in (constant.BLACK_PIECE, constant.WHITE_PIECE):
             for piece in node.board.piece_pos[colour]:
                 if piece in node.available_moves:
                     node.available_moves.remove(piece)
@@ -256,8 +256,8 @@ class MinimaxAB(object):
     @staticmethod
     def apply_horizontal_reflection(board_state):
         temp = ''
-        for index in range(constant.BOARD_SIZE**2):
-            temp+=constant.FREE_SPACE
+        for index in range(constant.BOARD_SIZE ** 2):
+            temp+= constant.FREE_SPACE
 
         temp = bytearray(temp,'utf-8')
 
@@ -612,7 +612,7 @@ class MinimaxABUndo(object):
     def update_available_nodes_placement(self, node):
         MinimaxABUndo.init_placable_area(node)
 
-        for colour in (constant.BLACK_PIECE,constant.WHITE_PIECE):
+        for colour in (constant.BLACK_PIECE, constant.WHITE_PIECE):
             for piece in self.board.piece_pos[colour]:
                 if piece in node.available_moves:
                     node.available_moves.remove(piece)
@@ -637,8 +637,8 @@ class MinimaxABUndo(object):
     @staticmethod
     def apply_horizontal_reflection(board_state):
         temp = ''
-        for index in range(constant.BOARD_SIZE**2):
-            temp+=constant.FREE_SPACE
+        for index in range(constant.BOARD_SIZE ** 2):
+            temp+= constant.FREE_SPACE
 
         temp = bytearray(temp,'utf-8')
 
@@ -686,7 +686,7 @@ class MinimaxABUndo(object):
 
     def start_available_actions_placement(self):
         # get rid of all pieces that exist on the board
-        for colour in (constant.BLACK_PIECE,constant.WHITE_PIECE):
+        for colour in (constant.BLACK_PIECE, constant.WHITE_PIECE):
             for piece in self.board.piece_pos[colour]:
                 if piece in self.available_actions[colour]:
                     if Board.within_starting_area(piece,colour):

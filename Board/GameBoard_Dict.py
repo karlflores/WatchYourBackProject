@@ -4,8 +4,8 @@
 
 '''
 
-from Board import constant
-from copy import deepcopy, copy
+from Constants import constant
+from copy import copy
 import math
 
 from Data_Structures.Stack import Stack
@@ -571,7 +571,7 @@ class Board(object):
             # put the original corners back on the board
             self.corner_pos = [(0,0),(7,0),(0,7),(7,7)]
             for (col, row) in self.corner_pos:
-                self.set_board(row,col,constant.CORNER_PIECE)
+                self.set_board(row, col, constant.CORNER_PIECE)
 
             # place all the pieces back on the board
             for colour in colour_tup:
@@ -598,15 +598,15 @@ class Board(object):
             # outer edges still invalid
             for i in range(constant.BOARD_SIZE):
                 # set the outer edges to invalid
-                self.set_board(0,i,constant.INVALID_SPACE)
-                self.set_board(7,i,constant.INVALID_SPACE)
-                self.set_board(i,7,constant.INVALID_SPACE)
-                self.set_board(i,0,constant.INVALID_SPACE)
+                self.set_board(0, i, constant.INVALID_SPACE)
+                self.set_board(7, i, constant.INVALID_SPACE)
+                self.set_board(i, 7, constant.INVALID_SPACE)
+                self.set_board(i, 0, constant.INVALID_SPACE)
 
             # set the corner positions to be at the old corners
             self.corner_pos = [(1,1),(6,1),(1,6),(6,6)]
             for (col,row) in self.corner_pos:
-                self.set_board(row,col,constant.CORNER_PIECE)
+                self.set_board(row, col, constant.CORNER_PIECE)
 
             # place all the pieces back on the board
             for colour in colour_tup:
@@ -660,7 +660,7 @@ class Board(object):
             # print(pos)
             if pos in self.piece_pos[colour]:
                 self.piece_pos[colour].pop(pos)
-            self.set_board(row,col,constant.FREE_SPACE)
+            self.set_board(row, col, constant.FREE_SPACE)
 
             # this piece is affected by the change so then we can add these pieces to the
             # affected piece list
@@ -694,7 +694,7 @@ class Board(object):
                 # print(pos)
                 if pos in self.piece_pos[colour]:
                     self.piece_pos[colour].pop(pos)
-                self.set_board(row,col,constant.FREE_SPACE)
+                self.set_board(row, col, constant.FREE_SPACE)
                 # these pieces are affected by the change so then we can add these pieces to the
                 # affected piece list
                 pieces_effected.append(((col, row), colour, constant.PLACE_LOC))
@@ -726,7 +726,7 @@ class Board(object):
 
                 curr_pos = self.convert_move_type_to_coord(old_pos, move_type)
                 # reset the new location to being free
-                self.set_board(curr_pos[1],curr_pos[0],constant.FREE_SPACE)
+                self.set_board(curr_pos[1], curr_pos[0], constant.FREE_SPACE)
                 if curr_pos in self.piece_pos[colour]:
                     self.piece_pos[colour].pop(curr_pos)
 
@@ -764,10 +764,10 @@ class Board(object):
                 # remove any piece that is eliminated from the position lists
                 if (col, row) in self.piece_pos[constant.BLACK_PIECE]:
                     self.piece_pos[constant.BLACK_PIECE].pop((col, row))
-                    self.eliminated_pieces[constant.BLACK_PIECE].append(((col,row),self.phase,self.move_counter))
+                    self.eliminated_pieces[constant.BLACK_PIECE].append(((col, row), self.phase, self.move_counter))
                 elif (col,row) in self.piece_pos[constant.WHITE_PIECE]:
                     self.piece_pos[constant.WHITE_PIECE].pop((col, row))
-                    self.eliminated_pieces[constant.WHITE_PIECE].append(((col,row),self.phase,self.move_counter))
+                    self.eliminated_pieces[constant.WHITE_PIECE].append(((col, row), self.phase, self.move_counter))
 
                 # set the column to invalid spaces
                 self.set_board(col, row, constant.INVALID_SPACE)
@@ -942,7 +942,7 @@ class Board(object):
     def update_available_nodes_placement(board,colour):
         actions = Board.init_placable_area(colour)
 
-        for colour in (constant.BLACK_PIECE,constant.WHITE_PIECE):
+        for colour in (constant.BLACK_PIECE, constant.WHITE_PIECE):
             for piece in board.piece_pos[colour].keys():
                 if piece in actions:
                     actions.remove(piece)

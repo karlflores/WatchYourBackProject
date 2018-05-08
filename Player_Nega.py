@@ -1,6 +1,6 @@
-from Board import constant
+from Constants import constant
 from Board.Board import Board
-from Agents.Negamax_TT import Negamax
+from Agents.Negamax import Negamax
 # from Agents.GreedyAlphaBeta import GreedyAlphaBetaMinimax
 
 
@@ -79,6 +79,8 @@ class Player:
             self.minimax.update_board(self.board)
             return best_move
         else:
+            if best_move is None:
+                return None
             # (best_move is None)
             # print(best_move[0],best_move[1])
             new_pos = Board.convert_move_type_to_coord(best_move[0], best_move[1])

@@ -3,14 +3,12 @@
 * and the player file
 '''
 from math import inf
-from Board.Board import constant
+from Constants import constant
 from Board.Board import Board
 from Evaluation.Policies import Evaluation
 from Data_Structures.Transposition_Table import TranspositionTable
 from copy import deepcopy
-from time import time, sleep
-from functools import lru_cache
-import heapq
+from time import time
 from Error_Handling.Errors import *
 
 
@@ -67,7 +65,8 @@ class Negascout(object):
         # clear the transposition table every time we make a new move -- this is to ensure that it doesn't grow too big
         # if self.board.phase == constant.MOVING_PHASE and self.board.move_counter == 0:
         if self.board.phase == constant.PLACEMENT_PHASE:
-            self.tt.clear()
+            # self.tt.clear()
+            pass
 
         MAX_ITER = 20
 
@@ -98,11 +97,11 @@ class Negascout(object):
         if self.board.phase == constant.PLACEMENT_PHASE:
             #self.time_alloc = (total/2 - self.time_alloc) / (24 - self.board.move_counter)
             total -= self.time_alloc
-            self.time_alloc = 1000
+            self.time_alloc = 5000
         else:
             #self.time_alloc = (total - self.time_alloc) / (100 - self.board.move_counter)
             total -= self.time_alloc
-            self.time_alloc = 1000
+            self.time_alloc = 5000
         # get time
         start_time = Negascout.curr_millisecond_time()
         best_depth = 1
@@ -346,10 +345,10 @@ class Negascout(object):
             actions = [move_to_try] + actions
 
         i = 0
-        if len(actions) <= 15:
+        if len(actions) <= 16:
             favourable = actions
         else:
-            favourable = actions[:15]
+            favourable = actions[:16]
         # print(len(actions))
 
         # start negascout here
@@ -428,7 +427,7 @@ class Negascout(object):
             if tt_depth >= depth:
                 if tt_type == constant.TT_EXACT:
                     # print("FOUND PV")
-                    return tt_value, tt_best_move
+                    return tt_best_move
                 elif tt_type == constant.TT_LOWER:
                     if tt_value > alpha:
                         # print("FOUND FAIL SOFT")
@@ -440,7 +439,7 @@ class Negascout(object):
                         beta = tt_value
 
                 if alpha >= beta:
-                    return tt_value, tt_best_move
+                    return tt_best_move
 
         actions_1 = self.board.update_actions(self.board, colour)
         # actions = actions_1
@@ -461,10 +460,10 @@ class Negascout(object):
             actions = [move_to_try] + actions
 
         i = 0
-        if len(actions) <= 15:
+        if len(actions) <= 20:
             favourable = actions
         else:
-            favourable = actions[:15]
+            favourable = actions[:20]
         # print(len(actions))
 
         # start negascout here

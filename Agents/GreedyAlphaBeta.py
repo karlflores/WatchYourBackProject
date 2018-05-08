@@ -3,11 +3,11 @@
 * and the player file
 '''
 from math import inf
-from Board.Board import constant
+from Constants import constant
 from Board.Board import Board
 from Evaluation.Policies import Evaluation
 from copy import deepcopy
-from time import time, sleep
+from time import time
 from functools import lru_cache
 import heapq
 

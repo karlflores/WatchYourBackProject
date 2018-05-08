@@ -1,8 +1,6 @@
 from Board.Board import Board
-from Board.Board import constant
-from Evaluation.Policies import Evaluation
+from Constants import constant
 from Agents.Minimax import Minimax
-from Agents.Minimax_Node import Node
 
 # create a new board game
 board_game = Board()
@@ -10,7 +8,7 @@ board_game = Board()
 board_game.print_board()
 
 # create the starting node -- this node is black
-node = Minimax.create_node(board_game,constant.BLACK_PIECE,None)
+node = Minimax.create_node(board_game, constant.BLACK_PIECE, None)
 node.board.print_board()
 print(node.available_moves)
 print(node.colour)

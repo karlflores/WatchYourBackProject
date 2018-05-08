@@ -1,6 +1,7 @@
-from Board import constant
-from Board.Board import Board
+from Constants import constant
+from BoardOOP import Board
 from Error_Handling.Errors import *
+
 
 class Piece(object):
     '''
@@ -19,10 +20,10 @@ class Piece(object):
         # check if a piece is placed within the defined starting areas of the board
         if colour == constant.WHITE_PIECE:
             min_row = 0
-            max_row = constant.BOARD_SIZE-3
+            max_row = constant.BOARD_SIZE - 3
         else:
             min_row = 2
-            max_row = constant.BOARD_SIZE-1
+            max_row = constant.BOARD_SIZE - 1
 
         col,row = pos
 
@@ -82,10 +83,10 @@ class Piece(object):
                 # if we get down here, we know that the neighbouring square is a free square
                 self.set_neighbour(direction, True)
 
-    def set_neighbour(self,direction, bool):
+    def set_neighbour(self,direction, bool_val):
         # if a neighbouring square is a free space -- not
         # necessarily if a neighbouring square is a legal move
-        self.neighbours[direction] = bool
+        self.neighbours[direction] = bool_val
 
     def get_neighbour(self,direction):
         # returns if a square in a specific direction from the perspective of this square
@@ -151,6 +152,19 @@ class Piece(object):
 
     def is_alive(self):
         return self.alive
+
+    def get_position(self):
+        return self.pos
+
+    def set_position(self,pos):
+        col, row = pos
+        if row < self.board.min_dim or row > self.board.max_dim:
+            raise IllegalPosition
+        if col < self.board.min_dim or col > self.board.max_dim:
+            raise IllegalPosition
+
+        # if we get here we can set the position of the piece
+        self.pos = pos
 
     # print a string representation of this piece
     def __str__(self):

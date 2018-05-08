@@ -24,3 +24,12 @@ class PieceOutofBound(Error):
 
 class IllegalPlacement(Error):
     pass
+
+class PieceNotExist(Error):
+    pass
+
+class MoveNotApplied(Error):
+    pass
+
+class IllegalPosition(Error):
+    pass

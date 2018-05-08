@@ -1,10 +1,8 @@
-from xml import etree as et
 from Board.Board import Board
-from copy import deepcopy, copy
+from copy import deepcopy
 from Player import Player as rand_player
 from Player_AB_LRU import Player as ab_player
-from Player_MCTS import Player as mcts_player
-from Board import constant
+from Constants import constant
 from math import *
 from XML.xml_helper import xml_helper as xml_save
 
