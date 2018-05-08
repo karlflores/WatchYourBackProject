@@ -1,6 +1,11 @@
 from Constants import constant
 from copy import deepcopy
 from math import inf
+'''
+NODE STRUCTURE FOR THE MCTS GAME TREE -- ALLOWS US TO TRAVERSE DOWN THE TREE AND ALSO 
+UPDATE/BACKPROPAGATE ONCE WE REACH TERMINAL STATE 
+'''
+
 
 class Node(object):
     def __init__(self,board,colour,move,parent):

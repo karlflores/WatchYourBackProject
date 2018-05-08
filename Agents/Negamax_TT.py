@@ -11,6 +11,11 @@ from copy import deepcopy
 from time import time
 from Error_Handling.Errors import *
 
+'''
+NEGAMAX WITH A PURPOSE BUILT TRANSPOSITION TABLE FOR MEMOISATION OF BOARDSTATES/AB CUTOFFS/BEST MOVES
+
+FUNCTIONALITY IS THE SAME AS WHAT IS IN NEGAMAX.PY
+'''
 
 class Negamax(object):
 

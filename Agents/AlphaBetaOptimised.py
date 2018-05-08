@@ -11,6 +11,17 @@ from time import time
 from functools import lru_cache
 import heapq
 from Error_Handling.Errors import *
+
+'''
+VERSION ONE OF OPTIMISATION OF AB PRUNING -- TRIED USING BUILT IN LRU-CACHE TO SPEED UP THE PROCESS
+
+THIS CLASS IS NO LONGER IN USE AS WE IMPLEMENTED OUR OWN TRANSPOSITION TABLE WHICH WE HAVE MORE CONTROL
+OVER 
+
+DEPRECIATED CLASS
+'''
+
+
 class MinimaxABOptimised(object):
 
     def __init__(self, board, colour):

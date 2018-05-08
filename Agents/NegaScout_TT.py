@@ -11,6 +11,20 @@ from copy import deepcopy
 from time import time
 from Error_Handling.Errors import *
 
+'''
+IMPLEMENTED THE NEGASCOUT ALGORITHM TO NEGAMAX-AB-TRANSPOSITION TABLE 
+- this works by assuming the first move you will try is the best move you have found so far, 
+and testing every other sequential move with a NULL alpha-beta window such that it maximises
+pruning. If the cutoff does not fail, it has to do a full research from that specific node as
+clearly the move tried was not the best move found so far.
+
+FROM OUR TESTS, THERE IS NO BENEFIT TO RUNNING THIS ALGORITHM, THERE IS NO SIGNIFICANT SPEED UP
+IN PERFORMANCE. THIS COULD BE DUE TO THE WAY THAT WE ARE DOING OUR MOVE ORDERING OR THE WAY THAT
+WE HAVE IMPLEMENTED THE TRANSPOSITION TABLE. THEORETICALLY, WE SHOULD HAVE SEEN A DECENT INCREASE 
+IN SPEEDUP, BUT I BELIEVE DUE TO THE RUN TIME OF NAIVE-MOVE ORDERING, THAT THIS ALGORITHM IS NOT 
+PROCUDING ANY NET BENEFIT TO NORMAL NEGAMAX-AB
+'''
+
 
 class Negascout(object):
 

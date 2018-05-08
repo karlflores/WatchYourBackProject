@@ -10,6 +10,10 @@ from Evaluation.Policies import Evaluation
 from copy import deepcopy
 from time import time, sleep
 
+'''
+THIS CLASS A DEPRECIATED AND NO LONGER IS IN USE -- BROKEN CODE
+SWITCHED TO NEGAMAX INSTEAD OF THIS 
+'''
 
 class MinimaxAB(object):
 

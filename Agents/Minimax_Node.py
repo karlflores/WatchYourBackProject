@@ -8,6 +8,9 @@ from Board.Board import Board
 from copy import deepcopy
 from math import inf
 
+'''
+DEPRECIATED CLASS -- SWITCHED TO UNDOMOVE APPROACH
+'''
 
 class Node(object):
 
