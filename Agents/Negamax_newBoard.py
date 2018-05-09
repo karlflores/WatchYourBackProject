@@ -105,6 +105,7 @@ class Negamax(object):
         best_depth = 1
         val, move = 0, None
 
+
         # iterative deepening begins here
         best_move = None
 
