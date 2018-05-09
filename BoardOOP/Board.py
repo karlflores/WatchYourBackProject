@@ -313,9 +313,6 @@ class Board(object):
                 entry = {elim_pos: True}
                 self.free_squares.update(entry)
 
-        # update the number of pieces the player is able to place
-        self.places_remaining[colour] -= 1
-
         if eliminated_pieces is None:
             print("THIS SHOULD NOT BE HAPPENING ----------------------------------------")
         return eliminated_pieces
@@ -361,7 +358,6 @@ class Board(object):
 
         eliminated_pieces = []
 
-        # we no longer reset the eliminated moves dictionary
         # make the action
         if self.phase == constant.PLACEMENT_PHASE:
             # make the placement -- this should take care of the update to the piece position list
@@ -375,7 +371,9 @@ class Board(object):
                 # change the phase from placement to moving
                 self.phase = constant.MOVING_PHASE
                 self.move_counter = 0
+
         #elif self.phase == constant.MOVING_PHASE:
+
         elif self.phase == constant.MOVING_PHASE:
             if self.move_counter >= 0:
                 # move is in the form (pos, direction)
@@ -388,7 +386,8 @@ class Board(object):
                 for p in eliminated:
                     eliminated_pieces.append(p)
 
-                self.move_counter+=1
+                self.move_counter += 1
+                # when we are applying the 127th move, we are now at 128, therefore now we need to shrink the board
 
             # when we apply the move and wee go into shrinking phase -- then we do the shrink
             if self.move_counter == 128 or self.move_counter == 192:
@@ -726,7 +725,8 @@ class Board(object):
         for i in (0, 2, 3, 1):
             corner = self.corner_pos[i]
             pieces = self.corner_elimination(corner)
-
+            print("CORNER PIECES ")
+            print(pieces)
             # add the eliminated pieces from corner elimination to the list of eliminated pieces
             eliminated_pieces += pieces
 
@@ -812,6 +812,8 @@ class Board(object):
                 col, row = eliminated_pos
                 # update the board representation
                 self.set_board(row, col, constant.FREE_SPACE)
+
+                eliminated_pieces.append(elim_piece)
 
         return eliminated_pieces
 
