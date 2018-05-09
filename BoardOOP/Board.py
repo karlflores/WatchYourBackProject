@@ -220,7 +220,7 @@ class Board(object):
         # check if the move is legal first
         if piece.is_legal_move(direction) is False:
             print(self)
-            print("WHYYYYYYYYYYYYYY--------------------------------------------")
+            # print("WHYYYYYYYYYYYYYY--------------------------------------------")
             print(pos, direction, colour)
             p = self.get_piece(pos)
             print(p)
@@ -354,6 +354,11 @@ class Board(object):
     # went we want to update the board we call this function
     # move has to be in the form ((row,col),direction)
     def update_board(self, move, colour):
+        # check if the move passed in was a forfeit move
+        if move is None:
+            self.move_counter += 1
+            return []
+
         eliminated_pieces = []
 
         # we no longer reset the eliminated moves dictionary
@@ -408,9 +413,6 @@ class Board(object):
                     piece = self.black_pieces[pos]
                     piece.set_valid_neighbours()
 
-            # check if the move passed in was a forfeit move
-            if move is None:
-                self.move_counter += 1
             # all 24 pieces have been placed on the board
 
         # print(eliminated_pieces)

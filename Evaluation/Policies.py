@@ -6,7 +6,7 @@ from XML.xml_helper import xml_helper
 # Class to implement all the evaluation functions that we generate throughout
 # the development of this project
 from Board.Board import Board
-from Evaluation.Features import Features
+from Evaluation.FeaturesOOP import Features
 
 class Evaluation(object):
     def __init__(self,path,filename):
