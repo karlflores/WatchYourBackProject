@@ -219,7 +219,7 @@ class Window(Frame):
         y_1 = 50
         x_2 = 974
         y_2 = 690
-        self.p1_name_obj = self.canvas.create_text((x_1 + 20), y_1 + 60, anchor=W, font="Helvetica", text="Player 1: Negamax w/ TT")
+        self.p1_name_obj = self.canvas.create_text((x_1 + 20), y_1 + 30, anchor=W, font="Helvetica", text="Player 1: Negamax w/ TT")
         self.p1_name = "TT"
 
     def p2_negamax_tt(self):
@@ -262,6 +262,7 @@ class Window(Frame):
         self.p1_name_obj = self.canvas.create_text((x_1 + 20), y_1 + 30, anchor=W, font="Helvetica",
                                          text="Player 1: Random")
         self.p1_name = "Random"
+
     def p2_random(self):
         self.canvas.delete(self.p2_name_obj)
         self.choose_random_player(2)
