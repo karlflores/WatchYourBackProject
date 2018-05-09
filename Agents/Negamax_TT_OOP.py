@@ -182,7 +182,7 @@ class Negamax(object):
                         beta = tt_value
 
                 if alpha >= beta:
-                    return tt_value, None
+                    return tt_value, tt_best_move
 
         actions = self.board.update_actions(colour)
 
@@ -202,7 +202,7 @@ class Negamax(object):
             # put the move to try at the first position -- therefore it will be searched first
             actions = [move_to_try] + actions
         i = 0
-        if len(actions) <= 8:
+        if len(actions) <= 10:
             favourable = actions
         else:
             favourable = actions[:len(actions)//2]
