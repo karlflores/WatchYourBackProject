@@ -53,17 +53,18 @@ class TranspositionTable:
 
         rotation_arr.append(TranspositionTable.apply_horizontal_reflection(temp))
         if phase == constant.MOVING_PHASE:
-            # check vertical reflection
-            rotation_arr.append(TranspositionTable.apply_vertical_reflection(temp))
-            # check rotation 90L
-            rotation1 = TranspositionTable.apply_90l_rot(temp)
-            rotation_arr.append(rotation1)
-            # check rotation 180l
-            rotation2 = TranspositionTable.apply_90l_rot(rotation1)
-            rotation_arr.append(rotation2)
-            # check rotation 270L
-            rotation3 = TranspositionTable.apply_90l_rot(rotation2)
-            rotation_arr.append(rotation3)
+            # # check vertical reflection
+            # rotation_arr.append(TranspositionTable.apply_vertical_reflection(temp))
+            # # check rotation 90L
+            # rotation1 = TranspositionTable.apply_90l_rot(temp)
+            # rotation_arr.append(rotation1)
+            # # check rotation 180l
+            # rotation2 = TranspositionTable.apply_90l_rot(rotation1)
+            # rotation_arr.append(rotation2)
+            # # check rotation 270L
+            # rotation3 = TranspositionTable.apply_90l_rot(rotation2)
+            # rotation_arr.append(rotation3)
+            pass
 
         # check all rotations first
         for board in rotation_arr:

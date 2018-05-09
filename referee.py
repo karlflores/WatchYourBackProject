@@ -8,7 +8,7 @@ import gc
 import time
 import argparse
 import importlib
-
+from Constants import constant
 VERSION_INFO = """Referee version 1.2 (released May 07 2018)
 Plays a basic game of Watch Your Back! between two Player classes
 Allows for resource limiting to simulate performance constraints used in marking
@@ -42,6 +42,8 @@ def main():
         turns = game.turns
         try:
             action = player.action(turns)
+            # if game.turns == 0 and game.phase != 'placing':
+            #     raise _InvalidActionException
         except _ResourceLimitException as e:
             # looks like one of the players exceeded their resource limits
             # during calculation of 'action'---that's the end of this game, then

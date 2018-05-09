@@ -4,7 +4,7 @@
 '''
 from math import inf
 from Constants import constant
-from Board.Board import Board
+from BoardOOP.Board import Board
 from Evaluation.Policies import Evaluation
 from Data_Structures.Transposition_Table import TranspositionTable
 from copy import deepcopy
@@ -75,7 +75,9 @@ class Negamax(object):
         MAX_ITER = 10
 
         # default policy
-        available_actions = self.board.update_actions(self.board, self.player)
+        available_actions = self.board.update_actions(self.player)
+
+        action_set = set(available_actions)
         # self.actions_leftover = self.board.update_actions(self.board, self.player)
 
         if len(available_actions) == 0:
@@ -124,9 +126,6 @@ class Negamax(object):
                 best_depth += 1
             except TimeOut:
                 print("TIMEOUT")
-                break
-
-            if Negamax.curr_millisecond_time() - start_time > self.time_alloc:
                 break
 
         self.eval_depth = best_depth
@@ -185,13 +184,13 @@ class Negamax(object):
                 if alpha >= beta:
                     return tt_value, None
 
-        actions_1 = self.board.update_actions(self.board, colour)
+        actions = self.board.update_actions(colour)
 
-        actions = self.board.sort_actions(actions_1,colour)
+        # actions = self.board.sort_actions(actions_1,colour)
 
         # terminal test -- default case
         if self.cutoff_test(depth):
-            val = self.evaluate_state(self.board, self.player, actions_1)*dic[colour]
+            val = self.evaluate_state(self.board, self.player, actions)*dic[colour]
             return val, None
 
         # do the minimax search
@@ -208,14 +207,16 @@ class Negamax(object):
         else:
             favourable = actions[:8]
         # print(len(actions))
-        for action in favourable:
+        for action in actions:
             # skip over the best action in the tt table
-            if action == move_to_try and i!= 0:
+            if action == move_to_try and i != 0:
                 continue
-            i+=1
+            i += 1
 
-            self.board.update_board(action, colour)
+            elim = self.board.update_board(action, colour)
             score, temp = self.negamax(depth-1, -beta, -alpha, opponent)
+            self.undo_action(action,colour,elim)
+
             score = -score
 
             if score > best_val:
@@ -224,8 +225,6 @@ class Negamax(object):
 
             if best_val > alpha:
                 alpha = best_val
-
-            self.undo_move()
 
             if alpha >= beta:
                 break
@@ -275,7 +274,7 @@ class Negamax(object):
     def is_terminal(self):
         return self.board.is_terminal()
 
-    def undo_move(self):
-        return self.board.undo_move()
+    def undo_action(self,action,colour,elim):
+        return self.board.undo_action(action,colour,elim)
         # then we need to recalculate the available moves based on the board representation
         # self.generate_actions()

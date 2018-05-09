@@ -1,6 +1,6 @@
 from Constants import constant
 from BoardOOP.Board import Board
-from Agents.Negamax_newBoard import Negamax
+from Agents.Negamax_TT_OOP import Negamax
 # from Agents.GreedyAlphaBeta import GreedyAlphaBetaMinimax
 
 

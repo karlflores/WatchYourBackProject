@@ -94,11 +94,11 @@ class Negamax(object):
         if self.board.phase == constant.PLACEMENT_PHASE:
             #self.time_alloc = (total/2 - self.time_alloc) / (24 - self.board.move_counter)
             #total -= self.time_alloc
-            self.time_alloc = 300
+            self.time_alloc = 500
         else:
             #self.time_alloc = (total - self.time_alloc) / (100 - self.board.move_counter)
             #total -= self.time_alloc
-            self.time_alloc = 300
+            self.time_alloc = 500
 
         # get time
         start_time = Negamax.curr_millisecond_time()
@@ -173,6 +173,10 @@ class Negamax(object):
         # print(self.board.black_pieces)
         # generate legal actions
         # actions = self.board.update_actions(colour)
+        # print("THESE ACTIONS----------------")
+        # print(actions)
+        # print(self.board)
+        # print("*"*30)
         for action in actions:
             # print("THIS CALL--------")
             # print(self.board)

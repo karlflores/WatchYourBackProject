@@ -213,7 +213,7 @@ class Board(object):
         except PieceNotExist:
             piece = None
             print("No piece at this location... " + str(pos))
-            print(my_pieces)
+            # print(my_pieces)
             traceback.print_exc(file=sys.stdout)
             exit(1)
 
@@ -223,8 +223,8 @@ class Board(object):
             # print("WHYYYYYYYYYYYYYY--------------------------------------------")
             print(pos, direction, colour)
             p = self.get_piece(pos)
-            print(p)
-            print(p.get_legal_actions())
+            # print(p)
+            # print(p.get_legal_actions())
             return
 
         # we know we can make the move now
@@ -371,6 +371,17 @@ class Board(object):
                 # change the phase from placement to moving
                 self.phase = constant.MOVING_PHASE
                 self.move_counter = 0
+
+                # update each piece
+                # we need to re-evaluate the piece neighbours
+                for pos in self.white_pieces:
+                    piece = self.white_pieces[pos]
+                    piece.set_valid_neighbours()
+
+                for pos in self.black_pieces:
+                    piece = self.black_pieces[pos]
+                    piece.set_valid_neighbours()
+
 
         #elif self.phase == constant.MOVING_PHASE:
 
@@ -725,8 +736,8 @@ class Board(object):
         for i in (0, 2, 3, 1):
             corner = self.corner_pos[i]
             pieces = self.corner_elimination(corner)
-            print("CORNER PIECES ")
-            print(pieces)
+            # print("CORNER PIECES ")
+            print# (pieces)
             # add the eliminated pieces from corner elimination to the list of eliminated pieces
             eliminated_pieces += pieces
 
@@ -1063,6 +1074,8 @@ class Board(object):
         # iterate through all the pieces
         for pos in my_pieces.keys():
             piece = my_pieces[pos]
+            # print(piece)
+            # print(piece.get_legal_actions())
             actions += piece.get_legal_actions()
 
         return actions
