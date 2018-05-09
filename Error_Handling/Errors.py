@@ -40,3 +40,6 @@ class IllegalPosition(Error):
 
 class InvalidAction(Error):
     pass
+
+class InvalidEliminatedList(Error):
+    pass

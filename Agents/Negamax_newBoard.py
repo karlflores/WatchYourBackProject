@@ -94,11 +94,11 @@ class Negamax(object):
         if self.board.phase == constant.PLACEMENT_PHASE:
             #self.time_alloc = (total/2 - self.time_alloc) / (24 - self.board.move_counter)
             #total -= self.time_alloc
-            self.time_alloc = 1000
+            self.time_alloc = 200
         else:
             #self.time_alloc = (total - self.time_alloc) / (100 - self.board.move_counter)
             #total -= self.time_alloc
-            self.time_alloc = 1000
+            self.time_alloc = 200
 
         # get time
         start_time = Negamax.curr_millisecond_time()
@@ -126,11 +126,13 @@ class Negamax(object):
                 # therefore here we check if a move is legal as well
                 if move is not None and move in action_set:
                     best_move = move
-
+                # print(self.board)
+                # print("sdfsfsfsfsfsdfsfsdfs")
             except TimeOut:
                 break
 
         self.eval_depth = best_depth
+
         return best_move
 
     def set_player_colour(self, colour):
@@ -164,15 +166,20 @@ class Negamax(object):
         # do the minimax search
         best_val = -inf
         best_action = None
-        print(self.board)
-        print(actions)
-        print(self.board.white_pieces)
-        print(self.board.black_pieces)
+        #print(self.board)
+        #print(actions)
+        #print(self.board.white_pieces)
+        # print(self.board.black_pieces)
+        # generate legal actions
+        # actions = self.board.update_actions(colour)
         for action in actions:
+            # print("THIS CALL--------")
+            # print(self.board)
+            # print("THIS CALL--------")
 
             elim = self.board.update_board(action, colour)
-
             score, temp = self.negamax(depth-1, -beta, -alpha, opponent)
+            self.undo_action(action, colour, elim)
 
             score = -score
 
@@ -182,8 +189,6 @@ class Negamax(object):
 
             if score > alpha:
                 alpha = score
-
-            self.undo_action(action,colour,elim)
 
             if alpha >= beta:
                 break

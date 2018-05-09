@@ -201,6 +201,7 @@ class Board(object):
     # when we want to apply a move to the board -- update the board and the dict associated
     # return the eliminated pieces when we apply a move to the board
     def apply_move(self, pos, direction, colour):
+
         if colour == constant.WHITE_PIECE:
             my_pieces = self.white_pieces
         else:
@@ -210,7 +211,7 @@ class Board(object):
         try:
             piece = self.get_piece(pos)
         except PieceNotExist:
-
+            piece = None
             print("No piece at this location... " + str(pos))
             print(my_pieces)
             traceback.print_exc(file=sys.stdout)
@@ -218,6 +219,12 @@ class Board(object):
 
         # check if the move is legal first
         if piece.is_legal_move(direction) is False:
+            print(self)
+            print("WHYYYYYYYYYYYYYY--------------------------------------------")
+            print(pos, direction, colour)
+            p = self.get_piece(pos)
+            print(p)
+            print(p.get_legal_actions())
             return
 
         # we know we can make the move now
@@ -260,11 +267,11 @@ class Board(object):
                 elim_pos = piece.get_position()
                 self.update_neighbouring_squares(elim_pos, True)
 
-        # return eliminated pieces
         return eliminated_pieces
 
     # place a piece on the board and return the eliminated piece if there are any
     def apply_placement(self, pos, colour):
+
         col, row = pos
         if colour == constant.WHITE_PIECE:
             my_pieces = self.white_pieces
@@ -309,6 +316,8 @@ class Board(object):
         # update the number of pieces the player is able to place
         self.places_remaining[colour] -= 1
 
+        if eliminated_pieces is None:
+            print("THIS SHOULD NOT BE HAPPENING ----------------------------------------")
         return eliminated_pieces
 
     # update the pieces neighbour free list --
@@ -346,6 +355,11 @@ class Board(object):
     # move has to be in the form ((row,col),direction)
     def update_board(self, move, colour):
         eliminated_pieces = []
+        if self.move_counter == 24 and self.phase == constant.PLACEMENT_PHASE:
+            # change the phase from placement to moving
+            self.phase = constant.MOVING_PHASE
+            self.move_counter = 0
+
         # we no longer reset the eliminated moves dictionary
         # make the action
         if self.phase == constant.PLACEMENT_PHASE:
@@ -353,29 +367,21 @@ class Board(object):
             # as well as the move counter
             eliminated_pieces = self.apply_placement(move, colour)
 
-        elif self.phase == constant.MOVING_PHASE:
-            # move is in the form (pos, direction)
-            pos = move[0]
-            direction = move[1]
-            # print(pos)
-            # make the move
-            eliminated_pieces = self.apply_move(pos, direction, colour)
-
-        # after an action is applied we can increment the move counter of the board
-        self.move_counter += 1
-
-        # test if we need to switch from placement to moving
-        if self.move_counter == 24 and self.phase == constant.PLACEMENT_PHASE:
-            # change the phase from placement to moving
-            self.phase = constant.MOVING_PHASE
-            self.move_counter = 0
-            # all 24 pieces have been placed on the board
-
-        if self.phase == constant.MOVING_PHASE:
-            # do we need to shrink the board
-            if self.move_counter in (128, 192):
+        #elif self.phase == constant.MOVING_PHASE:
+        else:
+            eliminated_pieces = []
+            if self.move_counter == 128 or self.move_counter == 192:
                 # add the eliminated pieces from the shrink board to this
-                eliminated_pieces += self.shrink_board()
+                shrink_elim = self.shrink_board()
+
+                if len(shrink_elim) > 0:
+                    for shrink_piece in shrink_elim:
+                        eliminated_pieces.append(shrink_piece)
+
+                # also update any neighbouring pieces to the corners -- they are not able to move into
+                # this position anymore
+                for corner in self.corner_pos:
+                    self.update_neighbouring_squares(corner, False)
 
                 # we need to re-evaluate the piece neighbours
                 for pos in self.white_pieces:
@@ -389,7 +395,33 @@ class Board(object):
             # check if the move passed in was a forfeit move
             if move is None:
                 self.move_counter += 1
+                return
+
+            # move is in the form (pos, direction)
+            pos = move[0]
+            direction = move[1]
+            # print(pos)
+            # make the move
+            eliminated = self.apply_move(pos, direction, colour)
+            # print(eliminated)
+            for p in eliminated:
+                eliminated_pieces.append(p)
+
+        # after an action is applied we can increment the move counter of the board
+        self.move_counter += 1
+
+        # test if we need to switch from placement to moving
+        if self.move_counter == 24 and self.phase == constant.PLACEMENT_PHASE:
+            # change the phase from placement to moving
+            self.phase = constant.MOVING_PHASE
+            self.move_counter = 0
+            # all 24 pieces have been placed on the board
+
         # print(eliminated_pieces)
+
+        if eliminated_pieces is None:
+            print("hdsalkjsdhfalkjfhalskdjfhalksjdfhalkjsdhf")
+
         return eliminated_pieces
 
     # check if there is a winner terminal states can only occur in the final phase
@@ -474,9 +506,10 @@ class Board(object):
             remove_col, remove_row = elim_pos
             self.set_board(remove_row, remove_col, constant.FREE_SPACE)
 
-            # update the eliminated piece dictionary
+            # update the eliminated piece list
             eliminated_pieces.append(elim_piece)
-
+        if eliminated_pieces is None:
+            print("*"*100)
         return eliminated_pieces
 
     # elimination helper function
@@ -630,6 +663,8 @@ class Board(object):
     # neighbouring the corner positions
     def shrink_board(self):
         eliminated_pieces = []
+        if self.num_shrink > 2:
+            return
 
         # use the referee code for the shrinking of the board
         offset = self.num_shrink
@@ -645,11 +680,15 @@ class Board(object):
                 if (col, row) in self.black_pieces:
                     piece = self.black_pieces.pop((col, row))
                     piece.eliminate()
+
                     self.black_eliminate_pieces.append(piece)
                     eliminated_pieces.append(piece)
+
                 elif (col, row) in self.white_pieces:
+
                     piece = self.white_pieces.pop((col, row))
                     piece.eliminate()
+
                     self.white_eliminate_pieces.append(piece)
                     eliminated_pieces.append(piece)
 
@@ -658,6 +697,7 @@ class Board(object):
 
         self.num_shrink += 1
         offset += 1
+
         # set the new corner
         self.corner_pos[0] = (offset, offset)
         self.corner_pos[1] = (7 - offset, offset)
@@ -678,10 +718,6 @@ class Board(object):
                 piece.eliminate()
                 self.black_eliminate_pieces.append(piece)
                 eliminated_pieces.append(piece)
-
-            # also update any neighbouring pieces to the corners -- they are not able to move into
-            # this position anymore
-            self.update_neighbouring_squares(corner, False)
 
             # set the board
             corner_col, corner_row = corner
@@ -704,7 +740,8 @@ class Board(object):
     # un shrink the board representation -- this method does not replace any eliminated pieces
     # this will be taken care of in the undo function
     def unshrink_board(self):
-        print("UNSHRINK")
+        # print("UNSHRINK")
+        # print(self.min_dim, self.max_dim)
         if self.min_dim < 1 or self.max_dim > constant.BOARD_SIZE - 1:
             return
 
@@ -736,10 +773,11 @@ class Board(object):
                 self.set_board(col, row, constant.FREE_SPACE)
 
         # replace the corners on the board
-        for col,row in new_corners:
+        for col, row in new_corners:
             self.set_board(row,col, constant.CORNER_PIECE)
 
         self.corner_pos = new_corners
+        self.num_shrink-=1
 
     # helper function for elimination of pieces at a corner -- for board shrinks
     # this does not update any neighbouring squares -- need to do this after the call
@@ -750,17 +788,16 @@ class Board(object):
         # self.print_board()
         # print("*"*50)
         # types of players
-        player_types = (constant.WHITE_PIECE, constant.BLACK_PIECE)
+        players = (constant.WHITE_PIECE, constant.BLACK_PIECE)
 
         # the corner piece can act as the player piece -- therefore we can eliminate
         # the white pieces around the corner first, then the black pieces
-        for player in player_types:
+        for player in players:
 
             if player == constant.WHITE_PIECE:
                 opponent_pieces = self.black_pieces
                 opp_elim_pieces = self.black_eliminate_pieces
             else:
-
                 opponent_pieces = self.white_pieces
                 opp_elim_pieces = self.white_eliminate_pieces
 
@@ -801,6 +838,9 @@ class Board(object):
 
     def reverse_eliminated_pieces(self,eliminated_pieces):
 
+        if eliminated_pieces is None:
+            raise InvalidEliminatedList
+
         for elim_piece in eliminated_pieces:
             # for each eliminated piece we must:
             # put them back on the board
@@ -824,24 +864,37 @@ class Board(object):
         # get the relavent piece dictionary
         if colour == constant.WHITE_PIECE:
             my_pieces = self.white_pieces
-        elif colour == constant.BLACK_PIECE:
+        else:
             my_pieces = self.black_pieces
 
         # then we need to update the board to being in the state where it originally was in
         # first we need to see if the board has just recently been shrunk
-        if self.move_counter in (128, 192):
+        if self.move_counter == 128 or self.move_counter == 192:
             # the board has just been shrunk once
             # restore the invalid piece positions to being free squares
+            for corner in self.corner_pos:
+                # print(corner)
+                # also update any neighbouring pieces to the corners -- they are not able to move into
+                # this position anymore
+                self.update_neighbouring_squares(corner, True)
+
             self.unshrink_board()
+            # also update any neighbouring pieces to the corners -- they are not able to move into
+            # this position anymore
+            for corner in self.corner_pos:
+                # print(corner)
+                self.update_neighbouring_squares(corner, False)
+
             # place all the eliminated pieces back on the board
             self.reverse_eliminated_pieces(eliminated_pieces)
 
             # need to re-evaluate all pieces neighbours on the board
             for pos in self.white_pieces:
-                piece = my_pieces[pos]
+                piece = self.white_pieces[pos]
                 piece.set_valid_neighbours()
+
             for pos in self.black_pieces:
-                piece = my_pieces[pos]
+                piece = self.black_pieces[pos]
                 piece.set_valid_neighbours()
 
         if action_applied is None:
@@ -894,11 +947,15 @@ class Board(object):
 
         elif self.phase == constant.MOVING_PHASE:
             # need to check if it is the first move of moving phase
+            # if we are at move_counter = 0, we have placed a piece on the
+            # board to get to this stage, therefore we just need to revert this
+            # placement on the board
             if self.move_counter == 0:
                 col, row = action_applied
-                # print("MOVE COUNTER IS NOW 0")
+
                 # this is the first move, then the action applied to the
                 # board is a placement
+
                 self.reverse_eliminated_pieces(eliminated_pieces)
 
                 # reverse the move that was placed on the board
@@ -906,29 +963,32 @@ class Board(object):
                     piece = my_pieces.pop(action_applied)
                     self.set_board(row, col, constant.FREE_SPACE)
 
-                    piece.set_valid_neighbours()
-                    # we have removed the pieces, therefore the neighbours can move into this space
-                    self.update_neighbouring_squares(action_applied,True)
-
                     # update the free squares of the game
                     entry = {action_applied: True}
                     self.free_squares.update(entry)
 
+                    piece.set_valid_neighbours()
+                    # we have removed the pieces, therefore the neighbours can move into this space
+                    self.update_neighbouring_squares(action_applied, True)
+
                     for elim_piece in eliminated_pieces:
+
                         elim_piece.set_valid_neighbours()
                         elim_pos = elim_piece.get_position()
                         # eliminated pieces are now put back onto the board, therefore set to False
                         # neighbouring squares can't move into this space anymore
-                        self.update_neighbouring_squares(elim_pos, False)
 
                         # update the free squares of the game
                         entry = {elim_pos: False}
                         self.free_squares.update(entry)
 
+                        self.update_neighbouring_squares(elim_pos, False)
+
                 # decrease the move counter
-                self.move_counter = 24
+                self.move_counter = 23
                 self.phase = constant.PLACEMENT_PHASE
                 return
+
             else:
                 # if the move counter was not 128,192 we need to place
                 # the eliminated pieces back on the board
@@ -937,10 +997,13 @@ class Board(object):
                 if self.move_counter not in (0, 128, 192):
                     self.reverse_eliminated_pieces(eliminated_pieces)
 
-                # we just need to undo the move that was made
-                to_pos = action_applied[0]
-                direction = self.get_opposite_direction(action_applied[1])
+                # we just need to undo the move that was made -- the action applied to the board moves a piece
+                # from one square to another given a direction, therefore
+                # to get the piece we want to move back we need to apply the move to get the to and from squares
 
+                to_pos = action_applied[0]
+                direction = action_applied[1]
+                # get the position of the piece of where it was moved to given an action was applied
                 from_pos = self.convert_direction_to_coord(to_pos, direction)
 
                 # reset the new location to being free

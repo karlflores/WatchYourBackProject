@@ -137,12 +137,17 @@ class Piece(object):
                 return False
 
         else:
+            if self.get_neighbour(direction) is False:
+                return False
+
             # then this is a jump move, need to see if the adjacent square is occupied
             # NOTE: direction - 4 converts a move of 2 step into a 1 step equivalent
             adj_square = self.get_neighbour(direction - 4)
             # print(adj_square)
             if adj_square is False and self.get_neighbour(direction) is True:
                 return True
+            elif adj_square is True and self.get_neighbour(direction) is True:
+                return False
             else:
                 return False
 
