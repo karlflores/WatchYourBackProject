@@ -2,6 +2,7 @@ from Constants import constant
 from BoardOOP.Piece import Piece
 from Error_Handling.Errors import *
 from copy import copy
+import traceback, sys
 
 '''
 THIS CLASS IMPLEMENTS THE BOARD GAME AND ITS MECHANISMS 
@@ -209,7 +210,10 @@ class Board(object):
         try:
             piece = self.get_piece(pos)
         except PieceNotExist:
-            print("No piece at this location... ")
+
+            print("No piece at this location... " + str(pos))
+            print(my_pieces)
+            traceback.print_exc(file=sys.stdout)
             exit(1)
 
         # check if the move is legal first
@@ -277,6 +281,7 @@ class Board(object):
             self.free_squares.update(entry)
         except IllegalPlacement:
             print("Piece created at illegal position on board")
+            traceback.print_exc(file=sys.stdout)
             exit(0)
             return
 
@@ -780,6 +785,7 @@ class Board(object):
     def get_piece(self, pos):
         if pos in self.white_pieces:
             return self.white_pieces[pos]
+
         elif pos in self.black_pieces:
             return self.black_pieces[pos]
         else:
@@ -932,10 +938,10 @@ class Board(object):
                     self.reverse_eliminated_pieces(eliminated_pieces)
 
                 # we just need to undo the move that was made
-                from_pos = action_applied[0]
+                to_pos = action_applied[0]
                 direction = self.get_opposite_direction(action_applied[1])
 
-                to_pos = self.convert_direction_to_coord(from_pos, direction)
+                from_pos = self.convert_direction_to_coord(to_pos, direction)
 
                 # reset the new location to being free
                 self.set_board(from_pos[1], from_pos[0], constant.FREE_SPACE)

@@ -164,8 +164,11 @@ class Negamax(object):
         # do the minimax search
         best_val = -inf
         best_action = None
-
-        for action in actions[:10]:
+        print(self.board)
+        print(actions)
+        print(self.board.white_pieces)
+        print(self.board.black_pieces)
+        for action in actions:
 
             elim = self.board.update_board(action, colour)
 
