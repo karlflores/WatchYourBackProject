@@ -355,10 +355,6 @@ class Board(object):
     # move has to be in the form ((row,col),direction)
     def update_board(self, move, colour):
         eliminated_pieces = []
-        if self.move_counter == 24 and self.phase == constant.PLACEMENT_PHASE:
-            # change the phase from placement to moving
-            self.phase = constant.MOVING_PHASE
-            self.move_counter = 0
 
         # we no longer reset the eliminated moves dictionary
         # make the action
@@ -366,10 +362,30 @@ class Board(object):
             # make the placement -- this should take care of the update to the piece position list
             # as well as the move counter
             eliminated_pieces = self.apply_placement(move, colour)
+            # after an action is applied we can increment the move counter of the board
+            self.move_counter += 1
 
+            # test if we need to switch from placement to moving
+            if self.move_counter == 24 and self.phase == constant.PLACEMENT_PHASE:
+                # change the phase from placement to moving
+                self.phase = constant.MOVING_PHASE
+                self.move_counter = 0
         #elif self.phase == constant.MOVING_PHASE:
-        else:
-            eliminated_pieces = []
+        elif self.phase == constant.MOVING_PHASE:
+            if self.move_counter >= 0:
+                # move is in the form (pos, direction)
+                pos = move[0]
+                direction = move[1]
+                # print(pos)
+                # make the move
+                eliminated = self.apply_move(pos, direction, colour)
+                # print(eliminated)
+                for p in eliminated:
+                    eliminated_pieces.append(p)
+
+                self.move_counter+=1
+
+            # when we apply the move and wee go into shrinking phase -- then we do the shrink
             if self.move_counter == 128 or self.move_counter == 192:
                 # add the eliminated pieces from the shrink board to this
                 shrink_elim = self.shrink_board()
@@ -395,26 +411,6 @@ class Board(object):
             # check if the move passed in was a forfeit move
             if move is None:
                 self.move_counter += 1
-                return
-
-            # move is in the form (pos, direction)
-            pos = move[0]
-            direction = move[1]
-            # print(pos)
-            # make the move
-            eliminated = self.apply_move(pos, direction, colour)
-            # print(eliminated)
-            for p in eliminated:
-                eliminated_pieces.append(p)
-
-        # after an action is applied we can increment the move counter of the board
-        self.move_counter += 1
-
-        # test if we need to switch from placement to moving
-        if self.move_counter == 24 and self.phase == constant.PLACEMENT_PHASE:
-            # change the phase from placement to moving
-            self.phase = constant.MOVING_PHASE
-            self.move_counter = 0
             # all 24 pieces have been placed on the board
 
         # print(eliminated_pieces)
