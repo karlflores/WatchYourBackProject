@@ -69,8 +69,8 @@ class Negamax(object):
     def itr_negamax(self):
         # clear the transposition table every time we make a new move -- this is to ensure that it doesn't grow too big
         # if self.board.phase == constant.MOVING_PHASE and self.board.move_counter == 0:
-        #if self.board.phase == constant.PLACEMENT_PHASE:
-        self.tt.clear()
+        if self.board.phase == constant.PLACEMENT_PHASE:
+            self.tt.clear()
 
         MAX_ITER = 10
 
@@ -186,7 +186,7 @@ class Negamax(object):
 
         actions = self.board.update_actions(colour)
 
-        # actions = self.board.sort_actions(actions_1,colour)
+        actions = self.board.sort_actions(actions,colour)
 
         # terminal test -- default case
         if self.cutoff_test(depth):
@@ -205,9 +205,9 @@ class Negamax(object):
         if len(actions) <= 8:
             favourable = actions
         else:
-            favourable = actions[:8]
+            favourable = actions[:len(actions)//2]
         # print(len(actions))
-        for action in actions:
+        for action in favourable:
             # skip over the best action in the tt table
             if action == move_to_try and i != 0:
                 continue

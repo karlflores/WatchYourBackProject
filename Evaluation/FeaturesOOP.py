@@ -150,8 +150,8 @@ class Features(object):
                 return False
 
         if board.phase == constant.MOVING_PHASE:
-            # the action must be converted from move_Type to coord of the new square it will occupy
-            new_pos = board.convert_move_type_to_coord(action[0],action[1])
+            # the action must be converted from direction to coord of the new square it will occupy
+            new_pos = board.convert_direction_to_coord(action[0],action[1])
             if board.check_one_piece_elimination(new_pos,colour) is not None:
                 return True
             else:
@@ -166,15 +166,15 @@ class Features(object):
         if board.phase == constant.PLACEMENT_PHASE:
             # the action is a placement on the board -- therefore we just need to check if it can
             # eliminate an opponent piece
-            if board.check_self_elimination(action, colour) is not None:
+            if board.check_self_elimination(action, colour, action_eval=True) is not None:
                 return True
             else:
                 return False
 
         if board.phase == constant.MOVING_PHASE:
-            # the action must be converted from move_Type to coord of the new square it will occupy
-            new_pos = board.convert_move_type_to_coord(action[0], action[1])
-            if board.check_self_elimination(new_pos, colour) is not None:
+            # the action must be converted from direction to coord of the new square it will occupy
+            new_pos = board.convert_direction_to_coord(action[0], action[1])
+            if board.check_self_elimination(new_pos, colour, action_eval=True) is not None:
                 return True
             else:
                 return False
@@ -260,7 +260,7 @@ class Features(object):
             pos = action
 
         elif board.phase == constant.MOVING_PHASE:
-            pos = board.convert_move_type_to_coord(action[0],action[1])
+            pos = board.convert_direction_to_coord(action[0],action[1])
 
 
         '''
@@ -334,7 +334,7 @@ class Features(object):
             pos = action
 
         elif board.phase == constant.MOVING_PHASE:
-            pos = board.convert_move_type_to_coord(action[0], action[1])
+            pos = board.convert_direction_to_coord(action[0], action[1])
 
         '''
         # if an enemy is in the middle of 4 pieces then this is a good thing 
@@ -381,7 +381,7 @@ class Features(object):
             pos = action
 
         elif board.phase == constant.MOVING_PHASE:
-            pos = board.convert_move_type_to_coord(action[0], action[1])
+            pos = board.convert_direction_to_coord(action[0], action[1])
 
         if pos == (3,3) or pos == (4,4) or pos == (3,4) or pos == (4,3):
             return True

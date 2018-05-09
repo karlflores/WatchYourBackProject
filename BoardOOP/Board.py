@@ -1,5 +1,6 @@
 from Constants import constant
 from BoardOOP.Piece import Piece
+from Evaluation.FeaturesOOP import Features
 from Error_Handling.Errors import *
 from copy import copy
 import traceback, sys
@@ -559,7 +560,7 @@ class Board(object):
         # if it does not exist therefore there is no piece to be eliminated
         return None
 
-    def check_self_elimination(self, my_piece_pos, colour):
+    def check_self_elimination(self, my_piece_pos, colour, action_eval=False):
         # update piecePos from tuple to pos_row and pos_col
         pos_col, pos_row = my_piece_pos
 
@@ -577,11 +578,17 @@ class Board(object):
         # now just need to check horizontal and vertical positions to see if they are in the piecePos list
         # horizontal check
         if ((pos_col + 1, pos_row) in opponent_pieces) and ((pos_col - 1, pos_row) in opponent_pieces):
-            if my_pieces[(pos_col, pos_row)].is_alive():
+            if action_eval is False:
+                if my_pieces[(pos_col, pos_row)].is_alive():
+                    return pos_col, pos_row
+            else:
                 return pos_col, pos_row
         # vertical piece position check for self elimination
         elif ((pos_col, pos_row + 1) in opponent_pieces) and ((pos_col, pos_row - 1) in opponent_pieces):
-            if my_pieces[(pos_col, pos_row)].is_alive():
+            if action_eval is False:
+                if my_pieces[(pos_col, pos_row)].is_alive():
+                    return pos_col, pos_row
+            else:
                 return pos_col, pos_row
         else:
             return None
@@ -1102,6 +1109,51 @@ class Board(object):
             return True
         else:
             return False
+
+    # return a sorted list of actions based on an evaluation function for those actions
+    def sort_actions(self,actions,colour):
+        # lets sort the list using another list of weights
+        # iterating + sorting + reconstructing -- nlog(n) + 2n : this is not good enough
+        weights = [0]*len(actions)
+        MAX_DIST = 14
+        for i, action in enumerate(actions):
+            # get the min manhattan distance of a piece -- if the distance is large we want to append a small value --
+                # max distance will be 14
+
+            weights[i] += (MAX_DIST - Features.min_manhattan_dist(self, action, colour))*10
+            if self.phase == constant.PLACEMENT_PHASE:
+                weights[i] += 4 - Features.dist_to_center(action)
+            else:
+                pos = self.convert_direction_to_coord(action[0],action[1])
+                weights[i] += 4 - Features.dist_to_center(pos)
+
+            # if an action is able to capture a piece then we need to increase the weight of this action
+            if Features.can_action_capture(self,action,colour) is True:
+                weights[i] += 1000
+
+            # if an action is going to self eliminate itself then we need to decrease the weight of this action
+            if Features.check_self_elimination(self,action,colour) is True:
+                weights[i] -= 2000
+
+            # if a piece is able to surround an enemy piece increase the weight
+            if Features.can_action_surround(self,action,colour) is True:
+                weights[i] += 20
+
+            # if a piece is able to form a cluster then this is a good move to make
+            if Features.can_form_cluster(self,action,colour) is True:
+                weights[i] += 50
+
+            # is a middle square free
+            if Features.occupy_middle(self,action,colour) is True:
+                weights[i] += 100
+
+            # if we are already in a middle square we don't really want to move this piece
+            if self.phase == constant.MOVING_PHASE:
+                if Features.in_middle(self,action) is True:
+                    weights[i] -= 50
+
+        return [action for _, action in sorted(zip(weights,actions), reverse=True)]
+
 
     '''
     # STANDARD METHODS OVERRIDDEN FOR THIS CLASS
