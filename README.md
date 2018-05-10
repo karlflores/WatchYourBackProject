@@ -126,7 +126,8 @@ To help prune more nodes in the tree we also implemented a transposition table i
 	-> board_bytearray: the byte array representation of that board state 		
 	-> tt_type: whether the minimax_value returned was an upper bound, lower bound or an exact value 
 	-> best_move: the best move found my minimax to get to that particular state 
-	-> depth: depth at which minimax was evaluated at. If we got to a deeper search on the next iteration of iterative deepening, we can rewrite the entry of this board representation 
+	-> depth: depth at which minimax was evaluated at. If we got to a deeper search on the next 
+	   iteration of iterative deepening, we can rewrite the entry of this board representation 
 		
 
 ```
