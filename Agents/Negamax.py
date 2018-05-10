@@ -4,31 +4,13 @@
 '''
 from math import inf
 from Constants import constant
-from Board.Board import Board
+from BoardOOP.Board import Board
 from Evaluation.Policies import Evaluation
 from Data_Structures.Transposition_Table import TranspositionTable
 from copy import deepcopy
 from time import time
 from Error_Handling.Errors import *
 
-'''
-FINAL NEGAMAX IMPLEMENTATION WITH A GREEDY CHOICE ON WHAT MOVES TO EXPLORE -- WE ONLY PICK A CERTAIN
-SUBSET OF THE AVAILABLE MOVES BASED ON WHAT WE THINK IS GOOD IN THE CURRENT STATE (NOT LOOKING AHEAD)
-WE THEN DO A MINIMAX/NEGAMAX SEARCH ON THESE AVAILABLE MOVES AND CHOOSE THE BEST POSSIBLE MOVE OUR OF
-THE SUBSET OF FAVOURABLE MOVES THAT WE HAVE CHOSEN
-
-WE SCORE EACH AVAILABLE ACTION USING AN EVALUATION FUNCTION THAT LOOKS AT CAPTURE ABILITY, SELF-ELIMINATION,
-FORMATION, AND POSITIONING ON THE BOARD TO DETERMINE WHETHER AN ACTION IS GOOD OR NOT. THIS IS THEN USE 
-TO NAIVELY SORT THE ACTIONS BASED ON ITS EVALUATION.
-
-THIS IMPLEMENTATION ALSO IMPLEMENTS ITERATVE DEEPENING WITH A TIMER SUCH THAT WHEN THE TIME RUNS OUT FOR
-EVALUATION THE NEGAMAX CALL RAISES A TIMEOUT EXCEPTION AND ITERATIVE DEEPENING IS ABLE TO RETURN THE BEST
-MOVE FOUND SO FAR.
-
-THIS NEGAMAX ALSO IMPLEMENTS ALPHA BETA PRUNING -- WE TRY TO MAKE THE MOST OF AB PRUNING BY IMPLEMENTING 
-SOME SORT OF MOVE ORDERING 
-
-'''
 
 class Negamax(object):
 
@@ -61,9 +43,6 @@ class Negamax(object):
         self.minimax_val = 0
         self.policy_vector = []
 
-        # dictionary storing the available moves of the board
-        self.available_actions = {constant.WHITE_PIECE: {}, constant.BLACK_PIECE: {}}
-
         # generate the actions for the start of the game
         # self.generate_actions()
 
@@ -88,8 +67,8 @@ class Negamax(object):
         MAX_ITER = 10
 
         # default policy
-        available_actions = self.board.update_actions(self.board, self.player)
-        print(len(available_actions))
+        available_actions = self.board.update_actions(self.player)
+
         action_set = set(available_actions)
         # self.actions_leftover = self.board.update_actions(self.board, self.player)
 
@@ -115,19 +94,23 @@ class Negamax(object):
         if self.board.phase == constant.PLACEMENT_PHASE:
             #self.time_alloc = (total/2 - self.time_alloc) / (24 - self.board.move_counter)
             #total -= self.time_alloc
-            self.time_alloc = 1000
+            self.time_alloc = 3000
         else:
             #self.time_alloc = (total - self.time_alloc) / (100 - self.board.move_counter)
             #total -= self.time_alloc
-            self.time_alloc = 1000
+            self.time_alloc = 800
+
         # get time
         start_time = Negamax.curr_millisecond_time()
         best_depth = 1
         val, move = 0, None
+
+
         # iterative deepening begins here
         best_move = None
+
         for depth in range(1, MAX_ITER):
-            print(self.tt.size)
+
             print(depth)
             try:
                 self.time_rem = self.time_alloc
@@ -144,14 +127,13 @@ class Negamax(object):
                 # therefore here we check if a move is legal as well
                 if move is not None and move in action_set:
                     best_move = move
+                # print(self.board)
+                # print("sdfsfsfsfsfsdfsfsdfs")
             except TimeOut:
-                print("TIMEOUT")
-                break
-
-            if Negamax.curr_millisecond_time() - start_time > self.time_alloc:
                 break
 
         self.eval_depth = best_depth
+
         return best_move
 
     def set_player_colour(self, colour):
@@ -163,19 +145,19 @@ class Negamax(object):
         return int(time() * 1000)
 
     # naive Negamax (depth limited)  -- No Transposition Table
-    def negamax(self,depth,alpha,beta,colour):
+    def negamax(self,depth, alpha, beta, colour):
         # Timeout handling
         self.time_end = self.curr_millisecond_time()
         if self.time_end - self.time_start > self.time_rem:
             raise TimeOut
 
         opponent = Board.get_opp_piece_type(colour)
+
+        # for evaluation
         dic = {self.player: 1, self.opponent: -1}
 
         # generate legal actions
-        actions_1 = self.board.update_actions(self.board, colour)
-        # print(len(actions))
-        actions = self.board.sort_actions(actions_1, colour)
+        actions = self.board.update_actions(colour)
 
         # terminal test -- default case
         if self.cutoff_test(depth):
@@ -185,31 +167,34 @@ class Negamax(object):
         # do the minimax search
         best_val = -inf
         best_action = None
-
+        #print(self.board)
+        #print(actions)
+        #print(self.board.white_pieces)
+        # print(self.board.black_pieces)
         # generate legal actions
-        #actions = self.board.update_actions(self.board, colour)
-        # split the actions into favourable an unfavourable
-        # if the length of actions is greater than X, then we can just choose to look through the first
-        # 5 'favourable' actions that we see right now
-        # if the length of actions is less than X, then we can just evaluate all possible actions we have
-        # THIS IS A GREEDY APPROACH TO MINIMAX THAT LIMITS OUR BRANCHING FACTOR OF THE GAME
-        if len(actions) > 8:
-            favourable = actions[:8]
-        else:
-            favourable = actions
-        # got here
-        #print("got here")
-        # depth reduction
-        R = 2
-        #print(favourable)
-        #self.board.print_board()
-        for action in favourable:
+        # actions = self.board.update_actions(colour)
+        # print("THESE ACTIONS----------------")
+        # print(actions)
+        # print(self.board)
+        # print("*"*30)
+        for action in actions:
+            # print("THIS CALL--------")
+            # print(self.board)
+            # print("THIS CALL--------")
+            # if self.board.phase == constant.MOVING_PHASE:
+            #     piece = self.board.get_piece(action[0])
+            #     direction = action[1]
+            #     if piece.is_legal_move(direction) is False:
+            #         print(actions)
+            #         print(self)
+            #         print("WHYYYYYYYYYYYYYY--------------------------------------------")
+            #         print(action[0], direction, colour)
+            #         print(piece)
+            #         print(piece.get_legal_actions())
 
-            self.board.update_board(action, colour)
-            if action in favourable:
-                score, temp = self.negamax(depth-1, -beta, -alpha, opponent)
-            else:
-                score, temp = self.negamax(depth-1-R, -beta, -alpha, opponent)
+            elim = self.board.update_board(action, colour)
+            score, temp = self.negamax(depth-1, -beta, -alpha, opponent)
+            self.undo_action(action, colour, elim)
 
             score = -score
 
@@ -219,8 +204,6 @@ class Negamax(object):
 
             if score > alpha:
                 alpha = score
-
-            self.undo_move()
 
             if alpha >= beta:
                 break
@@ -243,7 +226,7 @@ class Negamax(object):
     '''
 
     def evaluate_state(self, board, colour, actions):
-        #return Evaluation.basic_policy(board,colour)
+        # return len(self.board.white_pieces) - len(self.board.black_pieces)
         return self.evaluation.evaluate(board,colour,actions)
 
     # update the available moves of the search algorithm after it has been instantiated
@@ -257,7 +240,7 @@ class Negamax(object):
     def is_terminal(self):
         return self.board.is_terminal()
 
-    def undo_move(self):
-        return self.board.undo_move()
-        # then we need to recalculate the available moves based on the board representation
-        # self.generate_actions()
+    def undo_action(self,action,colour,elim_pieces):
+
+        self.board.undo_action(action,colour,elim_pieces)
+

@@ -2,9 +2,9 @@ from tkinter import *
 from BoardOOP.Board import Board
 from Constants import constant
 from Agents.Random import Random
-from Agents.NegaScout_TT_OOP import Negascout as NSTT
-from Agents.Negamax_TT_OOP import Negamax as NMXTT
-from Agents.Negamax_newBoard import Negamax as NMX
+from Agents.NegascoutTranspositionTable import Negascout as NSTT
+from Agents.NegamaxTranspositionTable import Negamax as NMXTT
+from Agents.Negamax import Negamax as NMX
 from Agents.Manual import Manual
 from time import sleep
 def main():

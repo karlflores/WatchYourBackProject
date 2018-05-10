@@ -1,8 +1,7 @@
 from Constants import constant
-from Board.Board import Board
-from Agents.NegaScout_TT import Negascout
+from BoardOOP.Board import Board
+from Agents.NegascoutTranspositionTable import Negascout
 # from Agents.GreedyAlphaBeta import GreedyAlphaBetaMinimax
-
 
 class Player:
 

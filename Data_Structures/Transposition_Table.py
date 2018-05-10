@@ -15,9 +15,10 @@ that have not been accessed recently, and therefore can be evicted from the cach
 
 '''
 
+
 # we treat a dictionary as a transposition table
 class TranspositionTable:
-    def __init__(self,MAX_SIZE=100000):
+    def __init__(self, MAX_SIZE=100000):
         self.empty = True
         self.size = 0
         self.tt = {}
@@ -42,41 +43,44 @@ class TranspositionTable:
             return key
 
         # turn board string into
-        temp = bytearray(boardstr, "utf-8")
+        # temp = bytearray(boardstr, "utf-8")
 
         '''
-                CHECK FOR ROTATIONS/SYMMETRIES AND SHIT 
+                CHECK FOR ROTATIONS/SYMMETRIES
+                
+                ALL THIS IS COMMENTED OUT AS WE FOUND THAT CHECKING FOR SYMMETRIES DID NOT INCREASE THE DEPTH 
+                AT WHICH WE WERE EVALUATING AT
         '''
 
-        rotation_arr = []
+        # rotation_arr = []
         # check horizontal and vertical symmetry
 
-        rotation_arr.append(TranspositionTable.apply_horizontal_reflection(temp))
-        if phase == constant.MOVING_PHASE:
-            # # check vertical reflection
-            # rotation_arr.append(TranspositionTable.apply_vertical_reflection(temp))
-            # # check rotation 90L
-            # rotation1 = TranspositionTable.apply_90l_rot(temp)
-            # rotation_arr.append(rotation1)
-            # # check rotation 180l
-            # rotation2 = TranspositionTable.apply_90l_rot(rotation1)
-            # rotation_arr.append(rotation2)
-            # # check rotation 270L
-            # rotation3 = TranspositionTable.apply_90l_rot(rotation2)
-            # rotation_arr.append(rotation3)
-            pass
+        # rotation_arr.append(TranspositionTable.apply_horizontal_reflection(temp))
+        # if phase == constant.MOVING_PHASE:
+        #     # check vertical reflection
+        #     rotation_arr.append(TranspositionTable.apply_vertical_reflection(temp))
+        #     # check rotation 90L
+        #     rotation1 = TranspositionTable.apply_90l_rot(temp)
+        #     rotation_arr.append(rotation1)
+        #     # check rotation 180l
+        #     rotation2 = TranspositionTable.apply_90l_rot(rotation1)
+        #     rotation_arr.append(rotation2)
+        #     # check rotation 270L
+        #     rotation3 = TranspositionTable.apply_90l_rot(rotation2)
+        #     rotation_arr.append(rotation3)
 
         # check all rotations first
-        for board in rotation_arr:
-            key = (board.decode("utf-8"), colour)
-            if key in self.tt:
-                # print("FOUND ROTATION")
-                return key
-            else:
-                return None
+        # for board in rotation_arr:
+        #     key = (board.decode("utf-8"), colour)
+        #     if key in self.tt:
+        #         # print("FOUND ROTATION")
+        #         return key
+        #     else:
+        #         return None
 
         # if there are no rotations in the TT and the original key is not in the TT therefore
         # this entry does not exist in the TT
+
         return None
 
     def get_entry(self, boardstr, colour):
@@ -96,6 +100,10 @@ class TranspositionTable:
         self.empty = True
         self.size = 0
         self.tt = {}
+
+    '''
+    METHODS TO APPLY SYMMETRIES TO THE BOARD 
+    '''
 
     @staticmethod
     def apply_horizontal_reflection(board_state):

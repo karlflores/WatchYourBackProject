@@ -219,13 +219,7 @@ class Board(object):
 
         # check if the move is legal first
         if piece.is_legal_move(direction) is False:
-            print(self)
-            # print("WHYYYYYYYYYYYYYY--------------------------------------------")
-            print(pos, direction, colour)
-            p = self.get_piece(pos)
-            # print(p)
-            # print(p.get_legal_actions())
-            return
+            return []
 
         # we know we can make the move now
         new_pos = self.convert_direction_to_coord(pos, direction)
@@ -755,8 +749,6 @@ class Board(object):
     # un shrink the board representation -- this method does not replace any eliminated pieces
     # this will be taken care of in the undo function
     def unshrink_board(self):
-        # print("UNSHRINK")
-        # print(self.min_dim, self.max_dim)
         if self.min_dim < 1 or self.max_dim > constant.BOARD_SIZE - 1:
             return
 
@@ -767,8 +759,6 @@ class Board(object):
         # reset the new min and max dimensions of the board
         self.min_dim -= 1
         self.max_dim += 1
-
-        print(self.min_dim, self.max_dim)
 
         #  reset the corner positions
         new_corners = [(self.min_dim,self.min_dim), (self.max_dim,self.min_dim), (self.min_dim, self.max_dim)\
@@ -798,11 +788,6 @@ class Board(object):
     # this does not update any neighbouring squares -- need to do this after the call
     def corner_elimination(self, corner):
         eliminated_pieces = []
-        # print("CALLED CORNER ELIMINATION")
-        # print("*"*50)
-        # self.print_board()
-        # print("*"*50)
-        # types of players
         players = (constant.WHITE_PIECE, constant.BLACK_PIECE)
 
         # the corner piece can act as the player piece -- therefore we can eliminate
@@ -816,13 +801,10 @@ class Board(object):
                 opponent_pieces = self.white_pieces
                 opp_elim_pieces = self.white_eliminate_pieces
 
-            oppponent = self.get_opp_piece_type(player)
             # there can be more than one elimination or there can be None
             while self.check_one_piece_elimination(corner, player) is not None:
                 eliminated_pos = self.check_one_piece_elimination(corner, player)
 
-                # remove from the oppenent players piece pos list
-                # print("ELIMINATED: " + str(eliminated_piece))
                 elim_piece = opponent_pieces.pop(eliminated_pos)
                 elim_piece.eliminate()
                 opp_elim_pieces.append(elim_piece)
@@ -1080,8 +1062,6 @@ class Board(object):
         # iterate through all the pieces
         for pos in my_pieces.keys():
             piece = my_pieces[pos]
-            # print(piece)
-            # print(piece.get_legal_actions())
             actions += piece.get_legal_actions()
 
         return actions
@@ -1144,7 +1124,7 @@ class Board(object):
 
             # is a middle square free
             if Features.occupy_middle(self,action,colour) is True:
-                weights[i] += 100
+                weights[i] += 5000
 
             # if we are already in a middle square we don't really want to move this piece
             if self.phase == constant.MOVING_PHASE:
@@ -1157,6 +1137,7 @@ class Board(object):
     '''
     # STANDARD METHODS OVERRIDDEN FOR THIS CLASS
     '''
+
     def __str__(self):
         board = ""
         for row in range(constant.BOARD_SIZE):

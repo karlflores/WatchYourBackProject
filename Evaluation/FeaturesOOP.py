@@ -1,15 +1,10 @@
 '''
 * Class to implement the different features of a game -- this is going
 * to be used for the evaluation function of a board state
-* Therefore we need to investigate different features of the board game
-* whether this be through simulation via MCTS or by playing the games a number of time s
 '''
-# from Board.Board import Board
+
 from math import fabs, inf, sqrt
 from Constants import constant
-
-
-# from copy import copy
 
 class Features(object):
 
@@ -30,43 +25,36 @@ class Features(object):
     def total_dist_to_center(board, colour):
         if colour == constant.WHITE_PIECE:
             my_pieces = board.white_pieces
-            opposition_pieces = board.black_pieces
         else:
             my_pieces = board.black_pieces
-            opposition_pieces = board.white_pieces
 
         dist_cent = 0
         for pieces in my_pieces:
-            dist_cent += Features.cart_distance(pieces, (3.5,3.5) )
+            dist_cent += Features.cart_distance(pieces, (3.5,3.5))
 
-        # number of pieces of the opponent eliminated
-        # available_actions = board.update_actions(board,colour)
-
-        # num_moves = len(available_actions)
-
-        # RANDOM MOVES FOR TESTING IF MINIMAX IS WORKING CORRECTLY
-        # return randint(0,5)
         return 1/(1+dist_cent)
 
+    # number of actions the player can make -- if we have less actions to make
+    # this may not be good, but this is not as important as every other feature therefore this should
+    # be weighted the least
     @staticmethod
     def num_actions(actions):
         return len(actions)
 
     @staticmethod
+    # cartesian distance
     def cart_distance(pos_1, pos_2):
         return sqrt((pos_1[0] - pos_2[0]) ** 2 + (pos_1[1] - pos_2[1]) ** 2)
 
     @staticmethod
     def manhattan_dist(piece1,piece2):
-        return int(fabs(piece1[0]-piece2[0])) + int(fabs(piece1[1]-piece2[1]))
+        return fabs(piece1[0]-piece2[0]) + fabs(piece1[1]-piece2[1])
 
     @staticmethod
     def min_manhattan_dist(board, action, colour):
         if colour == constant.WHITE_PIECE:
-            my_pieces = board.white_pieces
             opposition_pieces = board.black_pieces
         else:
-            my_pieces = board.black_pieces
             opposition_pieces = board.white_pieces
 
         # provided a piece to move check if this piece is close to any of the opponent pieces on the board
@@ -74,7 +62,6 @@ class Features(object):
         # we need to
         # only really should move the pieces that are close to the opponent, thus we can reduce the branching factor
         # this way
-        opponent = board.get_opp_piece_type(colour)
         # extract the piece to move from the
         if board.phase == constant.MOVING_PHASE:
             piece = action[0]
@@ -89,7 +76,7 @@ class Features(object):
 
         # loop through each pieces
         for opp_piece in opposition_pieces:
-            dist = Features.manhattan_dist(piece,opp_piece)
+            dist = Features.manhattan_dist(piece, opp_piece)
             min_dist = min(min_dist,dist)
 
         return min_dist
@@ -170,13 +157,12 @@ class Features(object):
         return False
 
     @staticmethod
+    # the number of my pieces that are surrounded by opponents -- this is bad
     def check_board_surrounded_my_piece(board,colour):
         if colour == constant.WHITE_PIECE:
             my_pieces = board.white_pieces
-            opposition_pieces = board.black_pieces
         else:
             my_pieces = board.black_pieces
-            opposition_pieces = board.white_pieces
 
         # check if there are any opponent pieces that surround you piece
         num_surround = 0
@@ -188,10 +174,8 @@ class Features(object):
     @staticmethod
     def check_board_surround_opponent(board,colour):
         if colour == constant.WHITE_PIECE:
-            my_pieces = board.white_pieces
             opposition_pieces = board.black_pieces
         else:
-            my_pieces = board.black_pieces
             opposition_pieces = board.white_pieces
 
         num_surround = 0
@@ -203,6 +187,7 @@ class Features(object):
 
         return num_surround
 
+    # can we make an action that surrounds another piece , if we can then this is good to do
     @staticmethod
     def can_action_surround(board, action, colour):
         if colour == constant.WHITE_PIECE:
@@ -216,7 +201,7 @@ class Features(object):
         if len(my_pieces) < 3:
             return False
             # check if a piece is surrounded by the opposite colour
-        opponent = board.get_opp_piece_type(colour)
+
         if board.phase == constant.PLACEMENT_PHASE:
             pos = action
 
@@ -236,6 +221,7 @@ class Features(object):
         
         now just need to check if a piece can occupy the corner locations 
         '''
+
         col, row = pos
         # top left
         if (col + 1, row + 1) in opposition_pieces and (col + 2, row) in my_pieces \
@@ -331,12 +317,6 @@ class Features(object):
 
     @staticmethod
     def occupy_middle(board,action,colour):
-        if colour == constant.WHITE_PIECE:
-            my_pieces = board.white_pieces
-            opposition_pieces = board.black_pieces
-        else:
-            my_pieces = board.black_pieces
-            opposition_pieces = board.white_pieces
 
         if board.phase == constant.PLACEMENT_PHASE:
             pos = action
@@ -374,7 +354,6 @@ class Features(object):
             my_pieces = board.black_pieces
             opposition_pieces = board.white_pieces
 
-        opponent = board.get_opp_piece_type(colour)
         middle = [(3,3),(3,4),(4,3),(4,4)]
         net_val = 0
 
@@ -433,10 +412,12 @@ class Features(object):
         opponent = board.get_opp_piece_type(colour)
         if board.phase == constant.MOVING_PHASE:
             if 112 < board.move_counter < 128:
-                return Features.edge_vulnerable_pieces(board,opponent) - Features.edge_vulnerable_pieces(board,colour)
+                # double the weight of any enemy players because we don't want to return zero if we have our pieces
+                # at the edges
+                return 2*Features.edge_vulnerable_pieces(board,opponent) - Features.edge_vulnerable_pieces(board,colour)
 
             if 176 < board.move_counter < 192:
-                return Features.edge_vulnerable_pieces(board,opponent) - Features.edge_vulnerable_pieces(board,colour)
+                return 2*Features.edge_vulnerable_pieces(board,opponent) - Features.edge_vulnerable_pieces(board,colour)
 
             # if we are not near the shrink we do no care about this
             return 0
@@ -473,10 +454,10 @@ class Features(object):
                 num += 1
 
         else:
-            piece_1 = board.convert_direction_to_coord(top_L, 0)
-            piece_2 = board.convert_direction_to_coord(top_L, 1)
-            piece_3 = board.convert_direction_to_coord(top_R, 2)
-            piece_4 = board.convert_direction_to_coord(top_R, 1)
+            piece_1 = board.convert_direction_to_coord(bot_L, 3)
+            piece_2 = board.convert_direction_to_coord(bot_L, 1)
+            piece_3 = board.convert_direction_to_coord(bot_R, 3)
+            piece_4 = board.convert_direction_to_coord(bot_R, 2)
 
             if piece_1 in my_pieces:
                 num += 1
@@ -489,3 +470,55 @@ class Features(object):
 
         return num
 
+    # if we have the centre position or not
+    @staticmethod
+    def center_hold(board,colour):
+
+        if colour == constant.WHITE_PIECE:
+            my_pieces = board.white_pieces
+
+        else:
+            my_pieces = board.black_pieces
+
+        # check if we currently occupy the middle positions
+        if (4,4) in my_pieces and (3,4) in my_pieces and (4,3) in my_pieces and (3,3) in my_pieces:
+            # top pieces
+            return 1
+        else:
+            return 0
+
+    # get the minimum distance of each piece to an ememy piece, add these distances together
+    # therefore this is a measure of how close our piece is to an enemy piece. In the later stages we
+    # want to move towards enemy pieces to capture them therefore this should take that into consideration
+    @staticmethod
+    def total_min_man_dist(board,colour):
+        total = 0
+        if colour == constant.WHITE_PIECE:
+            my_pieces = board.white_pieces
+            opposition_pieces = board.black_pieces
+
+        else:
+            my_pieces = board.black_pieces
+            opposition_pieces = board.white_pieces
+
+        # only take this into consideration in the moving phase of the game
+        if board.phase == constant.MOVING_PHASE and board.move_counter > 30:
+            total = 0
+            for pos in my_pieces:
+                if len(opposition_pieces) == 0:
+                    return 0
+
+                min_dist = inf
+                # loop through each pieces
+                for opp_piece in opposition_pieces:
+                    dist = Features.manhattan_dist(pos, opp_piece)
+                    # get the min distance
+                    min_dist = min(min_dist, dist)
+
+                total += min_dist
+
+        return total
+
+'''
+LOOK AT TIMING SCHEMES
+'''

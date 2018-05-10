@@ -1,7 +1,9 @@
 from Constants import constant
 from BoardOOP.Board import Board
-from Agents.NegaScout_TT_OOP import Negascout
+from Agents.NegamaxTranspositionTable import Negamax
+from ActionBook.ActionBook import ActionBook
 # from Agents.GreedyAlphaBeta import GreedyAlphaBetaMinimax
+
 
 class Player:
 
@@ -17,8 +19,7 @@ class Player:
         self.board = Board()
 
         # TODO -- need to see if this works correctly
-
-        self.minimax = Negascout(self.board, self.colour)
+        self.minimax = Negamax(self.board, self.colour)
 
         self.opponent = self.board.get_opp_piece_type(self.colour)
 
@@ -28,6 +29,8 @@ class Player:
         self.depth_eval = 0
         self.minimax_val = 0
         self.policy_vector = 0
+
+        self.action_book = ActionBook(self.colour)
 
     def update(self, action):
         # update the board based on the action of the opponent
@@ -42,14 +45,14 @@ class Player:
                 print("ERROR: action is not a tuple")
                 return
 
-            move_type = self.board.convert_coord_to_move_type(action[0], action[1])
+            move_type = self.board.convert_coord_to_direction(action[0], action[1])
 
             # update the player board representation with the action
             self.board.update_board((action[0], move_type), self.opponent)
-            self.minimax.update_board(self.board)
 
     def action(self, turns):
         self.minimax.update_board(self.board)
+        # print(self.board.board_state)
         # print(self.board.piece_pos)
         # if action is called first the board representation move counter will be zero
         # this indicates that this player is the first one to move
@@ -61,12 +64,21 @@ class Player:
             self.board.move_counter = 0
             self.board.phase = constant.MOVING_PHASE
 
-        # create the node to search on
-        # update the board representation and the available moves
-        # print(self.minimax.available_actions)
-        # best_move = self.minimax.alpha_beta_minimax(3)
-        best_move = self.minimax.itr_negascout()
-        # best_move = self.minimax.alpha_beta(3)
+        # check the action book to see if there is a state
+        board_state = self.board.board_state
+        if self.board.phase == constant.PLACEMENT_PHASE:
+            action = self.action_book.check_state(board_state)
+
+            if action is not None:
+                # return the action found and update the board representations
+                self.board.update_board(action, self.colour)
+                self.minimax.update_board(self.board)
+                return action
+
+        # if there is no found state in the action book, therefore we just do a negamax search
+
+        best_move = self.minimax.itr_negamax()
+
         self.depth_eval = self.minimax.eval_depth
         self.minimax_val = self.minimax.minimax_val
 
@@ -78,9 +90,11 @@ class Player:
             self.minimax.update_board(self.board)
             return best_move
         else:
+            if best_move is None:
+                return None
             # (best_move is None)
             # print(best_move[0],best_move[1])
-            new_pos = Board.convert_move_type_to_coord(best_move[0], best_move[1])
+            new_pos = Board.convert_direction_to_coord(best_move[0], best_move[1])
             self.board.update_board(best_move, self.colour)
             self.minimax.update_board(self.board)
             return best_move[0], new_pos
