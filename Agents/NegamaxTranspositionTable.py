@@ -91,11 +91,11 @@ class Negamax(object):
 
             # if we have reached 100 moves in the game and the game
             if self.total_time > 90000 or self.board.move_counter > 120:
-                self.time_alloc = 600
+                self.time_alloc = 550
                 # if we are near the final shrinking phase, then we can decrease the time it has to
                 # evaluate
                 if self.board.move_counter > 150:
-                    self.time_alloc = 200
+                    self.time_alloc = 185
 
 
         best_depth = 1

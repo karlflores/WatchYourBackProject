@@ -78,7 +78,7 @@ class Evaluation(object):
         else:
             # diff_pieces, dist_cent, num_actions, self_surrounded, opp_surrounded, middle_occupy, num_cluster,
             # edge_vuln, next_to_corner, sum_min_man_dist
-            self.weights = [1000, 50, 5, -100, 300, 2000, 500,220,550, 50, 15000]
+            self.weights = [1000, 50, 5, -100, 300, 2000, 500,220,550, 50, 5000]
 
             # to get the evaluation value -- we just need to do the dot product betweeen the policy vector
             # and the weight vector
