@@ -1,7 +1,7 @@
 from Constants import constant
 from WatchYourBack.Piece import Piece
 from Evaluation.Features import Features
-from Error_Handling.Errors import *
+from ErrorHandling.Errors import *
 from copy import copy
 import traceback, sys
 

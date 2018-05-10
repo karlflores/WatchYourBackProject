@@ -6,10 +6,10 @@ from math import inf
 from Constants import constant
 from DepreciatedBoard.Board import Board
 from Evaluation.Policies import Evaluation
-from Data_Structures.Transposition_Table import TranspositionTable
+from DataStructures.Transposition_Table import TranspositionTable
 from copy import deepcopy
 from time import time
-from Error_Handling.Errors import *
+from ErrorHandling.Errors import *
 
 '''
 FINAL NEGAMAX IMPLEMENTATION WITH A GREEDY CHOICE ON WHAT MOVES TO EXPLORE -- WE ONLY PICK A CERTAIN

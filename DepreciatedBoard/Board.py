@@ -8,7 +8,7 @@ from Constants import constant
 from copy import copy
 import math
 
-from Data_Structures.Stack import Stack
+from DataStructures.Stack import Stack
 
 from sys import getsizeof
 from Evaluation.FeaturesDepreciated import Features

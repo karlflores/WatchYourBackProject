@@ -1,6 +1,6 @@
 # this class is a book of opening moves for each player -- we only use this in the placement phase of the game.
 from Constants import constant
-from Data_Structures.Transposition_Table import TranspositionTable
+from DataStructures.Transposition_Table import TranspositionTable
 
 
 class ActionBook(object):

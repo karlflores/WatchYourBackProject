@@ -10,7 +10,7 @@ from copy import deepcopy
 from time import time
 from functools import lru_cache
 import heapq
-from Error_Handling.Errors import *
+from ErrorHandling.Errors import *
 
 '''
 VERSION ONE OF OPTIMISATION OF AB PRUNING -- TRIED USING BUILT IN LRU-CACHE TO SPEED UP THE PROCESS

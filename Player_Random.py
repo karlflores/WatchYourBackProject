@@ -1,6 +1,6 @@
 from Constants import constant
 from WatchYourBack.Board import Board
-from Error_Handling.Errors import *
+from ErrorHandling.Errors import *
 from random import randint
 
 class Player:

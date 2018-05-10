@@ -1,7 +1,9 @@
 from Constants import constant
 from WatchYourBack.Board import Board
 from Agents.NegascoutTranspositionTable import Negascout
-
+'''
+A PLAYER THAT USES THE NEGASCOUT ALGORITHM TO FIND ITS NEXT MOVE TO MAKE 
+'''
 class Player:
 
     def __init__(self, colour):
@@ -21,9 +23,6 @@ class Player:
 
         self.opponent = self.board.get_opp_piece_type(self.colour)
 
-        # self.search_algorithm = Minimax(self.board,self.available_moves,self.colour)
-
-        # print(self.opponent)
         self.depth_eval = 0
         self.minimax_val = 0
         self.policy_vector = 0
@@ -49,27 +48,17 @@ class Player:
 
     def action(self, turns):
         self.minimax.update_board(self.board)
-        # print(self.board.piece_pos)
-        # if action is called first the board representation move counter will be zero
-        # this indicates that this player is the first one to move
-
-        # if update is called before action the board representation counter will be 1,
-        # this indicates that the player is the second to move
 
         if turns == 0 and self.board.phase == constant.MOVING_PHASE:
             self.board.move_counter = 0
             self.board.phase = constant.MOVING_PHASE
 
-        # create the node to search on
-        # update the board representation and the available moves
-        # print(self.minimax.available_actions)
-        # best_move = self.minimax.alpha_beta_minimax(3)
+        # find the best move
         best_move = self.minimax.itr_negascout()
-        # best_move = self.minimax.alpha_beta(3)
+
         self.depth_eval = self.minimax.eval_depth
         self.minimax_val = self.minimax.minimax_val
 
-        # do an alpha beta search on this node
         # once we have found the best move we must apply it to the board representation
         if self.board.phase == constant.PLACEMENT_PHASE:
             # print(best_move)
