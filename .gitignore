@@ -9,3 +9,4 @@ testClassDeepCopy.py
 test.py
 __pycache__
 log.txt
+Player_Negamax_eval2.py
