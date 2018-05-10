@@ -467,8 +467,7 @@ class Features(object):
                 num += 1
             if piece_4 in my_pieces:
                 num += 1
-        if num !=0:
-            print(num)
+
         return num
 
     # if we have the centre position or not

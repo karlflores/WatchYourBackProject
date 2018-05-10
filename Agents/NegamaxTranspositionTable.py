@@ -84,13 +84,13 @@ class Negamax(object):
             return None
 
         if self.board.phase == constant.PLACEMENT_PHASE:
-            self.time_alloc = 1500
+            self.time_alloc = 1450
         else:
-            self.time_alloc = 900
+            self.time_alloc = 850
 
             # if we have reached 100 moves in the game and the game
-            if self.total_time > 100000 and self.board.move_counter > 120:
-                self.time_alloc = 500
+            if self.total_time > 100000 and self.board.move_counter > 100:
+                self.time_alloc = 300
 
         # get time
 

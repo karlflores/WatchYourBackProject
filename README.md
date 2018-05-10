@@ -206,8 +206,9 @@ The following describes the other algorithms that we have implemented and triale
 - Our evaluation function works by returning two vectors that correspond to the number of features that we wish to evaluate. To get the evaluation value we just take the dot product between the weight vector for that function together with the resulting vector of the feature values for the board.
 
 - The features we have implemented in our evaluation are as follows:
-    	1. The difference in the number of pieces on the board (EG. WHITE-BLACK)
-    	2. Combined distance of all pieces to the centre of the board 
+
+    1. The difference in the number of pieces on the board (EG. WHITE-BLACK)
+    2. Combined distance of all pieces to the centre of the board 
 		- This is because we want to be closer to the centre due to the shrinking nature of the board 
 	3. The difference in the number of actions a piece can make 
 	4. If a piece is surrounded such that it cannot move without being eliminated by an enemy piece 
