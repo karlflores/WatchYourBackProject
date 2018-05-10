@@ -349,3 +349,4 @@ class Features(object):
 
         return net_val
 
+    # @staticmethod

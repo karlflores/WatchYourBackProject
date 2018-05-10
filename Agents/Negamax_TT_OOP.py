@@ -13,7 +13,6 @@ from Error_Handling.Errors import *
 
 '''
 NEGAMAX WITH A PURPOSE BUILT TRANSPOSITION TABLE FOR MEMOISATION OF BOARDSTATES/AB CUTOFFS/BEST MOVES
-
 FUNCTIONALITY IS THE SAME AS WHAT IS IN NEGAMAX.PY
 '''
 
@@ -102,11 +101,11 @@ class Negamax(object):
         if self.board.phase == constant.PLACEMENT_PHASE:
             #self.time_alloc = (total/2 - self.time_alloc) / (24 - self.board.move_counter)
             total -= self.time_alloc
-            self.time_alloc = 1000
+            self.time_alloc = 900
         else:
             #self.time_alloc = (total - self.time_alloc) / (100 - self.board.move_counter)
             total -= self.time_alloc
-            self.time_alloc = 1000
+            self.time_alloc = 900
         # get time
         start_time = Negamax.curr_millisecond_time()
         best_depth = 1

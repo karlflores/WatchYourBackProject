@@ -12,41 +12,6 @@ from Constants import constant
 # from copy import copy
 
 class Features(object):
-    @staticmethod
-    def dist_to_piece(board, move):
-        pass
-
-    @staticmethod
-    #what to do if colour has middle 4 pieces in final stage
-    def final_captures(board):
-        pass
-
-    #binary - does colour have middle 4
-    @staticmethod
-    def middle_pieces(board):
-        pass
-
-    #implement massacre as a count for how many moves would be taken to eliminate all but 1 piece of opponent if no moves were made by them
-    @staticmethod
-    def massacre_1left(board):
-        pass
-
-    #how many moves from capturing an opponent piece -- from a particular action what is the minimum number of moves to capture a single/two pieces of the opponent
-    # we assume that the opponent is not moving
-    # only use this evaluation function in the moving phase
-    @staticmethod
-    def min_dist_to_capture_piece(board):
-        pass
-
-    #number of pieces
-    @staticmethod
-    def number_of_pieces(board):
-        pass
-
-    #compare number of moves to get all pieces on edge out of edge to move counter
-    @staticmethod
-    def edge_moves_to_shrink(board):
-        pass
 
     @staticmethod
     def diff_pieces(board, colour):
@@ -60,10 +25,6 @@ class Features(object):
 
         # this is the difference of the number of pieces relative to a specified colour on the board
         return len(my_pieces) - len(opposition_pieces)
-
-    @staticmethod
-    def piece_elim_pattern(self,piece):
-        pass
 
     @staticmethod
     def total_dist_to_center(board, colour):
@@ -424,4 +385,107 @@ class Features(object):
                 net_val -= 20
 
         return net_val
+
+    @staticmethod
+    # count the number of pieces are at the edge of the board
+    def edge_vulnerable_pieces(board,colour):
+        if colour == constant.WHITE_PIECE:
+            my_pieces = board.white_pieces
+
+        else:
+            my_pieces = board.black_pieces
+
+        edges = {}
+        num = 0
+        # count the number of edge pieces
+        for i in range(board.min_dim,board.max_dim+1):
+
+            left_edge = (board.min_dim,i)
+            right_edge = (board.max_dim,i)
+            top_edge = (i,board.min_dim)
+            bottom_edge = (i,board.max_dim)
+
+            if left_edge in my_pieces:
+               num += 1
+            if right_edge in my_pieces:
+                num += 1
+            if top_edge in my_pieces:
+                num += 1
+            if bottom_edge in my_pieces:
+                num += 1
+
+        # next shrink
+        next_corners = [(board.min_dim+1,board.min_dim+1),
+         (board.min_dim+1, board.max_dim-1),
+         (board.max_dim+1, board.max_dim-1),
+         (board.max_dim-1, board.max_dim-1)]
+
+        # count the number of pieces that are at the new corner positions
+        for corner in next_corners:
+            if corner in my_pieces:
+                num += 1
+
+        return num
+
+    # returns the difference in the number of pieces of opponent pieces at an edge vs our pieces at an edge
+    @staticmethod
+    def diff_edge_vulnerable(board,colour):
+        opponent = board.get_opp_piece_type(colour)
+        if board.phase == constant.MOVING_PHASE:
+            if 112 < board.move_counter < 128:
+                return Features.edge_vulnerable_pieces(board,opponent) - Features.edge_vulnerable_pieces(board,colour)
+
+            if 176 < board.move_counter < 192:
+                return Features.edge_vulnerable_pieces(board,opponent) - Features.edge_vulnerable_pieces(board,colour)
+
+            # if we are not near the shrink we do no care about this
+            return 0
+
+        # if we not in placing phase we do not care about this
+        return 0
+
+    # count the number of pieces next to the corners
+    @staticmethod
+    def place_next_to_corner(board,colour):
+        num = 0
+        if colour == constant.WHITE_PIECE:
+            my_pieces = board.white_pieces
+
+        else:
+            my_pieces = board.black_pieces
+
+        # left corner
+        top_L, top_R, bot_L, bot_R = board.corner_pos
+
+        if colour == constant.WHITE_PIECE:
+            piece_1 = board.convert_direction_to_coord(top_L, 0)
+            piece_2 = board.convert_direction_to_coord(top_L, 1)
+            piece_3 = board.convert_direction_to_coord(top_R, 2)
+            piece_4 = board.convert_direction_to_coord(top_R, 1)
+
+            if piece_1 in my_pieces:
+                num += 1
+            if piece_2 in my_pieces:
+                num += 1
+            if piece_3 in my_pieces:
+                num += 1
+            if piece_4 in my_pieces:
+                num += 1
+
+        else:
+            piece_1 = board.convert_direction_to_coord(top_L, 0)
+            piece_2 = board.convert_direction_to_coord(top_L, 1)
+            piece_3 = board.convert_direction_to_coord(top_R, 2)
+            piece_4 = board.convert_direction_to_coord(top_R, 1)
+
+            if piece_1 in my_pieces:
+                num += 1
+            if piece_2 in my_pieces:
+                num += 1
+            if piece_3 in my_pieces:
+                num += 1
+            if piece_4 in my_pieces:
+                num += 1
+
+        return num
 

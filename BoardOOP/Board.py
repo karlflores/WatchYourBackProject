@@ -44,7 +44,6 @@ class Board(object):
         self.black_pieces = {}
         self.black_eliminate_pieces = []
 
-
         self.places_remaining = {constant.WHITE_PIECE: 12, constant.BLACK_PIECE: 12}
 
         # initialise the board representation

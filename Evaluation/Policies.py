@@ -37,6 +37,18 @@ class Evaluation(object):
 
         return diff_pieces, dist_cent, num_actions, self_surrounded, opp_surrounded, middle_occupy, num_cluster
 
+    @staticmethod
+    def return_midgame_vector(board,colour,available_moves):
+
+        diff_pieces = Features.diff_pieces(board,colour)
+        dist_cent = Features.total_dist_to_center(board, colour)
+        num_actions = Features.num_actions(available_moves)
+        self_surrounded = Features.check_board_surrounded_my_piece(board,colour)
+        opp_surrounded = Features.check_board_surround_opponent(board,colour)
+        middle_occupy = Features.check_middle(board,colour)
+        num_cluster = Features.cluster_exists(board,colour)
+
+        return diff_pieces, dist_cent, num_actions, self_surrounded, opp_surrounded, middle_occupy, num_cluster
     # get the dot product between the weight and policy vectors -- this is the evaluation value
     @staticmethod
     def dot_prod(policy_vector, weight_vector):
@@ -50,6 +62,10 @@ class Evaluation(object):
 
         return evaluate
 
-    def evaluate(self,board,colour,available_moves):
+    def evaluate(self, board, colour, available_moves, load_weights=False):
         policy_vector = self.return_policy_vector(board,colour,available_moves)
-        return self.dot_prod(self.weights, policy_vector)
+        if load_weights is False:
+            return self.dot_prod(self.weights, policy_vector)
+        else:
+            pass
+
