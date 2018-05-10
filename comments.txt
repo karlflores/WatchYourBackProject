@@ -208,12 +208,12 @@ The following describes the other algorithms that we have implemented and triale
 - Our evaluation function works by returning two vectors that correspond to the number of features that we wish to evaluate. To get the evaluation value we just take the dot product between the weight vector for that function together with the resulting vector of the feature values for the board.
 
 - The features we have implemented in our evaluation are as follows:
-    	1. The difference in the number of pieces on the board (EG. WHITE-BLACK)
-    	2. Combined distance of all pieces to the centre of the board
+    1. The difference in the number of pieces on the board (EG. WHITE-BLACK)
+    2. Combined distance of all pieces to the centre of the board
 		- This is because we want to be closer to the centre due to the shrinking nature of the board
-	3. The difference in the number of actions a piece can make
+	3. The difference in the number of actions a player can make
 	4. If a piece is surrounded such that it cannot move without being eliminated by an enemy piece
-	5. If an enemy is surround such that it cannot move without being eliminated by our piece
+	5. If an enemy is surrounded such that it cannot move without being eliminated by our piece
 		- for 4,5 the patterns are shown the comments of the Features.py file
 	6. If we occupy the middle positions
 	7. The number of clusters of pieces on the board -- this is defined as being a "block" of 4 pieces in a 2x2 format, therefore we count a 3x3 arrangement of pieces as being 4 contiguous overlapping clusters on the board.
@@ -278,6 +278,7 @@ The following describes the other algorithms that we have implemented and triale
 		- Minimax.py -- The starting point of our algorithm development. It implemented basic minimax and alpha beta minimax as well as a minimax with undo-moves vs a minimax that deep-copies each board state. This lead us to choosing to have an undo-actions method as it reduced our search time to reach depth 3 and also decreased the memory it required.
 		- Minimax_Node.py -- this is the node structure for the old minimax search that deep-copies the board representation.
 		- Negamax.py, Negamax_TT.py, NegaScout_TT.py -- Equivalent to the versions that work with the submitted board implementation, but these classes only work with the old board implementation. These classes were used to compare the performance of the submitted board implementation vs the old implementation.
+	> Features
 
 
 

@@ -523,8 +523,8 @@ class Features(object):
     ELIM PATTERN IS AS FOLLOWS 
        (1)   |   (2)  |   (3)    |   (4)
         B    |    B   |          |         |{  These patterns are good to establish as they ensure that we are able to 
-        WW   |   WW   |    BW    |    BW   |{  capture a piece. Therefore if we can form these patterns it will be a
-         B   |   B    |     WB   |   WB    |{  benefit to us to do so 
+        WW   |   WW   |    BW    |    WB   |{  capture a piece. Therefore if we can form these patterns it will be a
+         B   |   B    |     WB   |   BW    |{  benefit to us to do so. -- Here we want to be 'Black'
     '''
     @staticmethod
     def check_elim_pattern(board, colour):
@@ -537,20 +537,111 @@ class Features(object):
 
         num_pattern = 0
 
+        # iterate through all the pieces -- set this piece as the reference piece for the patter
+        # if a patter exists it should there should be a patter than maps to this piece
         for piece in my_pieces:
+            # get the reference piece position
             col,row = piece
 
             # check pattern 1
+            if (col, row + 1) in opposition_pieces and (col + 1, row + 1) in opposition_pieces and \
+                    (col + 1, row + 2) in my_pieces:
+                num_pattern += 1
 
+            # check pattern 2
+            if (col, row - 1) in opposition_pieces and (col - 1, row - 1) in opposition_pieces and \
+                    (col - 1, row - 2) in my_pieces:
+                num_pattern += 1
+
+            # check pattern 3
+            if (col + 1, row) in opposition_pieces and (col + 1, row + 1) in opposition_pieces and \
+                    (col + 2, row + 1) in my_pieces:
+                num_pattern += 1
+
+            # check pattern 4
+            if (col - 1, row) in opposition_pieces and (col - 1, row + 1) in opposition_pieces and \
+                    (col - 2, row + 1) in my_pieces:
+                num_pattern += 1
+
+        # return the number of patterns found on the board
+        return num_pattern
 
     @staticmethod
-    def form_elim_patther(board, colour):
+    def form_elim_pattern(board, action, colour):
         if colour == constant.WHITE_PIECE:
             my_pieces = board.white_pieces
             opposition_pieces = board.black_pieces
         else:
             my_pieces = board.black_pieces
             opposition_pieces = board.white_pieces
+
+        # convert the action into a position
+        if board.phase == constant.MOVING_PHASE:
+            # need to ge the resulting action from the position+direction
+            pos = board.convert_direction_to_coord(action[0],action[1])
+        else:
+            # then the action is already a position
+            pos = action
+        # get the reference position
+        col, row = pos
+
+        '''
+        TO TEST IF A PIECE IS ABLE TO FORM A PATTERN WE JUST NEED TO TEST WHETHER IF IT IS ONE OF THE
+        BLACK PIECES IN THE DIAGRAMS ABOVE 
+        '''
+
+        '''
+            ELIM PATTERN IS AS FOLLOWS 
+               (1)   |   (2)  |   (3)    |   (4)
+                B    |    B   |          |         |{  These patterns are good to establish as they ensure that we are able to 
+                WW   |   WW   |    BW    |    WB   |{  capture a piece. Therefore if we can form these patterns it will be a
+                 B   |   B    |     WB   |   BW    |{  benefit to us to do so. -- Here we want to be 'Black'
+        '''
+
+        # check pattern 1 - BLACK UPPER
+        if (col, row + 1) in opposition_pieces and (col + 1, row + 1) in opposition_pieces and \
+                (col + 1, row + 2) in my_pieces:
+            return True
+
+        # check pattern 1 - BLACK LOWER
+        if (col, row - 1) in opposition_pieces and (col - 1, row - 1) in opposition_pieces and \
+                (col - 1, row - 2) in my_pieces:
+            return True
+
+        # check pattern 2 - BLACK UPPER
+        if (col, row + 1) in opposition_pieces and (col - 1, row + 1) in opposition_pieces and \
+                (col - 1, row + 2) in my_pieces:
+            return True
+
+        # check pattern 2 - BLACK LOWER
+        if (col, row - 1) in opposition_pieces and (col + 1, row - 1) in opposition_pieces and \
+                (col + 1, row - 2) in my_pieces:
+            return True
+
+        # check pattern 3 - BLACK UPPER
+        if (col + 1, row) in opposition_pieces and (col + 1, row + 1) in opposition_pieces and \
+                (col + 2, row + 1) in my_pieces:
+            return True
+
+        # check pattern 3 - BLACK LOWER
+        if (col - 1, row) in opposition_pieces and (col - 1, row - 1) in opposition_pieces and \
+                (col - 2, row - 1) in my_pieces:
+            return True
+
+        # check pattern 4 - BLACK UPPER
+        if (col - 1, row) in opposition_pieces and (col - 1, row + 1) in opposition_pieces and \
+                (col - 2, row + 1) in my_pieces:
+            return True
+
+        # check pattern 4 - BLACK LOWER
+        if (col + 1, row) in opposition_pieces and (col + 1, row - 1) in opposition_pieces and \
+                (col + 2, row - 1) in my_pieces:
+            return True
+
+        # else we cant form a pattern, then we return false
+        return False
+
+
 
 '''
 LOOK AT TIMING SCHEMES

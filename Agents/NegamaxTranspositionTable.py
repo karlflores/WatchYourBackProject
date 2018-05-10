@@ -18,7 +18,7 @@ FOR COMPARISON
 
 class Negamax(object):
 
-    def __init__(self, board, colour):
+    def __init__(self, board, colour, file_name):
         # we want to create a node
 
         self.tt = TranspositionTable()
@@ -55,7 +55,7 @@ class Negamax(object):
         self.total_time = 0
 
         # evaluation weight loading
-        self.evaluation = Evaluation("./XML","/eval_weights")
+        self.evaluation = Evaluation("./XML",file_name)
 
     '''
     Iterative Deepening Negamax 

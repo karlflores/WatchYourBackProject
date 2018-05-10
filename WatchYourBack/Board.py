@@ -1136,7 +1136,12 @@ class Board(object):
             # if we are already in a middle square we don't really want to move this piece
             if self.phase == constant.MOVING_PHASE:
                 if Features.in_middle(self, action) is True:
-                    weights[i] -= 300
+                    weights[i] -= 250
+
+            # if we can form a pattern that guarantees us a capture, then this move has more importance than
+            # other moves
+            if Features.form_elim_pattern(self, action, colour) is True:
+                weights[i] += 31000
 
         return [action for _, action in sorted(zip(weights,actions), reverse=True)]
 
