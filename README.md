@@ -1,4 +1,5 @@
 # Watch Your Back
+------------------------------------------/Watch Your Back\-----------------------------------------
 
 ## 1. Program Description
 Our program can be split up into four main parts:
@@ -8,7 +9,40 @@ Our program can be split up into four main parts:
     4. Evaluation function
 
 In terms of the files used in our submission, the structure is as follows:
-    >
+```
+	> WatchYourBack -----------------------------------------------------------------------
+		> Board.py
+			 |__ Implementation of the board 
+		> Piece.py
+			 |__ Implementation of the board pieces 
+	> Agents ------------------------------------------------------------------------------
+		> NegamaxTranspositionTable.py
+					     |__ Implementation of the Negamax algorithm with a
+						 transposition table
+	> Data_Structures ---------------------------------------------------------------------
+		> TranspositionTable.py
+				      |__Implementation of the Transposition Table 
+	> Constants ---------------------------------------------------------------------------
+		> constants.py
+			     |__ All constants used by the files in the submission
+	> Error_Handling ----------------------------------------------------------------------
+		> Errors.py
+			  |__ Custom exceptions created for debugging and error handling 
+	> Evaluation --------------------------------------------------------------------------
+		> Features.py
+			    |__ Implementation of all the features that we have come up with 
+		> Policies.py
+			    |__ The actual evaluation function implementation 
+	> XML ---------------------------------------------------------------------------------
+		> xml_helper.py
+			      |__ Class that helps us save, load and update weights for the 
+			   	  evaluation function. This was intended to be used with 
+				  Machine Learning.
+	> Player_Negamax.py 
+			  |__ Our final player submission.
+```
+		
+
 
 ### 1.1 The board/board rules
 * We decided to implement the board game using two main classes -- Board and Piece.
@@ -52,13 +86,9 @@ Overall, because we did re-implement the board game using different data structu
 	*PLAYERS THAT WORK WITH THE CURRENT IMPLEMENTATION*:
 
 	1. Player_Random.py -- a player that just chooses random moves
-
 	2. Player_Manual.py -- a player that accepts user input to what move it is able to make
-
 	3. Player_Negamax.py -- a player that implements the negamax algorithm with greedy heuristics on move evaluation and ordering. This also implements the ActionBook, and transposition tables to help inform decisions.
-
 	5. Player_Negascout.py -- implementation of the negascout algorithm with the greedy heuristics on move evaluation and ordering.
-
 	6. Player_MCTS.py -- Implementation of Monte Carlo Tree Search applied to Watch Your Back 
 
 * The players listed above guided the creation of our final player agent -- Player_Negamax.py which implements the iterative deepening version of negamax (with transposition table) with an opening book of moves.
@@ -72,8 +102,9 @@ The final search strategy that we chose to implement was the negamax variant of 
 At the start of the game we chose to implement a short "action book" for opening moves of the game to cut down search times and also to maximise the search times for later in the game. We chose to implement this as a dictionary where the key is the board-array string and the value is the position of the piece placement.
 
 Negamax is equivalent to alpha beta but it assumes that the game is a zero-sum two player game such that the following property is held:
-    
-	* max(alpha,beta) = -min(-alpha,-beta)
+```
+	max(alpha,beta) = -min(-alpha,-beta)
+```
 
 This means we are able to use one function call instead of creating two calls to min_player and max_player, thus simplifying the code implementation, and allows for easier implementation of addition features such are move ordering and transposition tables. 
 
@@ -90,16 +121,16 @@ To help prune more nodes in the tree we also implemented a transposition table i
 - The transposition table is a dictionary in python that stores different board-state, minimax-value/best move key-value pairs such that when we come across a board state, before we evaluate using minimax search we are able to query the table to check whether or not we have seen that state before.
  
 - The entry of the transposition table is as follows: 
-	```
-		{(board_bytearray, player_colour): (minimax_value, tt_type, best_move, depth)}
+```
+	{(board_bytearray, player_colour): (minimax_value, tt_type, best_move, depth)}
 
-		-> board_bytearray: the byte array representation of that board state 		
-		-> tt_type: whether the minimax_value returned was an upper bound, lower bound or an exact value 
-		-> best_move: the best move found my minimax to get to that particular state 
-		-> depth: depth at which minimax was evaluated at. If we got to a deeper search on the next iteration of iterative deepening, we can rewrite the entry of this board representation 
+	-> board_bytearray: the byte array representation of that board state 		
+	-> tt_type: whether the minimax_value returned was an upper bound, lower bound or an exact value 
+	-> best_move: the best move found my minimax to get to that particular state 
+	-> depth: depth at which minimax was evaluated at. If we got to a deeper search on the next iteration of iterative deepening, we can rewrite the entry of this board representation 
 		
 
-	```
+```
 
 - By storing whether the minimax was an alpha, beta cut-off or an PV_node value we are able to either just return the best move/best minimax value from the table for any future serach (if the board state matches an entry), or it can update the values of alpha and beta based on whether the value stored in the transposition table was a beta or alpha cut-off value.
 
@@ -125,10 +156,11 @@ The following describes the other algorithms that we have implemented and triale
 * Monte Carlo Tree Search (MCTS.py)
 
 - Originally we thought that we would use monte carlo tree search as our algorithm for decision making. It works by creating a game-tree on the fly by randomly simulating games and calculating the resultant chance of winning the game by taking a particular action. The algorithm progresses in 4 distinct phases:
-    1. Selection: Select the child node that looks the most promising according to a default policy. Here the policy used was the UCB1 (upper confidence bound 1) to select the most promising child node.
-    2. Expansion: Once we have selected the child node, we expand that child node by choosing a random action from that childs available actions to make. It creates a new node that corresponds to this action and adds it to this leaf nodes children list.
-    3. Simulation: From the newly created node we then simulate the game from this state until we reach terminal state. The winner from this simulation is recorded.
-    4. Backpropagation: The values from the simulation are backpropagated back up to the parent node, adjusting every node in the path to the parent along the way.
+
+	1. Selection: Select the child node that looks the most promising according to a default policy. Here the policy used was the UCB1 (upper confidence bound 1) to select the most promising child node.
+	2. Expansion: Once we have selected the child node, we expand that child node by choosing a random action from that childs available actions to make. It creates a new node that corresponds to this action and adds it to this leaf nodes children list.
+	3. Simulation: From the newly created node we then simulate the game from this state until we reach terminal state. The winner from this simulation is recorded.
+	4. Backpropagation: The values from the simulation are backpropagated back up to the parent node, adjusting every node in the path to the parent along the way.
 
 - This four step process is run multiple times, starting at the root node, until a game tree is built. Then, to choose the action to make, we pick the child of the root node which maxmimses the UCB1 value. I.e. from our current simulation which of the moves are we most comfortable making such that our chances of winning from these board states is maximised. 
 
@@ -140,7 +172,7 @@ The following describes the other algorithms that we have implemented and triale
 
 ### 1.4 Evaluation function
 
-####BOARD STATE EVALUATION FUNCTION
+#### BOARD STATE EVALUATION FUNCTION
 
 - Our evaluation function works by returning two vectors that correspond to the number of features that we wish to evaluate. To get the evaluation value we just take the dot product between the weight vector for that function together with the resulting vector of the feature values for the board.
 
@@ -162,17 +194,6 @@ The following describes the other algorithms that we have implemented and triale
 		- This is a value that represents how close our pieces are to the opponents. Later in the game we want to move our pieces as close as we can to the opponent pieces such that we can play are more offensive game such that we put ourselves in a position to capture them, if we are far away from the opponent we are not able to easily capture the opponet pieces. This function is only evaluated towards the end of the game. 
 	11. The difference number of patterns between the two players, of pieces on the board that correspond to guaranteed captures. These specific patters are shown in the comments of the Features.py file. 
 
-#### Machine Learning: 
-- We did not successfully implement machine learning to train the weights of our evaluation function as we ran out of time. We implemented the basis for TD-Leaf(Lambda) in the file Learning/Learners.py, although it has not been fully tested yet 
-
-- We actually have created a separate class called xml_helper to help save weights and load weights from an XML file. This class is actually used in our final submission to load the weights for our evaluation function. This allows to easily store and create different weights for our evaluation functions such that we can change it by just changing the file path to the weight-xml file.
-
-- Furthermore by using an XML file to load the weights, we can easily update and save weights generated by machine learning and "incrementally" update the weights as we wish. 
-
-- This technique also would have allowed us to have multiple agents that use the same search strategy with essentially the same evaluation function, except with different weights (via the weight xml files). We could then verse the same agent with each other with two different weights and see whether one function is better than the other. This was we can effectively create slowly refine our evaluation function through machine learning techniques. 
-
-- Sadly we did not have time to fully implement the TD-Leaf(Lambda) algorithm, all that was left to do was to try and return the "best policy vector" from the PV node found in the negamax algorithm such that we could extract the ith-feature for the partial derivative of the reward function, but we did not have time to do this sadly. 
-
 
 #### ACTION EVALUATION FUNCTION FOR GREEDY/NAIVE MOVE ORDERING
 - In order to order the legal actions from most favourable to least we applied a "action evaluation to each of the legal actions once generated, we then used those values to order the actions in decreasing values of evaluation. 
@@ -186,11 +207,24 @@ The following describes the other algorithms that we have implemented and triale
 	7. If an action results in us occupying part of the middle squares -- this is weighted highly as we try to occupy these squares first 
 	8. If, in the moving phase we move one of the middle pieces -- ideally we do not want to do this as, therefore we decrease the weight of that action if this occurs 
 	9. If we are able to form a pattern that ensures that we can capture a piece on the next move -- i.e. does not matter where the opponent moves or places their piece, we can always capture a piece
+
+#### Machine Learning: 
+- We did not successfully implement machine learning to train the weights of our evaluation function as we ran out of time. We implemented the basis for TD-Leaf(Lambda) in the file Learning/Learners.py, although it has not been fully tested yet 
+
+- We actually have created a separate class called xml_helper to help save weights and load weights from an XML file. This class is actually used in our final submission to load the weights for our evaluation function. This allows to easily store and create different weights for our evaluation functions such that we can change it by just changing the file path to the weight-xml file.
+
+- Furthermore by using an XML file to load the weights, we can easily update and save weights generated by machine learning and "incrementally" update the weights as we wish. 
+
+- This technique also would have allowed us to have multiple agents that use the same search strategy with essentially the same evaluation function, except with different weights (via the weight xml files). We could then verse the same agent with each other with two different weights and see whether one function is better than the other. This was we can effectively create slowly refine our evaluation function through machine learning techniques. 
+
+- Sadly we did not have time to fully implement the TD-Leaf(Lambda) algorithm, all that was left to do was to try and return the "best policy vector" from the PV node found in the negamax algorithm such that we could extract the ith-feature for the partial derivative of the reward function, but we did not have time to do this sadly. 
 		
 
 ### Other creative aspects
 
 - We implemented a simple GUI boardgame app to help visualise the game better -- App.py. This was implemented using tkinter and currently only supports visualising the turn by turn action of AI players. We planned on implementing a feature that allowed for human input such that we could verse our own AI, but we did not have any time to complete this. 
+
+
 
 ___________________________________________________________________________________________
 *COMMENTS.TXT ENDS HERE*
