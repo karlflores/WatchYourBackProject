@@ -1,4 +1,4 @@
-# Watch Your Back
+# Watch Your Back - AI Project
 
 ## 1. Program Description
 Our program can be split up into four main parts:
@@ -14,13 +14,16 @@ In terms of the files used in our submission, the structure is as follows:
 			 |__ Implementation of the board 
 		> Piece.py
 			 |__ Implementation of the board pieces 
+	> ActionBook---------------------------------------------------------------------------
+		> ActionBook.py
+			      |__ A book learned portion that stores different opening moves.
 	> Agents ------------------------------------------------------------------------------
 		> NegamaxTranspositionTable.py
 					     |__ Implementation of the Negamax algorithm with a
 						 transposition table
 	> Data_Structures ---------------------------------------------------------------------
 		> TranspositionTable.py
-				      |__Implementation of the Transposition Table 
+				      |__ Implementation of the Transposition Table 
 	> Constants ---------------------------------------------------------------------------
 		> constants.py
 			     |__ All constants used by the files in the submission
@@ -39,6 +42,35 @@ In terms of the files used in our submission, the structure is as follows:
 				  Machine Learning.
 	> Player_Negamax.py 
 			  |__ Our final player submission.
+```
+
+Other files that work with our current board implementation, but do not form part of our formal
+submission are as follows: 
+```
+	> Agents ------------------------------------------------------------------------------
+		> MCTS.py
+			|__ Monte Carlo Tree Search implementation applied to WYB
+		> MCTS_Node.py
+			     |__ Node object that can be expanded and searched on for MCTS
+		> Negamax.py
+			   |__ Negamax with no optimisations except move ordering 
+		> NegascoutTranspositionTable.py
+					       |__ Negascout implementation with Transposition
+						   Table
+		> Random.py
+			  |__ Implementation of an agent that chooses only random moves 
+
+	> Player_MCTS.py 
+		       |__ An agent that uses MCTS search to inform its next move 
+	> Player_Negascout.py 
+		            |__ An agent that uses Negascout search with Transposition Table 
+				to inform its next move 
+	> Player_Manual.py
+			 |__ A player that accepts human input from the command line to 
+			     inform its next move 
+	> Player_Random.py
+			 |__ A player that only chooses random moves to make. 
+		
 ```
 		
 
@@ -111,7 +143,7 @@ Negamax also has the same running time as naive alpha beta minimax O(b^d/2). For
 
 In the end we implemented a method which was able to take in the list of legal action, and we applied a light "action"-evaluation function to each of the legal actions and from this we were able to produce a sorted list of moves which we could then iterate on. To our surprise this method of ordering the moves did not produce any noticeable increase in performance. In part, we thought that this was because the cost of sorting a list of actions was O(Nlog(N)), and when combined with evaluating the moves which we assumed to be a O(1) operation, that the total cost of obtaining a list of sorted moves became a [O(Nlog(N)) + O(1)*N ~ O(Nlog(N))] operation. But because negamax/minimax variants are still exponential functions, and that we were doing this trivial ordering at every new state that we searched on, that the added computation of sorting the available moves negates any performance increase from move ordering in alpha-beta-negamax. 
 
-To counteract this we decided to split up the sorted actions list into a list of "favourable" and unfavourable moves. We achei by just taking the first len(actions)/2 or so of the list to evaluate (if there is greater than 16 actions) or the first 10 actions if there is between 10-16 legal actions to make, if the number of legal actions is less than 10 we just evaluate every action. This means that we effective just choose the best moves that we think are good so far and do a search on these actions to pick our best action to make. Effectively this is a greedy approach to reduce the branching factor of the game to make the search more feasible to complete in a reasonable amount of time. When playing an agent that makes random moves we were able to evaluate to depth 3-4 on average in a 900ms time-cutoff. Ideally we thought that we would have gotten to a deeper depth but we thought that due to our board implementation and the cost of move-ordering that this would have been the best strategy we could have come up with in this period of time. Furthermore because we applied this greedy nature of only looing at the best moves you think without looking any further in the game, negamax is no longer an optimal search and transitions into something more in line of a greedy search. 
+To counteract this we decided to split up the sorted actions list into a list of "favourable" and unfavourable moves. We achieve this by just taking the first len(actions)/2 or so of the list to evaluate (if there is greater than 16 actions) or the first 10 actions if there is between 10-16 legal actions to make, if the number of legal actions is less than 10 we just evaluate every action. This means that we effective just choose the best moves that we think are good so far and do a search on these actions to pick our best action to make. Effectively this is a greedy approach to reduce the branching factor of the game to make the search more feasible to complete in a reasonable amount of time. When playing an agent that makes random moves we were able to evaluate to depth 3-4 on average in a 900ms time-cutoff. Ideally we thought that we would have gotten to a deeper depth but we thought that due to our board implementation and the cost of move-ordering that this would have been the best strategy we could have come up with in this period of time. Furthermore because we applied this greedy nature of only looking at the best moves you think without looking any further in the game, negamax is no longer an optimal search and transitions into something more in line of a greedy search. 
 
 To help prune more nodes in the tree we also implemented a transposition table inside of negamax. The transposition table is explained below:
 
@@ -126,8 +158,7 @@ To help prune more nodes in the tree we also implemented a transposition table i
 	-> board_bytearray: the byte array representation of that board state 		
 	-> tt_type: whether the minimax_value returned was an upper bound, lower bound or an exact value 
 	-> best_move: the best move found my minimax to get to that particular state 
-	-> depth: depth at which minimax was evaluated at. If we got to a deeper search on the next 
-	   iteration of iterative deepening, we can rewrite the entry of this board representation 
+	-> depth: depth at which minimax was evaluated at. If we got to a deeper search on the next iteration of iterative deepening, we can rewrite the entry of this board representation 
 		
 
 ```
@@ -136,7 +167,7 @@ To help prune more nodes in the tree we also implemented a transposition table i
 
 - To maximise the use and efficiency of the table we incrementally fill up the table using iterative deepening search. When we increase the depth of search we always just try the best move that we have found so far to direct our search to deeper levels.
 
-- To reduce branching factor we also attempted to apply symmetries to the byte-array board representation. We did so by the following: when a symmetry was applied to a board representation we checked if the resultant board was in the transposition table. We originally tested for horizontal reflection in both placement and moving phases, and tested vertical, horizontal and rotation in the moving phases. We found that for most cases there was no point in testing for symmetries and reflections in the moving phases as through our simulations we found that it was very rare that we would be able to generate states that were symmetries of other states already in the table. Since the cost of applying a symmetry is O(n^2) and that we would be checking for symmetries at every state, that this was not worth it. We found that we were only finding symmetries in the first few moves of the board game, and hardly any, if any symmetries were found in the moving phase. We decided to not check for any symmetries when checking in the transposition table. The code supplied has the symmetry checking commented out. The relavent methods used for rotation, reflection are still provided.
+- To reduce branching factor we also attempted to apply symmetries to the byte-array board representation. We did so by the following: when a symmetry was applied to a board representation we checked if the resultant board was in the transposition table. We originally tested for horizontal reflection in both placement and moving phases, and tested vertical, horizontal and rotation in the moving phases. We found that for most cases there was no point in testing for symmetries and reflections in the moving phases as through our simulations we found that it was very rare that we would be able to generate states that were symmetries of other states already in the table. Since the cost of applying a symmetry is O(n^2) and that we would be checking for symmetries at every state, that this was not worth it. We found that we were only finding symmetries in the first few moves of the board game, and hardly any, if any symmetries were found in the moving phase. We decided to not check for any symmetries when checking in the transposition table. The code supplied has the symmetry checking commented out. The relevant methods used for rotation, reflection are still provided.
 
 - We clear the transposition table after every call to find the next move in the placement phase of the game. This is to stop it from growing too big. In the placement phase we do not clear the table. From our tests, the table does not exceed the memory limits of the game when it is not cleared during the moving phase. 
 
@@ -146,23 +177,21 @@ To help prune more nodes in the tree we also implemented a transposition table i
 The following describes the other algorithms that we have implemented and trialed: 
 
 * Minimax and Alpha-Beta (Minimax.py, AlphaBetaOptimised.py):
+- This was the starting point of our algorithm. We decided to compact the implementation of minimax using negamax therefore we stopped using this class.
+- Before we switched to using the negamax algorithm, we tried to use the built in python lru_cache to memoize negamax calls. The problem with this was that we did not know if the negamax value returned was an alpha beta cutoff or a PV-node therefore the resulting move returned by the negamax call was not known to be optimal or not. To replace this we decided to implement the transposition table. 
 
-    - This was the starting point of our algorithm. We decided to compact the implementation of minimax using negamax therefore we stopped using this class.
-
-    - Before we switched to using the negamax algorithm, we tried to use the built in python lru_cache to memoize negamax calls. The problem with this was that we did not know if the negamax value returned was an alpha beta cutoff or a PV-node therefore the resulting move returned by the negamax call was not known to be optimal or not. To replace this we decided to implement the transposition table. 
-
-* Negascout / Principal variation search (PVS)
-
-* Monte Carlo Tree Search (MCTS.py)
+* Negascout / Principal variation search (PVS):
+- This is a variant on iterative deepening negamax with transposition table and move ordering. This variant uses a "null window" search
+* Monte Carlo Tree Search (MCTS.py):
 
 - Originally we thought that we would use monte carlo tree search as our algorithm for decision making. It works by creating a game-tree on the fly by randomly simulating games and calculating the resultant chance of winning the game by taking a particular action. The algorithm progresses in 4 distinct phases:
 
 	1. Selection: Select the child node that looks the most promising according to a default policy. Here the policy used was the UCB1 (upper confidence bound 1) to select the most promising child node.
-	2. Expansion: Once we have selected the child node, we expand that child node by choosing a random action from that childs available actions to make. It creates a new node that corresponds to this action and adds it to this leaf nodes children list.
+	2. Expansion: Once we have selected the child node, we expand that child node by choosing a random action from that child's available actions to make. It creates a new node that corresponds to this action and adds it to this leaf nodes children list.
 	3. Simulation: From the newly created node we then simulate the game from this state until we reach terminal state. The winner from this simulation is recorded.
-	4. Backpropagation: The values from the simulation are backpropagated back up to the parent node, adjusting every node in the path to the parent along the way.
+	4. Backpropagation: The values from the simulation are back-propagated back up to the parent node, adjusting every node in the path to the parent along the way.
 
-- This four step process is run multiple times, starting at the root node, until a game tree is built. Then, to choose the action to make, we pick the child of the root node which maxmimses the UCB1 value. I.e. from our current simulation which of the moves are we most comfortable making such that our chances of winning from these board states is maximised. 
+- This four step process is run multiple times, starting at the root node, until a game tree is built. Then, to choose the action to make, we pick the child of the root node which maximises the UCB1 value. I.e. from our current simulation which of the moves are we most comfortable making such that our chances of winning from these board states is maximised. 
 
 - What we discovered was that this MCTS algorithm is dependent on how fast your are able to simulate a game until terminal state, as well as the time that the MCTS algorithm is allowed to run. The longer that the MCTS can take to create a game tree, the better the resulting move should be. What we found, that for a one-second move evaluation, that we were only able to create 10-12 child nodes. 
 
@@ -220,9 +249,48 @@ The following describes the other algorithms that we have implemented and triale
 - Sadly we did not have time to fully implement the TD-Leaf(Lambda) algorithm, all that was left to do was to try and return the "best policy vector" from the PV node found in the negamax algorithm such that we could extract the ith-feature for the partial derivative of the reward function, but we did not have time to do this sadly. 
 		
 
-### Other creative aspects
+### Other Creative Aspects / General Comments
 
 - We implemented a simple GUI boardgame app to help visualise the game better -- App.py. This was implemented using tkinter and currently only supports visualising the turn by turn action of AI players. We planned on implementing a feature that allowed for human input such that we could verse our own AI, but we did not have any time to complete this. 
+
+- Included in this submission are all the depreciated classes that have been created along the way to reach our final agent below is a description of all of these classes: 
+(NOTE: Many of these classes no longer work due to changes in board.py as we implemented other features) 
+	* DepreciatedBoard: 
+		- Board.py -- The original board implementation using lists to store piece positions
+		- GameBoard_Dict.py -- An edit of the above Board.py that changed the lists to dictionaries. This did not produce a significant increase in speed up partly because we were still using quite a lot of lists and also generating actions from scatch each time. We decided to go for a more object orient approach to the board game by splitting it up into a Piece class and Board class in the final submission which ended up being more efficient in terms of action generation, accessing and testing membership of pieces. 
+		- WYB_Bitboard.py -- We planned on implementing watch your back using a bitboard to see if there was going to be any benefits to run time from this data structure. Bitboards allow for parallelised bitwise computation and allows for very efficent action generation and board evaluation. We did not have any time to implement this, but it would have been good to do so. 
+
+	* DepreciatedPlayers: All these players are designed to work with the depreciated Board.py file
+		- Manual_Player.py -- Broken manual input player that worked with the old board representation 
+		- Player.py -- Player that chooses random moves
+		- Player_AB.py -- This player implemented alpha-beta minimax search with no optimisations
+		- Player_AB_DictUndo.py -- This implemented alpha-beta minimax using the GameBoard_Dict.py class and undo_move function to try an increase performance when compared to Player_AB_LRU and Player_AB. What was found, was that there was no increase in performance when using this class, we were only able to evaluate moves to very shallow depths (2-3) in 4-5 seconds of evaluation time. 
+		- Player_AB_LRU.py -- This player used the alpha-beta minimax with the built in LRU cache to memoize recently evaluated minimax states. This appeared to provide a significant increase in performance, allowing us to evaluate down to depth 2-3 in 1 sec. This was scrapped in favour of Transposition Tables which allowed for more accurate values and directed searches. 
+		- Player_Nega.py -- Negamax implementation for the first board implementation 
+		- Player_Negascout.py -- First Negascout implementation with the old board implementation 
+
+	* Agents/Depreciated Classes (these are all the classes that work with the old Board.py file) 
+		- AlphaBetaOptimised.py -- Class that uses the built in LRU cache with AlphaBeta to try an improve performance. 
+		- GreedyAlphaBeta.py -- Class that implemented move ordering using sorting and also the LRU cache for move ordering -- this did not work as intended, and I am pretty sure in its current state, it does not work with the depreciated board implementation.
+		- GreedyNegamax.py -- Class that implemented negamax together with the transposition table and greedy move ordering and selection. This is equivalent to the final submission class, but this only works with the old implementation. 
+		- Minimax.py -- The starting point of our algorithm development. It implemented basic minimax and alpha beta minimax as well as a minimax with undo-moves vs a minimax that deep-copies each board state. This lead us to choosing to have an undo-actions method as it reduced our search time to reach depth 3 and also decreased the memory it required.
+		- Minimax_Node.py -- this is the node structure for the old minimax search that deep-copies the board representation. 
+		- Negamax.py, Negamax_TT.py, NegaScout_TT.py -- Equivalent to the versions that work with the submitted board implementation, but these classes only work with the old board implementation. These classes were used to compare the performance of the submitted board implementation vs the old implementation. 
+
+		
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

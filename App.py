@@ -411,8 +411,5 @@ class Window(Frame):
         canvas = self.canvas
         self.info_objs.append(canvas.create_rectangle(x_1, y_1, x_2, y_2, outline=c1, fill=c2, width=2))
 
-
-
-
 if __name__ == "__main__":
     main()

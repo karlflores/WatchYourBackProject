@@ -1,6 +1,12 @@
 from WatchYourBack.Board import Board
 from Constants import constant
 from copy import deepcopy
+
+'''
+NOT A PART OF FINAL SUBMISSION -- THIS IS USED FOR APP.PY TO CREATE A MANUAL PLAYER THAT CAN PLAY AGAINST 
+OUR AI. THIS ALSO IN UNFINISHED...
+'''
+
 class Manual(object):
     def __init__(self,player):
         self.board = Board()
