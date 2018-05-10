@@ -11,7 +11,7 @@ import math
 from Data_Structures.Stack import Stack
 
 from sys import getsizeof
-from Evaluation.Features import Features
+from Evaluation.FeaturesDepreciated import Features
 
 class Board(object):
 

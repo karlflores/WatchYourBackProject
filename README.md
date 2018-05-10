@@ -1,6 +1,202 @@
 # Watch Your Back
 
-## PROJECT PART B
+## 1. Program Description
+Our program can be split up into four main parts:
+    1. The board/ board rules
+    2. The player
+    3. The search strategy
+    4. Evaluation function
+
+In terms of the files used in our submission, the structure is as follows:
+    >
+
+### 1.1 The board/board rules
+* We decided to implement the board game using two main classes -- Board and Piece.
+
+#### Piece.py
+
+* The Piece class models the behaviour that a piece (black or white) on the board. This class implements several methods that govern how the piece is able to move on the board, and also stores if any neighbouring squares surrounding itself is FREE. We store the neighbour "free" positions as a list, where the index represents the direction that that piece needs to take to occupy that square. This allows for constant time operation to find whether a neighbouring square is already occupied or not, and also allows us to update in constant time the occupancy state of this pieces neighbours. This approach allows us to efficiently allow us to generate the legal directions the piece can move by just checking whether the neighbours are free or not.
+
+#### Board.py
+* The Board class structure consists of a dictionary storing all the pieces on the board, a bytearray board representation that is use for the key in the Transposition Table data structure used in our search algorithms (more on this later...) and a dictionary that stores all FREE-spaces on the board during the placement phase. We decided to use a byte array to represent the board in string format as it allowed for the lightweight properties of a string, with constant time access to piece types but unlike a string, it was mutable. This allowed us to easily convert between a bytearray and a string using encode and decode methods. The byte array is only updated when we apply an action to the board or we undo an action from the board. For the board's purpose it allows an easy way to print the board. Dictionaries were used to store the pieces on the board as it allowed for average-case O(1) constant time access and checking, allowing for quick updates to the board.
+
+* The board class methods deal with the following features of the board game:
+
+	- Updating the board, which consisted of switching from placing to moving phases, shrinking the board and performing eliminations:
+
+		- Adding pieces to the board during the placement phase of the game.
+            		- This is handled by the apply_placement method which allows for a player to place a piece on the board
+
+        	- Moving a piece during the moving phase
+            		- This is handled by the apply_action method
+
+        	- Elimination of pieces is handled by the perform_elimination method
+
+        	- Shrinking the board is handled by the shrink_board method
+
+            	- This both eliminates any pieces near the corners according tp the rules of the game, as well as updating the bytearray representation of the board.
+
+    	- The board class is also responsible for generating a list of legal actions such that our searching algorithm is able to search on the board. This method utilises the information of the state of the neighbouring squares of a piece.
+        	- The sort actions method is able to take in a set of legal actions, and use a light evaluation function to sort those actions based on features of the game (more on this later...)
+    	
+- Most importantly, this Watch Your Back implementation also implements an undo_action method which takes in the action applied to the board and the list of eliminated pieces that resulted from applying that action. It then puts back all eliminated pieces on the board, undoes the action applied to the board and also updates the neighbouring square information of each "affected" piece from that action. By "affected piece" we mean pieces that have been eliminated, pieces that have been moved/placed and also neighbouring pieces of pieces that have been eliminated/moved/ placed on the board as well as neighbouring squares of newly-freed squares. By doing so we only update the attributes of pieces who have been affected by an action, thus eliminated any extra computation by not re-comupting any attributes of pieces that have been unaffected by an action. Furthermore, this undo_action method allows us to use the one board representation during the search thereby minimising any memory that we are using. This means we are able to store more information in the board structure as we are not deep-copying the board every time we explore a new path in a search.
+
+- Originally we were implementing the board using lists instead of dictionaries, and whenever we wanted to obtain a list of available actions it had to generate that list from scratch by looking if a square was empty or test if a piece was able to move in the each direction. Because accessing and testing membership in a list is an O(N) operation in the average case, whereas when using a dictionary accessing and testing membership is O(1) in the average case, there was a dramatic increase in speed when we compare the two models. Furthermore in the original board representation our undo function was quite a bit more complicated and used two seperate stacks to store the eliminated pieces (along with what turn they were eliminated on) and also the move applied to the game. When we wanted to undo an action, we just needed to pop the most recent element off the stack that corresponed to the most recent action and most recent eliminated pieces. Therefore this implementation required a bit more overhead in terms of memory but also because we were using more function calls to update and store these actions/pieces it did impact on the running time as well. There was one advantage to this implementation of the board is that we could do multiple undo-action calls in a row, where as with our current implementation it requires a list of eliminated pieces and the last move to be passed in.
+
+Overall, because we did re-implement the board game using different data structures, we also did notice an increase in performance in negamax calls. We were able to reach depth 2 within 200ms compared to taking around ~1s to do so previously.
+
+### 1.2 The player/s
+
+* Our method implements a range of players that can play the game -- one for each search method we have created. The ones of note are the following:
+
+	*PLAYERS THAT WORK WITH THE CURRENT IMPLEMENTATION*:
+
+	1. Player_Random.py -- a player that just chooses random moves
+
+	2. Player_Manual.py -- a player that accepts user input to what move it is able to make
+
+	3. Player_Negamax.py -- a player that implements the negamax algorithm with greedy heuristics on move evaluation and ordering. This also implements the ActionBook, and transposition tables to help inform decisions.
+
+	5. Player_Negascout.py -- implementation of the negascout algorithm with the greedy heuristics on move evaluation and ordering.
+
+	6. Player_MCTS.py -- Implementation of Monte Carlo Tree Search applied to Watch Your Back 
+
+* The players listed above guided the creation of our final player agent -- Player_Negamax.py which implements the iterative deepening version of negamax (with transposition table) with an opening book of moves.
+
+### 1.3 The search strategy
+
+#### Negamax 
+
+The final search strategy that we chose to implement was the negamax variant of minimax search with alpha beta pruning. We also used iterative deepening combined with a time-cutoff to ensure that we can return the best available move in a given amount of time.
+
+At the start of the game we chose to implement a short "action book" for opening moves of the game to cut down search times and also to maximise the search times for later in the game. We chose to implement this as a dictionary where the key is the board-array string and the value is the position of the piece placement.
+
+Negamax is equivalent to alpha beta but it assumes that the game is a zero-sum two player game such that the following property is held:
+    
+	* max(alpha,beta) = -min(-alpha,-beta)
+
+This means we are able to use one function call instead of creating two calls to min_player and max_player, thus simplifying the code implementation, and allows for easier implementation of addition features such are move ordering and transposition tables. 
+
+Negamax also has the same running time as naive alpha beta minimax O(b^d/2). For the game, we realised that the branching factor of the game is quite high (starting at 46 at the beginning of the game and can still be at around 30-35 during mid game assuming you still have most your pieces on the board). This meant that evaluating every move using minimax became unfeasable as even evaluating a move to depth 2 was originally taking 2-3 seconds per turn. Therefore we had to come up with a way to heavily prune the available moves to do search on. To do this we first implemented alpha-beta pruning with the original minimax function that we wrote, which still did not improve the performance of the algorithm significantly. We thought that this was partly because we were just evaluating moves as we saw them (no move ordering). Since alpha-beta pruning works best when you have good move ordering we knew that we needed to try to develop ways to prune out bad moves from the search space. 
+
+In the end we implemented a method which was able to take in the list of legal action, and we applied a light "action"-evaluation function to each of the legal actions and from this we were able to produce a sorted list of moves which we could then iterate on. To our surprise this method of ordering the moves did not produce any noticeable increase in performance. In part, we thought that this was because the cost of sorting a list of actions was O(Nlog(N)), and when combined with evaluating the moves which we assumed to be a O(1) operation, that the total cost of obtaining a list of sorted moves became a [O(Nlog(N)) + O(1)*N ~ O(Nlog(N))] operation. But because negamax/minimax variants are still exponential functions, and that we were doing this trivial ordering at every new state that we searched on, that the added computation of sorting the available moves negates any performance increase from move ordering in alpha-beta-negamax. 
+
+To counteract this we decided to split up the sorted actions list into a list of "favourable" and unfavourable moves. We achei by just taking the first len(actions)/2 or so of the list to evaluate (if there is greater than 16 actions) or the first 10 actions if there is between 10-16 legal actions to make, if the number of legal actions is less than 10 we just evaluate every action. This means that we effective just choose the best moves that we think are good so far and do a search on these actions to pick our best action to make. Effectively this is a greedy approach to reduce the branching factor of the game to make the search more feasible to complete in a reasonable amount of time. When playing an agent that makes random moves we were able to evaluate to depth 3-4 on average in a 900ms time-cutoff. Ideally we thought that we would have gotten to a deeper depth but we thought that due to our board implementation and the cost of move-ordering that this would have been the best strategy we could have come up with in this period of time. Furthermore because we applied this greedy nature of only looing at the best moves you think without looking any further in the game, negamax is no longer an optimal search and transitions into something more in line of a greedy search. 
+
+To help prune more nodes in the tree we also implemented a transposition table inside of negamax. The transposition table is explained below:
+
+#### Transposition table:
+
+- The transposition table is a dictionary in python that stores different board-state, minimax-value/best move key-value pairs such that when we come across a board state, before we evaluate using minimax search we are able to query the table to check whether or not we have seen that state before.
+ 
+- The entry of the transposition table is as follows: 
+	```
+		{(board_bytearray, player_colour): (minimax_value, tt_type, best_move, depth)}
+
+		-> board_bytearray: the byte array representation of that board state 		
+		-> tt_type: whether the minimax_value returned was an upper bound, lower bound or an exact value 
+		-> best_move: the best move found my minimax to get to that particular state 
+		-> depth: depth at which minimax was evaluated at. If we got to a deeper search on the next iteration of iterative deepening, we can rewrite the entry of this board representation 
+		
+
+	```
+
+- By storing whether the minimax was an alpha, beta cut-off or an PV_node value we are able to either just return the best move/best minimax value from the table for any future serach (if the board state matches an entry), or it can update the values of alpha and beta based on whether the value stored in the transposition table was a beta or alpha cut-off value.
+
+- To maximise the use and efficiency of the table we incrementally fill up the table using iterative deepening search. When we increase the depth of search we always just try the best move that we have found so far to direct our search to deeper levels.
+
+- To reduce branching factor we also attempted to apply symmetries to the byte-array board representation. We did so by the following: when a symmetry was applied to a board representation we checked if the resultant board was in the transposition table. We originally tested for horizontal reflection in both placement and moving phases, and tested vertical, horizontal and rotation in the moving phases. We found that for most cases there was no point in testing for symmetries and reflections in the moving phases as through our simulations we found that it was very rare that we would be able to generate states that were symmetries of other states already in the table. Since the cost of applying a symmetry is O(n^2) and that we would be checking for symmetries at every state, that this was not worth it. We found that we were only finding symmetries in the first few moves of the board game, and hardly any, if any symmetries were found in the moving phase. We decided to not check for any symmetries when checking in the transposition table. The code supplied has the symmetry checking commented out. The relavent methods used for rotation, reflection are still provided.
+
+- We clear the transposition table after every call to find the next move in the placement phase of the game. This is to stop it from growing too big. In the placement phase we do not clear the table. From our tests, the table does not exceed the memory limits of the game when it is not cleared during the moving phase. 
+
+
+#### Other Search Algorithms That We Explored 
+
+The following describes the other algorithms that we have implemented and trialed: 
+
+* Minimax and Alpha-Beta (Minimax.py, AlphaBetaOptimised.py):
+
+    - This was the starting point of our algorithm. We decided to compact the implementation of minimax using negamax therefore we stopped using this class.
+
+    - Before we switched to using the negamax algorithm, we tried to use the built in python lru_cache to memoize negamax calls. The problem with this was that we did not know if the negamax value returned was an alpha beta cutoff or a PV-node therefore the resulting move returned by the negamax call was not known to be optimal or not. To replace this we decided to implement the transposition table. 
+
+* Negascout / Principal variation search (PVS)
+
+* Monte Carlo Tree Search (MCTS.py)
+
+- Originally we thought that we would use monte carlo tree search as our algorithm for decision making. It works by creating a game-tree on the fly by randomly simulating games and calculating the resultant chance of winning the game by taking a particular action. The algorithm progresses in 4 distinct phases:
+    1. Selection: Select the child node that looks the most promising according to a default policy. Here the policy used was the UCB1 (upper confidence bound 1) to select the most promising child node.
+    2. Expansion: Once we have selected the child node, we expand that child node by choosing a random action from that childs available actions to make. It creates a new node that corresponds to this action and adds it to this leaf nodes children list.
+    3. Simulation: From the newly created node we then simulate the game from this state until we reach terminal state. The winner from this simulation is recorded.
+    4. Backpropagation: The values from the simulation are backpropagated back up to the parent node, adjusting every node in the path to the parent along the way.
+
+- This four step process is run multiple times, starting at the root node, until a game tree is built. Then, to choose the action to make, we pick the child of the root node which maxmimses the UCB1 value. I.e. from our current simulation which of the moves are we most comfortable making such that our chances of winning from these board states is maximised. 
+
+- What we discovered was that this MCTS algorithm is dependent on how fast your are able to simulate a game until terminal state, as well as the time that the MCTS algorithm is allowed to run. The longer that the MCTS can take to create a game tree, the better the resulting move should be. What we found, that for a one-second move evaluation, that we were only able to create 10-12 child nodes. 
+
+- The bottleneck in this implementation we found to be the time it takes to simulate the game. When we were using our original board implementation, it took roughly 0.08s to simulate a game to terminal state, therefore 12 nodes were able to be created. This board game at the start has a branching factor of 46, therefore we were not able to create a game tree even to evaluate to one complete layer. Therefore effectively we were just choosing a random move to make. To try improve this, we tried to rewrite the original board implementation to take advantage of dictionaries and sets to update/access the board. By doing so we decreased the amount of time to simulate a game down to 0.04s on average. But this was still way too slow for the generation of decent game tree. Therefore, we stopped exploring this algorithm in favour for negamax and its variants.
+
+- We planned on implementing different rollouts of the game -- i.e. a minimax evaluation to a shallow depth vs a random player to help inform which moves are the best to make, but because the random simluation was taking too long, that we did not even bother with this since this would be taking much longer to evaluate. Maybe if we had 1 hour per move to evaluate we could generate a good enough game tree to inform decision, but sadly this is not feasible. 
+
+### 1.4 Evaluation function
+
+####BOARD STATE EVALUATION FUNCTION
+
+- Our evaluation function works by returning two vectors that correspond to the number of features that we wish to evaluate. To get the evaluation value we just take the dot product between the weight vector for that function together with the resulting vector of the feature values for the board.
+
+- The features we have implemented in our evaluation are as follows:
+    	1. The difference in the number of pieces on the board (EG. WHITE-BLACK)
+    	2. Combined distance of all pieces to the centre of the board 
+		- This is because we want to be closer to the centre due to the shrinking nature of the board 
+	3. The difference in the number of actions a piece can make 
+	4. If a piece is surrounded such that it cannot move without being eliminated by an enemy piece 
+	5. If an enemy is surround such that it cannot move without being eliminated by our piece 
+		- for 4,5 the patterns are shown the comments of the Features.py file 
+	6. If we occupy the middle positions
+	7. The number of clusters of pieces on the board -- this is defined as being a "block" of 4 pieces in a 2x2 format, therefore we count a 3x3 arrangement of pieces as being 4 contiguous overlapping clusters on the board. 
+	8. Edge piece vulnerability -- If pieces are near an edge close to board shrinking, or if it is on a space where it would be eliminated due to board shrinking
+		- We try to move out of these situations when this is the case as we need to keep the maximum number of pieces alive 
+	9. The difference in the number of pieces of our pieces vs the opponent's that are next to a corner position on the board 
+		- We want to maximise the number of enemy pieces next to corners and minimise the number of our pieces next to the corner. This is because being next to a corner puts your piece in a vulnerable position. 
+	10. The sum of the minimum manhattan distances of our pieces to an opponent piece 
+		- This is a value that represents how close our pieces are to the opponents. Later in the game we want to move our pieces as close as we can to the opponent pieces such that we can play are more offensive game such that we put ourselves in a position to capture them, if we are far away from the opponent we are not able to easily capture the opponet pieces. This function is only evaluated towards the end of the game. 
+	11. The difference number of patterns between the two players, of pieces on the board that correspond to guaranteed captures. These specific patters are shown in the comments of the Features.py file. 
+
+#### Machine Learning: 
+- We did not successfully implement machine learning to train the weights of our evaluation function as we ran out of time. We implemented the basis for TD-Leaf(Lambda) in the file Learning/Learners.py, although it has not been fully tested yet 
+
+- We actually have created a separate class called xml_helper to help save weights and load weights from an XML file. This class is actually used in our final submission to load the weights for our evaluation function. This allows to easily store and create different weights for our evaluation functions such that we can change it by just changing the file path to the weight-xml file.
+
+- Furthermore by using an XML file to load the weights, we can easily update and save weights generated by machine learning and "incrementally" update the weights as we wish. 
+
+- This technique also would have allowed us to have multiple agents that use the same search strategy with essentially the same evaluation function, except with different weights (via the weight xml files). We could then verse the same agent with each other with two different weights and see whether one function is better than the other. This was we can effectively create slowly refine our evaluation function through machine learning techniques. 
+
+- Sadly we did not have time to fully implement the TD-Leaf(Lambda) algorithm, all that was left to do was to try and return the "best policy vector" from the PV node found in the negamax algorithm such that we could extract the ith-feature for the partial derivative of the reward function, but we did not have time to do this sadly. 
+
+
+#### ACTION EVALUATION FUNCTION FOR GREEDY/NAIVE MOVE ORDERING
+- In order to order the legal actions from most favourable to least we applied a "action evaluation to each of the legal actions once generated, we then used those values to order the actions in decreasing values of evaluation. 
+- The action evaluation function took the following features into consideration: 
+	1. The minimum manhattan distance of that piece being moved is to a opponent piece -- we want to move only the pieces that are close to the enemy piece 
+	2. If an action is able to be placed closer to the centre of the board, the higher the weighting will be
+	3. If an action can capture an opponent piece -- this is weighted highly
+	4. If an action results in self elimination -- this is weighted negatively
+	5. If an action can "surround" a piece such that the opponent can't move without being eliminated 
+	6. If an action results in a cluster forming on the board 
+	7. If an action results in us occupying part of the middle squares -- this is weighted highly as we try to occupy these squares first 
+	8. If, in the moving phase we move one of the middle pieces -- ideally we do not want to do this as, therefore we decrease the weight of that action if this occurs 
+	9. If we are able to form a pattern that ensures that we can capture a piece on the next move -- i.e. does not matter where the opponent moves or places their piece, we can always capture a piece
+		
+
+### Other creative aspects
+
+- We implemented a simple GUI boardgame app to help visualise the game better -- App.py. This was implemented using tkinter and currently only supports visualising the turn by turn action of AI players. We planned on implementing a feature that allowed for human input such that we could verse our own AI, but we did not have any time to complete this. 
+
+___________________________________________________________________________________________
+*COMMENTS.TXT ENDS HERE*
+___________________________________________________________________________________________
+
+# PROJECT PART B -- LOG COMMENTS 
 
 ### Board.py
 * Implemented the backend of the game board using the class Board. Currently it stores a bytearray representation of the game state as well as the positions of pieces on the board in that game state. It also stores a move counter and phase indicator 

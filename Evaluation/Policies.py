@@ -6,7 +6,7 @@ from XML.xml_helper import xml_helper
 # Class to implement all the evaluation functions that we generate throughout
 # the development of this project
 from DepreciatedBoard.Board import Board
-from Evaluation.FeaturesOOP import Features
+from Evaluation.Features import Features
 
 
 class Evaluation(object):
@@ -27,7 +27,7 @@ class Evaluation(object):
 
     @staticmethod
     def return_policy_vector(board,colour,available_moves):
-
+        opponent = board.get_opp_piece_type(colour)
         diff_pieces = Features.diff_pieces(board,colour)
         dist_cent = Features.total_dist_to_center(board, colour)
         num_actions = Features.num_actions(available_moves)
@@ -37,7 +37,7 @@ class Evaluation(object):
         num_cluster = Features.cluster_exists(board,colour)
         sum_min_man_dist = Features.total_min_man_dist(board, colour)
         edge_vuln = Features.diff_edge_vulnerable(board, colour)
-        next_to_corner = Features.place_next_to_corner(board, colour)
+        next_to_corner = Features.place_next_to_corner(board,opponent) - Features.place_next_to_corner(board, colour)
         return diff_pieces, dist_cent, num_actions, self_surrounded, opp_surrounded, middle_occupy, num_cluster, \
                     edge_vuln, next_to_corner, sum_min_man_dist
 
@@ -62,7 +62,10 @@ class Evaluation(object):
         else:
             # diff_pieces, dist_cent, num_actions, self_surrounded, opp_surrounded, middle_occupy, num_cluster,
             # edge_vuln, next_to_corner, sum_min_man_dist
-            self.weights = [1000, 50, 5, -100, 300, 1000, 500,220,100,50]
+            self.weights = [1000, 50, 5, -100, 300, 2000, 500,220,350, 50]
+
+            # to get the evaluation value -- we just need to do the dot product betweeen the policy vector
+            # and the weight vector
             return self.dot_prod(self.weights, policy_vector)
 
 
