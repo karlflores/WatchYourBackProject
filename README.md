@@ -1,5 +1,4 @@
 # Watch Your Back
-------------------------------------------/Watch Your Back\-----------------------------------------
 
 ## 1. Program Description
 Our program can be split up into four main parts:
