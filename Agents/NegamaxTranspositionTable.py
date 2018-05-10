@@ -75,7 +75,7 @@ class Negamax(object):
             # set the max depth iterations based on the phase that we are in
             MAX_ITER = 5
         else:
-            MAX_ITER = 10
+            MAX_ITER = 11
 
         # default policy
         available_actions = self.board.update_actions(self.player)
@@ -91,11 +91,11 @@ class Negamax(object):
 
             # if we have reached 100 moves in the game and the game
             if self.total_time > 90000 or self.board.move_counter > 120:
-                self.time_alloc = 550
+                self.time_alloc = 500
                 # if we are near the final shrinking phase, then we can decrease the time it has to
                 # evaluate
                 if self.board.move_counter > 150:
-                    self.time_alloc = 185
+                    self.time_alloc = 190
 
 
         best_depth = 1
