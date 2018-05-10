@@ -5,7 +5,9 @@ from Player_AB_LRU import Player as ab_player
 from Constants import constant
 from math import *
 from XML.xml_helper import xml_helper as xml_save
-
+'''
+UNFININSED MACHINE LEARNING CLASS -- WE DID NOT HAVE TIME TO FULL IMPLEMENT THIS FOR OUR SUBMISSION 
+'''
 class Learner(object):
     def __init__(self, name, learning_rate=0.7, new_func = False):
         self.learning_rate = learning_rate

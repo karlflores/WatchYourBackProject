@@ -16,15 +16,8 @@ class Evaluation(object):
         # read the weights from the XML file
         self.weights = self.read_xml.load()
 
-    @staticmethod
-    def distance(pos_1,pos_2):
-        return sqrt((pos_1[0]-pos_2[0])**2+(pos_1[1]-pos_2[1])**2)
-
-    @staticmethod
-    def eval(board,weights):
-        for weight in weights:
-            pass
-
+    # return the policy vector -- this was designed this way such that we could have easily applied machine learning
+    # the policy vector is just a vector containing the evaluation of each individual feature of the board-state
     @staticmethod
     def return_policy_vector(board,colour,available_moves):
         opponent = board.get_opp_piece_type(colour)
@@ -54,6 +47,9 @@ class Evaluation(object):
 
         return evaluate
 
+    # get the scalar evaluation of the board state
+    # note -- load_weights -- this is if we want to use the xml_file to load weights (True) if we dont we set it to
+    # False (default value)
     def evaluate(self, board, colour, available_moves, load_weights=False):
         policy_vector = self.return_policy_vector(board,colour,available_moves)
         # print(policy_vector)

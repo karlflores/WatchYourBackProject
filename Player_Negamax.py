@@ -2,34 +2,43 @@ from Constants import constant
 from WatchYourBack.Board import Board
 from Agents.NegamaxTranspositionTable import Negamax
 from ActionBook.ActionBook import ActionBook
-# from Agents.GreedyAlphaBeta import GreedyAlphaBetaMinimax
 
+'''
+THIS IS THE FINAL SUBMISSION: 
 
+THIS PLAYER IMPLEMENTS THE FOLLOWING TO INFORM ITSELF ON WHAT MOVE TO MAKE NEXT: 
+    - NEGAMAX WITH TRANSPOSITION TABLE AS ITS MAIN SEARCH STRATEGY
+    - GREEDY MOVE ORDERING USING A LIGHT EVALUATION FUNCTION AND SELECTION OF THE BEST MOVES TO COMPLETE THE 
+      SEARCH ON 
+    - MOVE ORDERING USING THE TRANSPOSITION TABLE IN MINIMAX -- WE TRY THE BEST MOVE FOUND SO FAR AT EARLIER 
+      DEPTH ITERATIONS FIRST, BECAUSE CHANCES ARE, THIS MOVE MAY BE THE BEST MOVE FOR THE NEXT DEPTH AS WELL 
+    - AN OPENING BOOK OF MOVES TO CUT DOWN SEARCH TIME AT THE START OF THE GAME WHERE THERE ARE POSITIONS THAT
+      WE SHOULDN'T NEED TO SEARCH ON. 
+'''
 class Player:
 
     def __init__(self, colour):
+        # set the colour of the player
         if colour == 'white':
             self.colour = constant.WHITE_PIECE
         elif colour == 'black':
             self.colour = constant.BLACK_PIECE
 
-        self.available_moves = []
-
         # each players internal board representation
         self.board = Board()
 
-        # TODO -- need to see if this works correctly
+        # set up the minimax search strategy -- NEGAMAX
         self.minimax = Negamax(self.board, self.colour)
 
+        # set the colour of the opponent
         self.opponent = self.board.get_opp_piece_type(self.colour)
 
-        # self.search_algorithm = Minimax(self.board,self.available_moves,self.colour)
-
-        # print(self.opponent)
+        # set up the mini-max return values
         self.depth_eval = 0
         self.minimax_val = 0
         self.policy_vector = 0
 
+        # initialise the action book
         self.action_book = ActionBook(self.colour)
 
     def update(self, action):
@@ -37,7 +46,6 @@ class Player:
         if self.board.phase == constant.PLACEMENT_PHASE:
             # update board also returns the pieces of the board that will be eliminated
             self.board.update_board(action, self.opponent)
-            # self.board.eliminated_pieces[self.opponent]
             self.minimax.update_board(self.board)
 
         elif self.board.phase == constant.MOVING_PHASE:
@@ -45,21 +53,18 @@ class Player:
                 print("ERROR: action is not a tuple")
                 return
 
+            # get the "to" square direction using the provided positions
             move_type = self.board.convert_coord_to_direction(action[0], action[1])
 
             # update the player board representation with the action
             self.board.update_board((action[0], move_type), self.opponent)
 
     def action(self, turns):
+
+        # update the negamax/minimax board representation
         self.minimax.update_board(self.board)
-        # print(self.board.board_state)
-        # print(self.board.piece_pos)
-        # if action is called first the board representation move counter will be zero
-        # this indicates that this player is the first one to move
 
-        # if update is called before action the board representation counter will be 1,
-        # this indicates that the player is the second to move
-
+        # reset the move counter of the board
         if turns == 0 and self.board.phase == constant.MOVING_PHASE:
             self.board.move_counter = 0
             self.board.phase = constant.MOVING_PHASE
@@ -85,15 +90,13 @@ class Player:
         # do an alpha beta search on this node
         # once we have found the best move we must apply it to the board representation
         if self.board.phase == constant.PLACEMENT_PHASE:
-            # print(best_move)
             self.board.update_board(best_move, self.colour)
             self.minimax.update_board(self.board)
             return best_move
         else:
+            # if we are in moving phase, return the correctly formatted positions
             if best_move is None:
                 return None
-            # (best_move is None)
-            # print(best_move[0],best_move[1])
             new_pos = Board.convert_direction_to_coord(best_move[0], best_move[1])
             self.board.update_board(best_move, self.colour)
             self.minimax.update_board(self.board)

@@ -1,7 +1,3 @@
-'''
-* Implements the mini-max algorithm based on the minimax_mode structure
-* and the player file
-'''
 from math import inf
 from Constants import constant
 from WatchYourBack.Board import Board
@@ -68,7 +64,7 @@ class Negascout(object):
         self.time_rem = 0
         self.time_start = 0
         self.time_end = 0
-
+        self.total_time = 0
         self.evaluation = Evaluation("./XML","/eval_weights")
 
     '''
@@ -104,31 +100,31 @@ class Negascout(object):
         else:
             self.time_alloc = (30000 - self.time_alloc) / (100 - self.board.move_counter)
         '''
-
-        # self.time_alloc = 5000
-        # time allocated per move in ms
-        self.time_alloc = 0
-        total = 120000
         if self.board.phase == constant.PLACEMENT_PHASE:
-            #self.time_alloc = (total/2 - self.time_alloc) / (24 - self.board.move_counter)
-            total -= self.time_alloc
-            self.time_alloc = 5000
+            self.time_alloc = 1500
         else:
-            #self.time_alloc = (total - self.time_alloc) / (100 - self.board.move_counter)
-            total -= self.time_alloc
-            self.time_alloc = 5000
+            self.time_alloc = 1200
+
+            # if we have reached 100 moves in the game and the game
+            if self.total_time > 90000 or self.board.move_counter > 120:
+                self.time_alloc = 500
+                # if we are near the final shrinking phase, then we can decrease the time it has to
+                # evaluate
+                if self.board.move_counter > 150:
+                    self.time_alloc = 150
+
 
         start_time = Negascout.curr_millisecond_time()
         best_depth = 1
         val, move = 0, None
         best_move = None
-
+        self.time_rem = self.time_alloc
         # iterative deepening begins here
         for depth in range(1, MAX_ITER):
             print(self.tt.size)
             print(depth)
             try:
-                self.time_rem = self.time_alloc
+
                 self.time_start = self.curr_millisecond_time()
                 val, move = self.negascout(depth, -inf, inf, self.player)
                 # move = self.negascout(depth,self.player)
@@ -144,10 +140,8 @@ class Negascout(object):
             except TimeOut:
                 print("TIMEOUT")
                 break
-
-            if Negascout.curr_millisecond_time() - start_time > self.time_alloc:
-                break
-
+        # add the time allocated to the total time
+        self.total_time += self.time_alloc
         self.eval_depth = best_depth
         return best_move
 
@@ -238,40 +232,46 @@ class Negascout(object):
 
             elim = self.board.update_board(action, colour)
 
-            # if i == 0:
-            #     # do a full search on the best move found so far
-            #     score, _ = self.negascout(depth-1,-beta,-alpha, opponent)
-            #     score = -score
-            #
-            # else:
-            #     # assume that
-            #     score, _ = self.negascout(depth-1,-alpha-1,-alpha,opponent)
-            #     score = -score
-            #
-            #     if alpha < score < beta:
-            #         score, _ = self.negascout(depth-1,-beta,-score,opponent)
-            #         score = -score
-
-            score, _ = self.negascout(depth-1,-beta,-alpha,opponent)
-            score = -score
-
-            if alpha < score < beta and i > 0:
-                score,_ = self.negascout(depth-1,-beta,-alpha, opponent)
+            # if we are at the first node -- this is the best node we have found so far
+            # therefore we do a full search on this node
+            if i == 0:
+                # do a full search on the best move found so far
+                score, _ = self.negascout(depth-1,-beta,-alpha, opponent)
                 score = -score
-            
+
+            else:
+                # assume that the first move is the best move we have found so far,
+                # therefore to see if this is the case we can do a null window search on the
+                # rest of the moves, if the search breaks, then we know that the first move is
+                # the best move and it will return the best move
+                # but if the search "failed high" - i.e. the score is between alpha and beta
+                # we need to do a full research of the node to work out the minimax value
+
+                # do the null window search
+                score, _ = self.negascout(depth-1,-alpha-1,-alpha,opponent)
+                score = -score
+
+                # if it failed high, then we just do a full search to find the actual best move
+                if alpha < score < beta:
+                    score, _ = self.negascout(depth-1,-beta,-score,opponent)
+                    score = -score
+
+            # get the best value and score
             if best_val < score:
                 best_val = score
                 best_action = action
 
+            # reset alpha
             if alpha < score:
                 alpha = score
 
+            # undo the action applied to the board -- we can now apply another move to the board
             self.undo_actions(action,colour,elim)
 
+            # test for alpha beta cutoff
             if alpha >= beta:
                 break
 
-            beta = alpha + 1
         # store the values in the transposition table
         if best_val <= original_alpha:
             # then this is an upperbound -FAILHARD

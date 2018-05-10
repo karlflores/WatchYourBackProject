@@ -1,7 +1,6 @@
 from Constants import constant
 from WatchYourBack.Board import Board
 from Agents.NegascoutTranspositionTable import Negascout
-# from Agents.GreedyAlphaBeta import GreedyAlphaBetaMinimax
 
 class Player:
 
@@ -42,10 +41,10 @@ class Player:
                 print("ERROR: action is not a tuple")
                 return
 
-            move_type = self.board.convert_coord_to_move_type(action[0], action[1])
+            direction = self.board.convert_coord_to_direction(action[0], action[1])
 
             # update the player board representation with the action
-            self.board.update_board((action[0], move_type), self.opponent)
+            self.board.update_board((action[0], direction), self.opponent)
             self.minimax.update_board(self.board)
 
     def action(self, turns):
@@ -80,7 +79,7 @@ class Player:
         else:
             # (best_move is None)
             # print(best_move[0],best_move[1])
-            new_pos = Board.convert_move_type_to_coord(best_move[0], best_move[1])
+            new_pos = Board.convert_direction_to_coord(best_move[0], best_move[1])
             self.board.update_board(best_move, self.colour)
             self.minimax.update_board(self.board)
             return best_move[0], new_pos

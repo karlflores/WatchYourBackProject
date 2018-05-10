@@ -141,6 +141,7 @@ class MonteCarloTreeSearch(object):
         # remove that action from the untried action list
         node.untried_actions.remove(action)
 
+        # create the new node to be added to the game tree
         child = self.create_node(node.board,Board.get_opp_piece_type(node.colour), action, node)
 
         # apply the move to that child node
@@ -155,7 +156,6 @@ class MonteCarloTreeSearch(object):
 
     # evaluate the UCB1 value of a particular node -- this is what we use to explore
     # the tree until we get to a child node
-
     def UCB1(self,node,explore_param):
         # check if the parent exists
         if node.parent is None:
@@ -189,6 +189,7 @@ class MonteCarloTreeSearch(object):
                 # print(child)
                 return child
             else:
+
                 # choose the child with the best UCB1 score
                 # if it is not a child node then we want to find which of its nodes has the highest UCB and traverse
                 # down that node
@@ -206,19 +207,20 @@ class MonteCarloTreeSearch(object):
                 # child.board.update_board(best_child.move, best_child.colour)
                 self.action_num += 1
 
-            # recursively go down the tree until we hit a child node
-            # self.UCB1_traversal(best_child, explore_param)
-        # print(select_node)
+        # return the selected node
         return select_node
 
+    # update the root of the tree
     def update_root(self,root):
         self.root = root
         # update the actions of the root
         self.root.update_actions()
 
+    # update the internal board representation
     def update_board(self,board):
         self.board = deepcopy(board)
 
+    # method to create the node for the search
     @staticmethod
     def create_node(board,colour,move,parent):
         node = Node(board,colour,move,parent)
@@ -226,6 +228,7 @@ class MonteCarloTreeSearch(object):
         node.parent = parent
         return node
 
+    # method to choose the move based on the UCB values of its children
     def make_move(self,root):
         best_move = None
         best_ucb = -inf
@@ -239,13 +242,13 @@ class MonteCarloTreeSearch(object):
                 best_ucb = child.ucb_value
                 best_child = child
 
-        print("UCB: ",end='')
-        print(best_ucb)
-        print("WINS: ",end='')
-        print(best_child.wins)
-
-        print("VISITED: ",end='')
-        print(best_child.visit_num)
-        print("PARENT VISITED: ",end='')
-        print(best_child.parent.visit_num)
+        # print("UCB: ",end='')
+        # print(best_ucb)
+        # print("WINS: ",end='')
+        # print(best_child.wins)
+        #
+        # print("VISITED: ",end='')
+        # print(best_child.visit_num)
+        # print("PARENT VISITED: ",end='')
+        # print(best_child.parent.visit_num)
         return best_move

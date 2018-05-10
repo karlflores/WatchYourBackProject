@@ -11,6 +11,13 @@ from copy import deepcopy
 from time import time
 from Error_Handling.Errors import *
 
+'''
+NAIVE NEGAMAX IMPLEMENTATION THAT HAS NO OPTIMISATIONS -- THIS IS TO BENCHMARK THE OTHER NEGAMAX DERIVATIVES AGAINST 
+SO THAT WE CAN SEE IF THOSE OPTIMISATIONS HAVE ACTUALLY YIELDED AN INCREASE IN PERFORMANCE 
+
+IN THIS CASE WE HAVE SINCE WE COULD ONLY EVALUATE TO 2-PLY WITH THIS IMPLEMENTATION WHEREAS THE OTHER TWO 
+IMPLEMENTATIONS (NEGAMAX_TT AND NEGASCOUT) WERE ABLE TO EVALUATE TO 4-PLY IN THE SAME AMOUNT OF COMPUTATIONAL TIME 
+'''
 
 class Negamax(object):
 
@@ -218,12 +225,6 @@ class Negamax(object):
             return True
 
         return False
-    '''
-    * NEED TO THINK ABOUT IF THIS FUNCTION JUST EVALUATES THE NODES AT THE ROOT STATE DUE TO THE UNDO MOVES 
-            -- NEED TO TEST THIS OUT SOMEHOW, because other than that the algorithm is working as intended 
-            -- Need to work out some optimisations of the algorithm though 
-
-    '''
 
     def evaluate_state(self, board, colour, actions):
         # return len(self.board.white_pieces) - len(self.board.black_pieces)

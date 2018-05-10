@@ -1,7 +1,3 @@
-'''
-* Implements the mini-max algorithm based on the minimax_mode structure
-* and the player file
-'''
 from math import inf
 from Constants import constant
 from WatchYourBack.Board import Board
@@ -12,8 +8,12 @@ from time import time
 from Error_Handling.Errors import *
 
 '''
-NEGAMAX WITH A PURPOSE BUILT TRANSPOSITION TABLE FOR MEMOISATION OF BOARDSTATES/AB CUTOFFS/BEST MOVES
-FUNCTIONALITY IS THE SAME AS WHAT IS IN NEGAMAX.PY
+NEGAMAX WITH A PURPOSE BUILT TRANSPOSITION TABLE FOR MEMOIzATION OF BOARDSTATES/AB CUTOFFS/BEST MOVES
+
+THIS HAS THE SAME FUNCTIONALITY AND METHOD SIGNATURES AS NEGAMAX.PY -- THEREFORE CAN BE USED INTERCHANGEABLY 
+FOR COMPARISON 
+
+
 '''
 
 class Negamax(object):
@@ -38,10 +38,6 @@ class Negamax(object):
         # default depth
         self.depth = inf
 
-        # default move ordering with iterative deepening
-        self.actions_evaluated = []
-        self.actions_leftover = []
-
         # data structures for machine learning
         self.eval_depth = 0
         self.minimax_val = 0
@@ -50,31 +46,36 @@ class Negamax(object):
         # dictionary storing the available moves of the board
         self.available_actions = {constant.WHITE_PIECE: {}, constant.BLACK_PIECE: {}}
 
-        # generate the actions for the start of the game
-        # self.generate_actions()
-
+        # timing attributes
         self.undo_effected = []
         self.time_alloc = 0
         self.time_rem = 0
         self.time_start = 0
         self.time_end = 0
         self.total_time = 0
+
+        # evaluation weight loading
         self.evaluation = Evaluation("./XML","/eval_weights")
 
     '''
-    * Alpha Beta - Minimax Driver Function 
+    Iterative Deepening Negamax 
+    
+    This implements a time-cutoff such that search is terminated once we have reached the allocated time for evaluation.
+    
+    IT RETURNS THE BEST MOVE IT HAS FOUND IN THE TIME ALLOCATED 
     '''
-
     def itr_negamax(self):
         # clear the transposition table every time we make a new move -- this is to ensure that it doesn't grow too big
         # if self.board.phase == constant.MOVING_PHASE and self.board.move_counter == 0:
         if self.board.phase == constant.PLACEMENT_PHASE:
+            # clear the transposition table every time we want to evaluate a move in placement phase
+            # this is to limit the size of growth
             self.tt.clear()
 
-            # set the max depth iterations based on the phase
+            # set the max depth iterations based on the phase that we are in
             MAX_ITER = 5
         else:
-            MAX_ITER = 11
+            MAX_ITER = 8
 
         # default policy
         available_actions = self.board.update_actions(self.player)
@@ -84,36 +85,47 @@ class Negamax(object):
             return None
 
         if self.board.phase == constant.PLACEMENT_PHASE:
-            self.time_alloc = 1450
+            self.time_alloc = 1500
         else:
-            self.time_alloc = 850
+            self.time_alloc = 1200
 
             # if we have reached 100 moves in the game and the game
-            if self.total_time > 100000 and self.board.move_counter > 100:
-                self.time_alloc = 300
+            if self.total_time > 90000 or self.board.move_counter > 120:
+                self.time_alloc = 500
+                # if we are near the final shrinking phase, then we can decrease the time it has to
+                # evaluate
+                if self.board.move_counter > 150:
+                    self.time_alloc = 150
 
-        # get time
 
         best_depth = 1
         val, move = 0, None
+
+        # set the time remaining for each move evaluation
+        self.time_rem = self.time_alloc
 
         # iterative deepening begins here
         for depth in range(1, MAX_ITER):
             # get the best move until cut off is reached
             try:
-                self.time_rem = self.time_alloc
 
                 self.time_start = self.curr_millisecond_time()
                 val, move = self.negamax(depth, -inf, inf, self.player)
                 self.time_end = self.curr_millisecond_time()
 
+                # update the time remaining
                 self.time_rem = self.time_alloc - (self.time_end-self.time_start)
 
                 best_depth += 1
             except TimeOut:
                 break
 
-        print(best_depth - 1)
+        # add the total time to the time allocated
+        self.total_time += self.time_alloc
+
+        # print(self.total_time)
+        # print(best_depth - 1)
+
         self.eval_depth = best_depth - 1
         return move
 
@@ -121,10 +133,22 @@ class Negamax(object):
         self.player = colour;
         self.opponent = Board.get_opp_piece_type(colour)
 
+
+    # get the current time in milliseconds
     @staticmethod
     def curr_millisecond_time():
         return int(time() * 1000)
 
+
+    '''
+    NEGAMAX DRIVER FUNCTION -- THIS IMPLEMENTS THE FOLLOWING:
+        - NEGAMAX WITH A TRANSPOSITION TABLE 
+        - MOVE ORDERING USING THE BEST MOVE WE HAVE FOUND SO FAR (IF IT EXISTS IN THE TRANSPOSITION TABLE) 
+        - MOVE ORDERING OF THE MOVES WE THINK TO BE FAVOURABLE USING A LIGHTWEIGHT EVALUATION FUNCTION 
+        - SELECTING ONLY THE TOP FAVOURABLE MOVES TO EVALUATE USING MINIMAX -- THIS IS HEAVY GREEDY PRUNING 
+          APPLIED TO NEGAMAX DESIGNED SUCH THAT WE ONLY LOOK AT MOVES THAT WE THINK WILL PRODUCE A GOOD OUTCOME,
+          THUS PRUNING ANY MOVES THAT HAVE A HIGH CHANGE OF HAVING NO EFFECT ON THE GAME-STATE UTILITY.
+    '''
     def negamax(self,depth,alpha,beta,colour):
 
         # print(self.board.board_state)
@@ -144,6 +168,8 @@ class Negamax(object):
 
         key = self.tt.contains(board_str, colour, phase=self.board.phase)
         if key is not None:
+
+            # get the value mappings from the dictionary
             board_str = key[0]
             entry = self.tt.get_entry(board_str,colour)
             tt_value = entry[0]
@@ -203,6 +229,10 @@ class Negamax(object):
         else:
             favourable = actions[:len(actions)//2]
 
+        # iterate only through the favourable moves, ensuring that the number of moves is not too big
+        # the aim is to reduce the branching factor as much as we can, but also having enough moves to
+        # evaluate such that we get the part of the optimality decision making  from negamax/minimax
+        # rather than a purely greedy approach.
         for action in favourable:
 
             # skip over the best action in the tt table -- this action has already be searched
@@ -226,6 +256,7 @@ class Negamax(object):
             if best_val > alpha:
                 alpha = best_val
 
+            # test for cut off
             if alpha >= beta:
                 break
 
@@ -246,6 +277,7 @@ class Negamax(object):
 
         return best_val, best_action
 
+    # cut-off test -- either depth is zero or the board is at terminal state
     def cutoff_test(self, depth):
         if depth == 0:
             return True

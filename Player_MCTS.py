@@ -22,10 +22,6 @@ class Player:
 
         self.opponent = self.board.get_opp_piece_type(self.colour)
 
-        # self.search_algorithm = Minimax(self.board,self.available_moves,self.colour)
-
-        # print(self.opponent)
-
     def update(self, action):
         # update the board based on the action of the opponent
         if self.board.phase == constant.PLACEMENT_PHASE:
@@ -46,19 +42,14 @@ class Player:
     def action(self, turns):
         self.strategy.num_nodes = 0
         self.strategy.update_board(self.board)
-        # if action is called first the board representation move counter will be zero
-        # this indicates that this player is the first one to move
-
-        # if update is called before action the board representation counter will be 1,
-        # this indicates that the player is the second to move
 
         if turns == 0 and self.board.phase == constant.MOVING_PHASE:
             self.board.move_counter = 0
             self.board.phase = constant.MOVING_PHASE
 
         best_move = self.strategy.MCTS()
-        print("NUM NODE IN THIS TREE: " + str(self.strategy.num_nodes))
-        # do an alpha beta search on this node
+        # print("NUM NODE IN THIS TREE: " + str(self.strategy.num_nodes))
+
         # once we have found the best move we must apply it to the board representation
         if self.board.phase == constant.PLACEMENT_PHASE:
             self.board.update_board(best_move, self.colour)
