@@ -519,6 +519,9 @@ class Features(object):
 
         return total
 
+
+    def check_elim_patterh(self):
+        pass
 '''
 LOOK AT TIMING SCHEMES
 '''

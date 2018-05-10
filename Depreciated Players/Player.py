@@ -1,5 +1,5 @@
 from Constants import constant
-from Board.Board import Board
+from DepreciatedBoard.Board import Board
 from Agents.Random import Random
 
 

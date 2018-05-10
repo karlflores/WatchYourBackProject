@@ -33,11 +33,9 @@ class ActionBook(object):
         action_book.update({'X------X-----------O------@-@OO----O------@-@-----------X------X': (3,3)})
         action_book.update({'X------X-----------O------@O-OO----O------@-@-@---------X------X': (4,3)})
         action_book.update({'X------X-----------O------@OOOO----O------@-@-@---------X------X': (4,4)})
-
-        self.action_book = action_book
+        self.action_book_start = action_book
 
     def placement_book_black(self):
-
         action_book = {}
         action_book.update({'X------X-------------------O----------------------------X------X': (4,4)})
         action_book.update({'X------X--------------------O---------------------------X------X': (3,4)})
@@ -50,21 +48,24 @@ class ActionBook(object):
         action_book.update({'X------X------------------OO------O-@------@------------X------X': (3,4)})
         action_book.update({'X------X------------------OO-------O@------@------------X------X': (2,4)})
         action_book.update({'X------X------------------OO--------@-----O@------------X------X': (1,5)})
-
+        action_book.update({'X------X------------------O-@------O--------------------X------X': (5,4)})
+        action_book.update({'X------X-------------------O@------O--------------------X------X': (2,3)})
+        action_book.update({'X------X--------------------@------OO-------------------X------X': (4,5)})
+        action_book.update({'X------X-----------O------O-@------O-@------------------X------X': (5,2)})
         self.action_book_start = action_book
 
     def check_state(self,board_arr):
         board_str = board_arr.decode("utf-8")
 
-        if board_str in self.action_book:
+        if board_str in self.action_book_start:
             # return the move corresponding to the state
-            return self.action_book[board_str]
+            return self.action_book_start[board_str]
 
         # check for symmetries -- we will only check for horizontal symmetries
         new_board = TranspositionTable.apply_horizontal_reflection(board_arr)
         new_board_str = new_board.decode("utf-8")
         if new_board_str in self.action_book_start:
-            action = self.action_book[new_board_str]
+            action = self.action_book_start[new_board_str]
 
             # apply move rotation - just need to reflect the move horizontally
             col,row = action

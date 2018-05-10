@@ -1,4 +1,4 @@
-from Board.Board import Board
+from DepreciatedBoard.Board import Board
 from Constants import constant
 from Agents.Minimax import Minimax
 

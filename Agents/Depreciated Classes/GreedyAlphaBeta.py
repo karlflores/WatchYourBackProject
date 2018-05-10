@@ -4,7 +4,7 @@
 '''
 from math import inf
 from Constants import constant
-from Board.Board import Board
+from DepreciatedBoard.Board import Board
 from Evaluation.Policies import Evaluation
 from copy import deepcopy
 from time import time

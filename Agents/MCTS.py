@@ -1,8 +1,7 @@
 from math import inf,sqrt,log
 from Agents.MCTS_Node import Node
 from Constants import constant
-# from Board.Board import Board
-from BoardOOP.Board import Board
+from WatchYourBack.Board import Board
 from copy import deepcopy
 from time import time
 from random import randint

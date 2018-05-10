@@ -4,7 +4,7 @@
 * Therefore we need to investigate different features of the board game
 * whether this be through simulation via MCTS or by playing the games a number of time s
 '''
-# from Board.Board import Board
+# from DepreciatedBoard.DepreciatedBoard import DepreciatedBoard
 from math import fabs, inf, sqrt
 from Constants import constant
 

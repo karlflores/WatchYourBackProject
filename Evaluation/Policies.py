@@ -5,7 +5,7 @@ from XML.xml_helper import xml_helper
 # from random import randint
 # Class to implement all the evaluation functions that we generate throughout
 # the development of this project
-from Board.Board import Board
+from DepreciatedBoard.Board import Board
 from Evaluation.FeaturesOOP import Features
 
 

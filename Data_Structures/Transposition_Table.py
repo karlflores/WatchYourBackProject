@@ -1,6 +1,6 @@
 from copy import copy
 from Constants import constant
-from Board.Board import Board
+from WatchYourBack.Board import Board
 '''
 We can use a dictionary to store any visited node in the search -- just store the board representation 
 as a tuple with the player that made that move and the board representation itself -- this is the key
@@ -114,8 +114,7 @@ class TranspositionTable:
             for col in range(constant.BOARD_SIZE):
                 Board.set_array_char(temp, row, 7 - col,
                                      Board.get_array_element(board_state, row, col))
-        # print(temp)
-        # print(board_state)
+
         return temp
 
     @staticmethod

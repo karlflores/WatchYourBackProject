@@ -1,4 +1,4 @@
-from BoardOOP.Board import Board
+from WatchYourBack.Board import Board
 from Constants import constant
 from copy import deepcopy
 class Manual(object):

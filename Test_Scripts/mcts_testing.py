@@ -1,5 +1,5 @@
 from Agents.Negamax import Negamax
-from Board.Board import Board
+from DepreciatedBoard.Board import Board
 from Constants import constant
 
 # create a new board
@@ -24,5 +24,5 @@ while(board.is_terminal() is False):
     print(move)
     board.update_board(move,colour)
     board.print_board()
-    colour = Board.get_opp_piece_type(colour)
+    colour = DepreciatedBoard.get_opp_piece_type(colour)
 '''

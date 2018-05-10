@@ -4,7 +4,7 @@
 
 
 from Evaluation.Policies import Evaluation
-from Board.Board import Board
+from DepreciatedBoard.Board import Board
 from copy import deepcopy
 from math import inf
 

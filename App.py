@@ -1,5 +1,5 @@
 from tkinter import *
-from BoardOOP.Board import Board
+from WatchYourBack.Board import Board
 from Constants import constant
 from Agents.Random import Random
 from Agents.NegascoutTranspositionTable import Negascout as NSTT

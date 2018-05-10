@@ -4,7 +4,7 @@
 '''
 from math import inf
 from Constants import constant
-from Board.Board import Board
+from DepreciatedBoard.Board import Board
 from Evaluation.Policies import Evaluation
 from Data_Structures.Transposition_Table import TranspositionTable
 from copy import deepcopy
@@ -163,7 +163,7 @@ class Negascout(object):
         if self.time_end - self.time_start > self.time_rem:
             raise TimeOut
 
-        opponent = Board.get_opp_piece_type(colour)
+        opponent = DepreciatedBoard.get_opp_piece_type(colour)
         original_alpha = alpha
         dic = {self.player: 1, self.opponent: -1}
 

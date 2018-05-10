@@ -1,5 +1,5 @@
 from Constants import constant
-from BoardOOP.Board import Board
+from WatchYourBack.Board import Board
 from Agents.NegamaxTranspositionTable import Negamax
 from ActionBook.ActionBook import ActionBook
 # from Agents.GreedyAlphaBeta import GreedyAlphaBetaMinimax

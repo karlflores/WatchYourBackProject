@@ -1,4 +1,4 @@
-from Board.Board import Board
+from DepreciatedBoard.Board import Board
 from copy import deepcopy
 from Player import Player as rand_player
 from Player_AB_LRU import Player as ab_player

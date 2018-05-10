@@ -1,5 +1,5 @@
 from Constants import constant
-from BoardOOP.Piece import Piece
+from WatchYourBack.Piece import Piece
 from Evaluation.FeaturesOOP import Features
 from Error_Handling.Errors import *
 from copy import copy

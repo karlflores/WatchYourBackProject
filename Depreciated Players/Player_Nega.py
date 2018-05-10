@@ -1,5 +1,5 @@
 from Constants import constant
-from Board.Board import Board
+from DepreciatedBoard.Board import Board
 from Agents.Negamax import Negamax
 # from Agents.GreedyAlphaBeta import GreedyAlphaBetaMinimax
 

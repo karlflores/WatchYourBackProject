@@ -1,5 +1,5 @@
 from Agents.Minimax import MinimaxABUndo
-from Board.Board import Board
+from DepreciatedBoard.Board import Board
 from Constants import constant
 
 board = Board()

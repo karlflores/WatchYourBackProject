@@ -5,7 +5,7 @@
 from math import inf
 from Agents.Minimax_Node import Node, UndoNode
 from Constants import constant
-from Board.Board import Board
+from DepreciatedBoard.Board import Board
 from Evaluation.Policies import Evaluation
 from copy import deepcopy
 from time import time, sleep
@@ -115,7 +115,7 @@ class MinimaxAB(object):
             # if self.check_symmetry(child.board.board_state) is True:
                 # continue
             # make a new node for each available node -- this child is now the opposite colour
-            # child = M inimax.create_node(node.board, Board.get_opp_piece_type(node.colour), action)
+            # child = M inimax.create_node(node.board, DepreciatedBoard.get_opp_piece_type(node.colour), action)
 
             # get the minimax value for this node
             evaluate = max(evaluate, self.min_value(child, depth-1, alpha, beta))
@@ -386,7 +386,7 @@ class MinimaxABUndo(object):
 
         # loop through all available actions
         for action in available_actions:
-            child = self.create_node(Board.get_opp_piece_type(root.colour),action)
+            child = self.create_node(DepreciatedBoard.get_opp_piece_type(root.colour),action)
             # apply the action to the minimax board
             self.update_minimax_board(action,child)
 
@@ -966,7 +966,7 @@ class MinimaxUndo(object):
 
         # loop through all available actions
         for action in available_actions:
-            child = self.create_node(Board.get_opp_piece_type(root.colour),action)
+            child = self.create_node(DepreciatedBoard.get_opp_piece_type(root.colour),action)
             # apply the action to the minimax board
             self.update_minimax_board(action,child)
 

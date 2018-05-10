@@ -1,5 +1,5 @@
 from Constants import constant
-from BoardOOP.Board import Board
+from WatchYourBack.Board import Board
 from Error_Handling.Errors import *
 
 class Player:

@@ -7,6 +7,9 @@ Our program can be split up into four main parts:
     3. The search strategy
     4. Evaluation function
 
+In terms of the files used in our submission, the structure is as follows:
+    >
+
 ### 1.1 The board/board rules
 * We decided to implement the board game using two main classes -- Board and Piece.
 

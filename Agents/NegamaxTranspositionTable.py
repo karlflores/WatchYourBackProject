@@ -4,7 +4,7 @@
 '''
 from math import inf
 from Constants import constant
-from BoardOOP.Board import Board
+from WatchYourBack.Board import Board
 from Evaluation.Policies import Evaluation
 from Data_Structures.Transposition_Table import TranspositionTable
 from copy import deepcopy

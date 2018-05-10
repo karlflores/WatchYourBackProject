@@ -1,4 +1,4 @@
-from Board import Board
+from DepreciatedBoard import Board
 from Part_A import constant
 
 board = Board()
