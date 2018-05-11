@@ -68,6 +68,7 @@ class ActionBook(object):
 
         if board_str in self.action_book_start:
             # return the move corresponding to the state
+            # print("NOT REFLECTION")
             return self.action_book_start[board_str]
 
         # check for symmetries -- we will only check for horizontal symmetries
@@ -80,7 +81,8 @@ class ActionBook(object):
             col,row = action
 
             # (0,1) --> (0,6) or (4,3) -> (4,4) ...
-            return col, 7 - row
+            # print("REFLECTION")
+            return 7 - col, row
 
         return None
 

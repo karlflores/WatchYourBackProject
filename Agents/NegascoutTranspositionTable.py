@@ -65,7 +65,11 @@ class Negascout(object):
         self.time_start = 0
         self.time_end = 0
         self.total_time = 0
-        self.evaluation = Evaluation("./XML","/eval_weights")
+        # load the evaluation function based on the colour of the player
+        if self.player == constant.WHITE_PIECE:
+            self.evaluation = Evaluation("./XML","/white_weights")
+        else:
+            self.evaluation = Evaluation("./XML","/black_weights")
 
     '''
     * Alpha Beta - Minimax Driver Function 

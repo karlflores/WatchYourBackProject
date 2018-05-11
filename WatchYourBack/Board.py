@@ -292,7 +292,7 @@ class Board(object):
             entry = {pos: False}
             self.free_squares.update(entry)
         except IllegalPlacement:
-            print("Piece created at illegal position on board")
+            print("Piece created at illegal position on board : " + str(pos))
             traceback.print_exc(file=sys.stdout)
             exit(0)
             return
@@ -1131,7 +1131,7 @@ class Board(object):
 
             # if an action is able to capture a piece then we need to increase the weight of this action
             if Features.can_action_capture(self,action,colour) is True:
-                weights[i] += 2500
+                weights[i] += 10500
 
             # if an action is going to self eliminate itself then we need to decrease the weight of this action
             if Features.check_self_elimination(self,action,colour) is True:
@@ -1139,7 +1139,7 @@ class Board(object):
 
             # if a piece is able to surround an enemy piece increase the weight
             if Features.can_action_surround(self,action,colour) is True:
-                weights[i] += 550
+                weights[i] += 300
 
             # if a piece is able to form a cluster then this is a good move to make
             if Features.can_form_cluster(self,action,colour) is True:
@@ -1147,17 +1147,31 @@ class Board(object):
 
             # is a middle square free -- if it is this should be one of the first moves we should try
             if Features.occupy_middle(self,action,colour) is True:
-                weights[i] += 1000
+                # if we are the second player, it may not be the best to go for the middle therefore we need to
+                # decrease the weight if we are the black player
+                if colour == constant.WHITE_PIECE:
+                    weights[i] += 1000
+                else:
+                    weights[i] += 500
 
             # if we are already in a middle square we don't really want to move this piece
             if self.phase == constant.MOVING_PHASE:
                 if Features.in_middle(self, action) is True:
-                    weights[i] -= 450
+                    weights[i] -= 700
 
             # if we can form a pattern that guarantees us a capture, then this move has more importance than
             # other moves
             if Features.form_elim_pattern(self, action, colour) is True:
-                weights[i] += 650
+                weights[i] += 800
+
+            # if the colour is black we should check if we are placing in a vulnerable position -- these actions
+            # are not desired as it means we can easily be taken -- we care about this more when we are
+            # the black piece as we have to play more defensively
+            if Features.check_vulnerable_action(self, action, colour) is True:
+                if colour == constant.WHITE_PIECE:
+                    weights[i] -= 350
+                else:
+                    weights[i] -= 450
 
         return [action for _, action in sorted(zip(weights,actions), reverse=True)]
 

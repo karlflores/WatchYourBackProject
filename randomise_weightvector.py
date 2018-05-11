@@ -5,8 +5,31 @@ from random import randint
 
 # weights = [1000, 300, 5, -100, 300, 2000, 100,220,550, 50, 5000, 3000]
 weights = []
-for i in range(12):
-    weights.append(randint(-100,100))
+# diff_pieces,
+weights.append(randint(0,150))
+# dist_cent,
+weights.append(randint(0,100))
+# num_vulnerable,
+weights.append(randint(0,100))
+# self_surrounded,
+weights.append(randint(-100,0))
+# opp_surrounded,
+weights.append(randint(0,80))
+# middle_occupy,
+weights.append(randint(0,200))
+# num_cluster,
+weights.append(randint(0,150))
+# edge_vuln,
+weights.append(randint(0,100))
+# next_to_corner,
+weights.append(randint(0,90))
+# sum_min_man_dist,
+weights.append(randint(0,40))
+# diff_elim_pattern,
+weights.append(randint(0,80))
+# diff_root_pieces
+weights.append(randint(0,100))
+
 test = xml_helper("./XML","/randomise")
 test.save(weights)
 w = test.load()

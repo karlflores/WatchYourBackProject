@@ -55,8 +55,11 @@ class Negamax(object):
         self.time_end = 0
         self.total_time = 0
 
-        # evaluation weight loading
-        self.evaluation = Evaluation("./XML",file_name)
+        # load the evaluation function based on the colour of the player
+        if self.player == constant.WHITE_PIECE:
+            self.evaluation = Evaluation("./XML", "/white_weights")
+        else:
+            self.evaluation = Evaluation("./XML", "/black_weights")
 
     '''
     Iterative Deepening Negamax 

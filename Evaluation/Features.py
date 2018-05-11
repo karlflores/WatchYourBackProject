@@ -379,8 +379,8 @@ class Features(object):
         # count the number of edge pieces
         for i in range(board.min_dim,board.max_dim+1):
 
-            left_edge = (board.min_dim,i)
-            right_edge = (board.max_dim,i)
+            left_edge = (board.min_dim, i)
+            right_edge = (board.max_dim, i)
             top_edge = (i,board.min_dim)
             bottom_edge = (i,board.max_dim)
 
@@ -411,14 +411,14 @@ class Features(object):
     def diff_edge_vulnerable(board,colour):
         opponent = board.get_opp_piece_type(colour)
         if board.phase == constant.MOVING_PHASE:
-            if 100 < board.move_counter < 128:
+            if 95 < board.move_counter < 128:
                 # double the weight of any enemy players because we don't want to return zero if we have our pieces
                 # at the edges
-                return Features.edge_vulnerable_pieces(board,opponent) - 2*Features.edge_vulnerable_pieces(board,colour)
-
-            if 160 < board.move_counter < 192:
-                return Features.edge_vulnerable_pieces(board,opponent) - 2*Features.edge_vulnerable_pieces(board,colour)
-
+                # return Features.edge_vulnerable_pieces(board,opponent) - Features.edge_vulnerable_pieces(board,colour)
+                return Features.edge_vulnerable_pieces(board,colour)
+            if 155 < board.move_counter < 192:
+                # return Features.edge_vulnerable_pieces(board,opponent) - Features.edge_vulnerable_pieces(board,colour)
+                return Features.edge_vulnerable_pieces(board,colour)
             # if we are not near the shrink we do no care about this
             return 0
 
@@ -685,4 +685,33 @@ class Features(object):
 
         return num_vulnerable
 
+    # this method checks if a piece being placed is vulternable or not
+    # a piece is vulnerable if it has an opposition piece adjacent to it, and then a free sqaure directly
+    # on the other side ... i.e. X B W  <---------- X is the free sqaure (black can be attacked from the left side)
+    @staticmethod
+    def check_vulnerable_action(board, action, colour):
+        if colour == constant.WHITE_PIECE:
+            opposition_pieces = board.black_pieces
+        else:
+            opposition_pieces = board.white_pieces
 
+        if board.phase == constant.PLACEMENT_PHASE:
+            (col, row) = action
+        else:
+            (col, row) = board.convert_direction_to_coord(action[0], action[1])
+
+        # check horizontal vulnerability
+        if board.check_free_square((col - 1, row)) and (col + 1, row) in opposition_pieces:
+            return True
+
+        elif board.check_free_square((col - 1, row)) and (col + 1, row) in opposition_pieces:
+            return True
+
+        # check vertical vulnerability of a piece
+        if board.check_free_square((col, row - 1)) and (col, row + 1) in opposition_pieces:
+            return True
+
+        elif board.check_free_square((col, row + 1)) and (col, row -1) in opposition_pieces:
+            return True
+
+        return False
