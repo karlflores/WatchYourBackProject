@@ -27,7 +27,7 @@ class Evaluation(object):
     # return the policy vector -- this was designed this way such that we could have easily applied machine learning
     # the policy vector is just a vector containing the evaluation of each individual feature of the board-state
     @staticmethod
-    def return_policy_vector(board,colour,available_moves):
+    def return_policy_vector(board,colour, available_moves):
         # find the values of each of the features
 
         # get the opponent colour
@@ -48,17 +48,15 @@ class Evaluation(object):
         # Index 6
         num_cluster = Features.cluster_exists(board,colour)
 
-        # Index 7 -- minimise our total minimum distance to the opponent pieces such that we remain somewhat offensive
-        sum_min_man_dist = Features.total_min_man_dist(board, colour)
-        # Index 8 -- Minimise the number of vulnerable pieces we have on the edge of the board, but max the opponents
+        # Index 7 -- Minimise the number of vulnerable pieces we have on the edge of the board, but max the opponents
         edge_vuln = Features.diff_edge_vulnerable(board, colour)
-        # Index 9 -- We want to minimise our places next to the corner but maximise the opponents pieces at a corner
+        # Index 8 -- We want to minimise our places next to the corner but maximise the opponents pieces at a corner
         next_to_corner = Features.place_next_to_corner(board, opponent) - Features.place_next_to_corner(board, colour)
-        # Index 10 -- We want to maxmimse the number of patterns we have compared to the number of patters the
+        # Index 9 -- We want to maxmimse the number of patterns we have compared to the number of patters the
         # opponent has
         diff_elim_pattern = Features.check_elim_pattern(board,colour) - Features.check_elim_pattern(board, opponent)
 
-        # Index 11 -- We want to minimise the difference in pieces between the root node and the current depth we
+        # Index 10 -- We want to minimise the difference in pieces between the root node and the current depth we
         # are evaluating at -- we want to reduce the amount of pieces that we loose from the root
         # take the difference between opponent and current player -- we want to maximise the eliminations of the
         # opponent
@@ -67,7 +65,7 @@ class Evaluation(object):
 
         # return the policy vectors with the features in the right index
         return diff_pieces, dist_cent, num_vulnerable, self_surrounded, opp_surrounded, middle_occupy, num_cluster, \
-            edge_vuln, next_to_corner, sum_min_man_dist, diff_elim_pattern, diff_root_pieces
+            edge_vuln, next_to_corner, diff_elim_pattern, diff_root_pieces
 
     # get the dot product between the weight and policy vectors -- this is the evaluation value
     @staticmethod

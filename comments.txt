@@ -40,6 +40,10 @@ In terms of the files used in our submission, the structure is as follows:
 			      |__ Class that helps us save, load and update weights for the
 			   	  evaluation function. This was intended to be used with
 				  Machine Learning.
+		> black_weights.xml
+				  |__ Evaluation weights for the black player
+		> white_weights.xml
+				  |__ Evaluation weights for the white player
 	> Player_Negamax.py
 			  |__ Our final player submission.
 ```
@@ -75,17 +79,19 @@ submission are as follows:
 
 
 
-### 1.1 The board/board rules
-* We decided to implement the board game using two main classes -- Board and Piece.
+### 1.1 Watch Your Back Implementation
+
+* We decided to implement Watch Your Back using two main classes -- Board.py and Piece.py.
 
 #### Piece.py
 
 * The Piece class models the behaviour that a piece (black or white) on the board. This class implements several methods that govern how the piece is able to move on the board, and also stores if any neighbouring squares surrounding itself is FREE. We store the neighbour "free" positions as a list, where the index represents the direction that that piece needs to take to occupy that square. This allows for constant time operation to find whether a neighbouring square is already occupied or not, and also allows us to update in constant time the occupancy state of this pieces neighbours. This approach allows us to efficiently allow us to generate the legal directions the piece can move by just checking whether the neighbours are free or not.
 
 #### Board.py
+
 * The Board class structure consists of a dictionary storing all the pieces on the board, a bytearray board representation that is use for the key in the Transposition Table data structure used in our search algorithms (more on this later...) and a dictionary that stores all FREE-spaces on the board during the placement phase. We decided to use a byte array to represent the board in string format as it allowed for the lightweight properties of a string, with constant time access to piece types but unlike a string, it was mutable. This allowed us to easily convert between a bytearray and a string using encode and decode methods. The byte array is only updated when we apply an action to the board or we undo an action from the board. For the board's purpose it allows an easy way to print the board. Dictionaries were used to store the pieces on the board as it allowed for average-case O(1) constant time access and checking, allowing for quick updates to the board.
 
-* The board class methods deal with the following features of the board game:
+The board class methods deal with the following features of the board game:
 
 	- Updating the board, which consisted of switching from placing to moving phases, shrinking the board and performing eliminations:
 
@@ -104,11 +110,11 @@ submission are as follows:
     	- The board class is also responsible for generating a list of legal actions such that our searching algorithm is able to search on the board. This method utilises the information of the state of the neighbouring squares of a piece.
         	- The sort actions method is able to take in a set of legal actions, and use a light evaluation function to sort those actions based on features of the game (more on this later...)
 
-- Most importantly, this Watch Your Back implementation also implements an undo_action method which takes in the action applied to the board and the list of eliminated pieces that resulted from applying that action. It then puts back all eliminated pieces on the board, undoes the action applied to the board and also updates the neighbouring square information of each "affected" piece from that action. By "affected piece" we mean pieces that have been eliminated, pieces that have been moved/placed and also neighbouring pieces of pieces that have been eliminated/moved/ placed on the board as well as neighbouring squares of newly-freed squares. By doing so we only update the attributes of pieces who have been affected by an action, thus eliminated any extra computation by not re-comupting any attributes of pieces that have been unaffected by an action. Furthermore, this undo_action method allows us to use the one board representation during the search thereby minimising any memory that we are using. This means we are able to store more information in the board structure as we are not deep-copying the board every time we explore a new path in a search.
+Most importantly, this Watch Your Back implementation also implements an undo_action method which takes in the action applied to the board and the list of eliminated pieces that resulted from applying that action. It then puts back all eliminated pieces on the board, undoes the action applied to the board and also updates the neighbouring square attributes of each "affected" piece from that action. By "affected piece" we mean pieces that have been eliminated, pieces that have been moved/placed and also neighbouring pieces of pieces that have been eliminated/moved/ placed on the board as well as neighbouring squares of newly-freed squares. By doing so we only update the attributes of pieces who have been affected by an action, thus eliminated any extra computation by not re-comupting any attributes of pieces that have been unaffected by an action. Furthermore, this undo_action method allows us to use the one board representation during the search thereby minimising any memory that we are using. This means we are able to store more information in the board structure as we are not deep-copying the board every time we explore a new path in a search.
 
-- Originally we were implementing the board using lists instead of dictionaries, and whenever we wanted to obtain a list of available actions it had to generate that list from scratch by looking if a square was empty or test if a piece was able to move in the each direction. Because accessing and testing membership in a list is an O(N) operation in the average case, whereas when using a dictionary accessing and testing membership is O(1) in the average case, there was a dramatic increase in speed when we compare the two models. Furthermore in the original board representation our undo function was quite a bit more complicated and used two seperate stacks to store the eliminated pieces (along with what turn they were eliminated on) and also the move applied to the game. When we wanted to undo an action, we just needed to pop the most recent element off the stack that corresponed to the most recent action and most recent eliminated pieces. Therefore this implementation required a bit more overhead in terms of memory but also because we were using more function calls to update and store these actions/pieces it did impact on the running time as well. There was one advantage to this implementation of the board is that we could do multiple undo-action calls in a row, where as with our current implementation it requires a list of eliminated pieces and the last move to be passed in.
+Originally we were implementing the board using lists instead of dictionaries (The depreciated board class), and whenever we wanted to obtain a list of available actions it had to generate that list from scratch by looking if a square was empty or test if a piece was able to move in the each direction. Because accessing and testing membership in a list is an O(N) operation in the average case, whereas when using a dictionary accessing and testing membership is O(1) in the average case, there was a dramatic increase in speed when we compare the two models. Furthermore in the original board representation our undo function was quite a bit more complicated and used two seperate stacks to store the eliminated pieces (along with what turn they were eliminated on) and also the move applied to the game. When we wanted to undo an action, we just needed to pop the most recent element off the stack that corresponded to the most recent action and most recent eliminated pieces. Therefore, this implementation required a bit more overhead in terms of memory but also because we were using more function calls to update and store these actions/pieces we think that it did impact on the running time as well. There was one advantage to this implementation of this board is that we could do multiple undo-action calls in a row, where as with our current implementation it requires a list of eliminated pieces and the last move to be passed in.
 
-Overall, because we did re-implement the board game using different data structures, we also did notice an increase in performance in negamax calls. We were able to reach depth 2 within 200ms compared to taking around ~1s to do so previously.
+Overall, because we did re-implement the board game using different data structures, we also did notice an increase in performance in negamax calls. We were able to reach depth 2 within 200ms compared to taking around ~1s to do so previously. Furthermore when playing a two bots who randomised their next action we noticed an increase in total time taken to complete the simulation from 0.07-0.08s to around 0.02-0.03s on average. This validated our decision to rewrite the board implementation to utilise more dictionaries instead of lists and to only update the pieces that were immediately affected by an applied action.
 
 ### 1.2 The player/s
 
@@ -163,13 +169,15 @@ To help prune more nodes in the tree we also implemented a transposition table i
 
 ```
 
-- By storing whether the minimax was an alpha, beta cut-off or an PV_node value we are able to either just return the best move/best minimax value from the table for any future serach (if the board state matches an entry), or it can update the values of alpha and beta based on whether the value stored in the transposition table was a beta or alpha cut-off value.
+- By storing whether the minimax was an alpha, beta cut-off or an PV_node value we are able to either just return the best move/best minimax value from the table for any future search (if the board state matches an entry), or it can update the values of alpha and beta based on whether the value stored in the transposition table was a beta or alpha cut-off value.
 
 - To maximise the use and efficiency of the table we incrementally fill up the table using iterative deepening search. When we increase the depth of search we always just try the best move that we have found so far to direct our search to deeper levels.
 
 - To reduce branching factor we also attempted to apply symmetries to the byte-array board representation. We did so by the following: when a symmetry was applied to a board representation we checked if the resultant board was in the transposition table. We originally tested for horizontal reflection in both placement and moving phases, and tested vertical, horizontal and rotation in the moving phases. We found that for most cases there was no point in testing for symmetries and reflections in the moving phases as through our simulations we found that it was very rare that we would be able to generate states that were symmetries of other states already in the table. Since the cost of applying a symmetry is O(n^2) and that we would be checking for symmetries at every state, that this was not worth it. We found that we were only finding symmetries in the first few moves of the board game, and hardly any, if any symmetries were found in the moving phase. We decided to not check for any symmetries when checking in the transposition table. The code supplied has the symmetry checking commented out. The relevant methods used for rotation, reflection are still provided.
 
 - We clear the transposition table after every call to find the next move in the placement phase of the game. This is to stop it from growing too big. In the placement phase we do not clear the table. From our tests, the table does not exceed the memory limits of the game when it is not cleared during the moving phase.
+
+- Through trial and error we found that it was only feasible to evaluate the placement phase to
 
 
 #### Other Search Algorithms That We Explored
@@ -184,9 +192,13 @@ The following describes the other algorithms that we have implemented and triale
 
 * Negascout / Principal variation search (PVS)
 
+- When we were researching optimisations that can applied to minimax/negamax one algorithm that came up was Negascout.  This algorithm works by assuming the first move you try when doing minimax/negamax is the best-move you have found so far. Therefore this algorithm only really works when you have an iterative deepening version of minimax/negamax such that you always try the best move you have found when you searched one layer less. When we try to search on the best move we found so far we assume that this move could also be the best move found at the current layer that we are iterating at. Therefore to validate this we can test each of the other nodes with a 'null window' (the alpha-beta window is of size 1) which is the equivalent to setting beta = -alpha-1 and alpha = -alpha. If the search fails (either above alpha or below beta) , then we can discard that move, but if the search actually succeed we have to do a full re-search using the original values of alpha and beta to find the actual best move.
+
+- This algorithm only really works if you have good move ordering. This works best with a transposition table which stores the best moves found so far through your search. For our application, we found that negascout did not improve our running time significantly, and that we could not actually get to a deeper depth in the same evaluation time compared to our implementation of negamax (with transposition tables and greedy move ordering). Therefore we chose not to use this in our final submission.
+
 * Monte Carlo Tree Search (MCTS.py)
 
-- Originally we thought that we would use monte carlo tree search as our algorithm for decision making. It works by creating a game-tree on the fly by randomly simulating games and calculating the resultant chance of winning the game by taking a particular action. The algorithm progresses in 4 distinct phases:
+- Originally we thought that we would use Monte Carlo Tree Search as our algorithm for decision making. It works by creating a game-tree on the fly by randomly simulating games and calculating the resultant chance of winning the game by taking a particular action. The algorithm progresses in 4 distinct phases:
 
 	1. Selection: Select the child node that looks the most promising according to a default policy. Here the policy used was the UCB1 (upper confidence bound 1) to select the most promising child node.
 	2. Expansion: Once we have selected the child node, we expand that child node by choosing a random action from that child's available actions to make. It creates a new node that corresponds to this action and adds it to this leaf nodes children list.
@@ -199,7 +211,7 @@ The following describes the other algorithms that we have implemented and triale
 
 - The bottleneck in this implementation we found to be the time it takes to simulate the game. When we were using our original board implementation, it took roughly 0.08s to simulate a game to terminal state, therefore 12 nodes were able to be created. This board game at the start has a branching factor of 46, therefore we were not able to create a game tree even to evaluate to one complete layer. Therefore effectively we were just choosing a random move to make. To try improve this, we tried to rewrite the original board implementation to take advantage of dictionaries and sets to update/access the board. By doing so we decreased the amount of time to simulate a game down to 0.04s on average. But this was still way too slow for the generation of decent game tree. Therefore, we stopped exploring this algorithm in favour for negamax and its variants.
 
-- We planned on implementing different rollouts of the game -- i.e. a minimax evaluation to a shallow depth vs a random player to help inform which moves are the best to make, but because the random simluation was taking too long, that we did not even bother with this since this would be taking much longer to evaluate. Maybe if we had 1 hour per move to evaluate we could generate a good enough game tree to inform decision, but sadly this is not feasible.
+- We planned on implementing different rollouts of the game -- i.e. a minimax evaluation to a shallow depth vs a random player to help inform which moves are the best to make, but because the random simulation was taking too long, that we did not even bother with this since this would be taking much longer to evaluate. Maybe if we had 1 hour per move to evaluate we could generate a good enough game tree to inform decision, but sadly this is not feasible.
 
 ### 1.4 Evaluation function
 
@@ -208,14 +220,19 @@ The following describes the other algorithms that we have implemented and triale
 - Our evaluation function works by returning two vectors that correspond to the number of features that we wish to evaluate. To get the evaluation value we just take the dot product between the weight vector for that function together with the resulting vector of the feature values for the board.
 
 - The features we have implemented in our evaluation are as follows:
-    1. The difference in the number of pieces on the board (EG. WHITE-BLACK)
-    2. Combined distance of all pieces to the centre of the board
+    	1. The difference in the number of pieces on the board (EG. WHITE-BLACK)
+    	2. Combined distance of all pieces to the centre of the board
 		- This is because we want to be closer to the centre due to the shrinking nature of the board
-	3. The difference in the number of actions a player can make
+	3. The number of our pieces that are vulnerable to being captures
+		- This is determined by having an opponent piece adjacent, then a free square that is
+	          in the sqaure directly opposite to the sqauare that is occupied by the opponent
+		```
+			- I.e. X B W  (where B is vulnerable to W due to the free square X)
+		```
 	4. If a piece is surrounded such that it cannot move without being eliminated by an enemy piece
-	5. If an enemy is surrounded such that it cannot move without being eliminated by our piece
+	5. If an enemy is surround such that it cannot move without being eliminated by our piece
 		- for 4,5 the patterns are shown the comments of the Features.py file
-	6. If we occupy the middle positions
+	6. If we occupy the middle position of the board -- this is good for us, we want to hold this position.
 	7. The number of clusters of pieces on the board -- this is defined as being a "block" of 4 pieces in a 2x2 format, therefore we count a 3x3 arrangement of pieces as being 4 contiguous overlapping clusters on the board.
 	8. Edge piece vulnerability -- If pieces are near an edge close to board shrinking, or if it is on a space where it would be eliminated due to board shrinking
 		- We try to move out of these situations when this is the case as we need to keep the maximum number of pieces alive
@@ -224,6 +241,7 @@ The following describes the other algorithms that we have implemented and triale
 	10. The sum of the minimum manhattan distances of our pieces to an opponent piece
 		- This is a value that represents how close our pieces are to the opponents. Later in the game we want to move our pieces as close as we can to the opponent pieces such that we can play are more offensive game such that we put ourselves in a position to capture them, if we are far away from the opponent we are not able to easily capture the opponet pieces. This function is only evaluated towards the end of the game.
 	11. The difference number of patterns between the two players, of pieces on the board that correspond to guaranteed captures. These specific patters are shown in the comments of the Features.py file.
+	12. The difference in the number of pieces at the current depth that we are evaluating at vs the number of pieces we have in the root board state -- this is a measure of the number of pieces that could be eliminated
 
 
 #### ACTION EVALUATION FUNCTION FOR GREEDY/NAIVE MOVE ORDERING
@@ -239,6 +257,8 @@ The following describes the other algorithms that we have implemented and triale
 	8. If, in the moving phase we move one of the middle pieces -- ideally we do not want to do this as, therefore we decrease the weight of that action if this occurs
 	9. If we are able to form a pattern that ensures that we can capture a piece on the next move -- i.e. does not matter where the opponent moves or places their piece, we can always capture a piece
 
+- Both the weights for the action evaluation function and the board state evaluation function were chosen empirically by playing both random bots, and also randomised weight vectors. ma
+
 #### Machine Learning:
 - We did not successfully implement machine learning to train the weights of our evaluation function as we ran out of time. We implemented the basis for TD-Leaf(Lambda) in the file Learning/Learners.py, although it has not been fully tested yet
 
@@ -253,16 +273,19 @@ The following describes the other algorithms that we have implemented and triale
 
 ### Other creative aspects
 
-- We implemented a simple GUI boardgame app to help visualise the game better -- App.py. This was implemented using tkinter and currently only supports visualising the turn by turn action of AI players. We planned on implementing a feature that allowed for human input such that we could verse our own AI, but we did not have any time to complete this.
+- We implemented a simple GUI board game app to help visualise the game better -- App.py. This was implemented using tkinter and currently only supports visualising the turn by turn action of AI players. We planned on implementing a feature that allowed for human input such that we could verse our own AI, but we did not have any time to complete this.
+
+- In order to try inform our selves of what are good weights for our evaluation function we wrote a small script that randomised the weights assigned to the weight vector (randomise_weightvector.py). In order to apply this weight function to an agent we copied our final agent to a new file called Player_weights.py and modified it such that it asks for input of the file name of the xml file that stores the weights. Note the xml file must be stored in the XML folder, and the filename as to be in the form '/file_name' (e.g. '/randomise' or '/eval_weights'). This allowed us to randomise weights and apply it to an agent very easily.
 
 - Included in this submission are all the depreciated classes that have been created along the way to reach our final agent below is a description of all of these classes:
-(NOTE: Many of these classes no longer work due to changes in board.py as we implemented other features)
+(NOTE: Many of these classes no longer work due to changes in board.py as we implemented other features -- if we ever needed to evaluate the old board implementation we could always revert to a previous commit as all changes for this project was stored in GIT.)
+
 	* DepreciatedBoard:
 		- Board.py -- The original board implementation using lists to store piece positions
 		- GameBoard_Dict.py -- An edit of the above Board.py that changed the lists to dictionaries. This did not produce a significant increase in speed up partly because we were still using quite a lot of lists and also generating actions from scatch each time. We decided to go for a more object orient approach to the board game by splitting it up into a Piece class and Board class in the final submission which ended up being more efficient in terms of action generation, accessing and testing membership of pieces.
 		- WYB_Bitboard.py -- We planned on implementing watch your back using a bitboard to see if there was going to be any benefits to run time from this data structure. Bitboards allow for parallelised bitwise computation and allows for very efficent action generation and board evaluation. We did not have any time to implement this, but it would have been good to do so.
 
-	> DepreciatedPlayers: All these players are designed to work with the depreciated Board.py file
+	* DepreciatedPlayers: All these players are designed to work with the depreciated Board.py file
 		- Manual_Player.py -- Broken manual input player that worked with the old board representation
 		- Player.py -- Player that chooses random moves
 		- Player_AB.py -- This player implemented alpha-beta minimax search with no optimisations
@@ -271,14 +294,16 @@ The following describes the other algorithms that we have implemented and triale
 		- Player_Nega.py -- Negamax implementation for the first board implementation
 		- Player_Negascout.py -- First Negascout implementation with the old board implementation
 
-	> Agents/DepreciatedClasses (these are all the classes that work with the old Board.py file)
+	* Agents/DepreciatedClasses (these are all the classes that work with the old Board.py file)
 		- AlphaBetaOptimised.py -- Class that uses the built in LRU cache with AlphaBeta to try an improve performance.
 		- GreedyAlphaBeta.py -- Class that implemented move ordering using sorting and also the LRU cache for move ordering -- this did not work as intended, and I am pretty sure in its current state, it does not work with the depreciated board implementation.
 		- GreedyNegamax.py -- Class that implemented negamax together with the transposition table and greedy move ordering and selection. This is equivalent to the final submission class, but this only works with the old implementation.
 		- Minimax.py -- The starting point of our algorithm development. It implemented basic minimax and alpha beta minimax as well as a minimax with undo-moves vs a minimax that deep-copies each board state. This lead us to choosing to have an undo-actions method as it reduced our search time to reach depth 3 and also decreased the memory it required.
 		- Minimax_Node.py -- this is the node structure for the old minimax search that deep-copies the board representation.
 		- Negamax.py, Negamax_TT.py, NegaScout_TT.py -- Equivalent to the versions that work with the submitted board implementation, but these classes only work with the old board implementation. These classes were used to compare the performance of the submitted board implementation vs the old implementation.
-	> Features
+
+	* Evaluation:
+		- FeaturesDepreciated -- This class of features only works with the depreciated board implementation. This does not work with the submitted implementation
 
 
 

@@ -60,6 +60,7 @@ class ActionBook(object):
         action_book.update({'X------X-------------------@@-------O-------OO----------X------X': (3, 2)})
         action_book.update({'X------X------------O------O--------@-------------------X------X': (2, 4)})
         action_book.update({'X------X------------O------O-O------@-------------------X------X': (2, 4)})
+        action_book.update({'X------X-----------O-------@--------O-------------------X------X': (3, 5)})
 
         self.action_book_start = action_book
 
