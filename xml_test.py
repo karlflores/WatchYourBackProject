@@ -8,7 +8,7 @@ from XML.xml_helper import xml_helper
 # edge_vuln, next_to_corner, sum_min_man_dist, diff_elim_pattern, diff_root_pieces
 
 # weights = [1000, 300, 5, -100, 300, 2000, 100,220,550, 50, 5000, 3000]
-weights = [300, 80, 95, -50, 60, 170, -90, 95, 80, 10, 50, 90]
+weights = [300, 80, 95, -50, 60, 170, -90, 95, 80, 10, 50, 80]
 # weights = [100,0,0,0,0,0,0,0,0,0,0,0]
 test = xml_helper("./XML","/white_weights")
 test.save(weights)
