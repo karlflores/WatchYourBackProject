@@ -61,6 +61,8 @@ class Negamax(object):
 
         self.evaluation = Evaluation("./XML","/eval_weights")
 
+
+
     '''
     * Alpha Beta - Minimax Driver Function 
     '''
@@ -71,7 +73,9 @@ class Negamax(object):
         #if self.board.phase == constant.PLACEMENT_PHASE:
         self.tt.clear()
 
-        MAX_ITER = 10
+        # update the root number of pieces every time we do a search on a new node
+        self.board.root_num_black = len(self.board.black_pieces)
+        self.board.root_num_white = len(self.board.white_pieces)
 
         # default policy
         available_actions = self.board.update_actions(self.player)

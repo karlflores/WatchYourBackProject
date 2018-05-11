@@ -16,6 +16,7 @@ FOR COMPARISON
 
 '''
 
+
 class Negamax(object):
 
     def __init__(self, board, colour, file_name):
@@ -76,6 +77,10 @@ class Negamax(object):
             MAX_ITER = 5
         else:
             MAX_ITER = 11
+
+        # update the root number of pieces every time we do a search on a new node
+        self.board.root_num_black = len(self.board.black_pieces)
+        self.board.root_num_white = len(self.board.white_pieces)
 
         # default policy
         available_actions = self.board.update_actions(self.player)
@@ -222,10 +227,10 @@ class Negamax(object):
         i = 0
         # split the list of actions into favourable and unfavourable actions
         # we only consider to search teh favourable actions if the action list is long enough
-        if len(actions) <= 10:
+        if len(actions) <= 12:
             favourable = actions
-        elif 10 < len(actions) < 16:
-            favourable = actions[:10]
+        elif 12 < len(actions) < 20:
+            favourable = actions[:12]
         else:
             favourable = actions[:len(actions)//2]
 
@@ -233,6 +238,7 @@ class Negamax(object):
         # the aim is to reduce the branching factor as much as we can, but also having enough moves to
         # evaluate such that we get the part of the optimality decision making  from negamax/minimax
         # rather than a purely greedy approach.
+        # print(len(favourable))
         for action in favourable:
 
             # skip over the best action in the tt table -- this action has already be searched

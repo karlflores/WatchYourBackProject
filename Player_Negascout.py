@@ -55,6 +55,11 @@ class Player:
 
         # find the best move
         best_move = self.minimax.itr_negascout()
+        # if the best move we have found so far is a Forfeit -- return this
+        if best_move is None:
+            self.board.update_board(best_move, self.colour)
+            self.minimax.update_board(self.board)
+            return None
 
         self.depth_eval = self.minimax.eval_depth
         self.minimax_val = self.minimax.minimax_val

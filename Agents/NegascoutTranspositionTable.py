@@ -76,30 +76,26 @@ class Negascout(object):
         # clear the transposition table every time we make a new move -- this is to ensure that it doesn't grow too big
         # if self.board.phase == constant.MOVING_PHASE and self.board.move_counter == 0:
         if self.board.phase == constant.PLACEMENT_PHASE:
+            # clear the transposition table every time we want to evaluate a move in placement phase
+            # this is to limit the size of growth
             self.tt.clear()
 
+            # set the max depth iterations based on the phase that we are in
+            MAX_ITER = 5
+        else:
+            MAX_ITER = 11
 
-        MAX_ITER = 20
+        # update the root number of pieces every time we do a search on a new node
+        self.board.root_num_black = len(self.board.black_pieces)
+        self.board.root_num_white = len(self.board.white_pieces)
 
         # default policy
         available_actions = self.board.update_actions(colour)
         action_set = set(available_actions)
-        # self.actions_leftover = self.board.update_actions(self.board, self.player)
 
         if len(available_actions) == 0:
             return None
-        #else:
-            # lets just set the default to the first move
-        #    move = available_actions[0]
 
-        # time allocated per move in ms
-        '''
-        self.time_alloc = 0
-        if self.board.phase == constant.PLACEMENT_PHASE:
-            self.time_alloc = (30000 - self.time_alloc) / (24 - self.board.move_counter)
-        else:
-            self.time_alloc = (30000 - self.time_alloc) / (100 - self.board.move_counter)
-        '''
         if self.board.phase == constant.PLACEMENT_PHASE:
             self.time_alloc = 1500
         else:
@@ -113,12 +109,11 @@ class Negascout(object):
                 if self.board.move_counter > 150:
                     self.time_alloc = 150
 
-
-        start_time = Negascout.curr_millisecond_time()
         best_depth = 1
         val, move = 0, None
         best_move = None
         self.time_rem = self.time_alloc
+
         # iterative deepening begins here
         for depth in range(1, MAX_ITER):
             print(self.tt.size)
@@ -218,8 +213,10 @@ class Negascout(object):
             actions = [move_to_try] + actions
 
         i = 0
-        if len(actions) <= 10:
+        if len(actions) <= 12:
             favourable = actions
+        elif 12 < len(actions) < 20:
+            favourable = actions[:12]
         else:
             favourable = actions[:len(actions)//2]
         # print(len(actions))
@@ -304,7 +301,6 @@ class Negascout(object):
     '''
 
     def evaluate_state(self, board, colour, actions):
-        #return Evaluation.basic_policy(board,colour)
         return self.evaluation.evaluate(board, colour, actions)
 
     # update the available moves of the search algorithm after it has been instantiated

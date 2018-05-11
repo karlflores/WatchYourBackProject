@@ -73,6 +73,10 @@ class Board(object):
         # define the board parameters and constants
         self.board_state = self.init_board_rep()
 
+        # the number of pieces at the current state -- this is not updated in minimax search
+        self.root_num_black = 0
+        self.root_num_white = 0
+
     @staticmethod
     def init_board_rep():
         # store the board representation as a byte_array length 64 (64bytes)
@@ -93,6 +97,13 @@ class Board(object):
 
                 self.free_squares.update(entry)
 
+    # check if a square is free or not
+    def check_free_square(self,pos):
+        if pos in self.free_squares:
+            return self.free_squares[pos]
+
+        # if the position is not in the free_squares dictionary -- then it is not free
+        return False
 # string_array helper methods
     @staticmethod
     def get_array_element(byte_array,row,col):
@@ -1095,6 +1106,11 @@ class Board(object):
         # iterating + sorting + reconstructing -- nlog(n) + 2n : this is not good enough
         weights = [0]*len(actions)
         MAX_DIST = 14
+
+        '''
+        ACTION- EVALUATION FUNCTION 
+        '''
+
         for i, action in enumerate(actions):
             # get the min manhattan distance of a piece -- if the distance is large we want to append a small value --
                 # max distance will be 14
@@ -1102,46 +1118,46 @@ class Board(object):
             if self.phase == constant.PLACEMENT_PHASE:
                 # we minus the distance because if we are further away from the centre, it is less ideal than being
                 #  close to the centre
-                weights[i] -= Features.dist_to_center(action) * 5
+                weights[i] -= Features.dist_to_center(action) * 50
 
                 # at the start of the game we want to place our pieces close to the opponent, but the weighting
                 # is not as high as in the moving phase as we don't necessarily want to evaluate actions that
                 # closer to the center of the board
-                weights[i] += (MAX_DIST - Features.min_manhattan_dist(self, action, colour)) * 5
+                weights[i] += (MAX_DIST - Features.min_manhattan_dist(self, action, colour)) * 10
             else:
                 pos = self.convert_direction_to_coord(action[0],action[1])
-                weights[i] -= Features.dist_to_center(pos) * 5
+                weights[i] -= Features.dist_to_center(pos) * 50
                 weights[i] += (MAX_DIST - Features.min_manhattan_dist(self, action, colour)) * 25
 
             # if an action is able to capture a piece then we need to increase the weight of this action
             if Features.can_action_capture(self,action,colour) is True:
-                weights[i] += 10000
+                weights[i] += 2500
 
             # if an action is going to self eliminate itself then we need to decrease the weight of this action
             if Features.check_self_elimination(self,action,colour) is True:
-                weights[i] -= 5000
+                weights[i] -= 4000
 
             # if a piece is able to surround an enemy piece increase the weight
             if Features.can_action_surround(self,action,colour) is True:
-                weights[i] += 50
+                weights[i] += 550
 
             # if a piece is able to form a cluster then this is a good move to make
             if Features.can_form_cluster(self,action,colour) is True:
-                weights[i] += 500
+                weights[i] += 750
 
             # is a middle square free -- if it is this should be one of the first moves we should try
             if Features.occupy_middle(self,action,colour) is True:
-                weights[i] += 5000
+                weights[i] += 1000
 
             # if we are already in a middle square we don't really want to move this piece
             if self.phase == constant.MOVING_PHASE:
                 if Features.in_middle(self, action) is True:
-                    weights[i] -= 250
+                    weights[i] -= 450
 
             # if we can form a pattern that guarantees us a capture, then this move has more importance than
             # other moves
             if Features.form_elim_pattern(self, action, colour) is True:
-                weights[i] += 31000
+                weights[i] += 650
 
         return [action for _, action in sorted(zip(weights,actions), reverse=True)]
 

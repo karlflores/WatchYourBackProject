@@ -11,7 +11,7 @@ THIS PLAYER IMPLEMENTS THE FOLLOWING TO INFORM ITSELF ON WHAT MOVE TO MAKE NEXT:
     - NEGAMAX WITH TRANSPOSITION TABLE AS ITS MAIN SEARCH STRATEGY
     - GREEDY MOVE ORDERING USING A LIGHT EVALUATION FUNCTION AND SELECTION OF THE BEST MOVES TO COMPLETE THE 
       SEARCH ON 
-    - MOVE ORDERING USING THE TRANSPOSITION TABLE IN MINIMAX -- WE TRY THE BEST MOVE FOUND SO FAR AT EARLIER 
+    - MOVE ORDERING USING THE TRANSPOSITION TABLE IN NEGAMAX -- WE TRY THE BEST MOVE FOUND SO FAR AT EARLIER 
       DEPTH ITERATIONS FIRST, BECAUSE CHANCES ARE, THIS MOVE MAY BE THE BEST MOVE FOR THE NEXT DEPTH AS WELL 
     - AN OPENING BOOK OF MOVES TO CUT DOWN SEARCH TIME AT THE START OF THE GAME WHERE THERE ARE POSITIONS THAT
       WE SHOULDN'T NEED TO SEARCH ON. 
@@ -105,7 +105,10 @@ class Player:
         else:
             # if we are in moving phase, return the correctly formatted positions
             if best_move is None:
+                self.board.update_board(best_move, self.colour)
+                self.minimax.update_board(self.board)
                 return None
+
             new_pos = Board.convert_direction_to_coord(best_move[0], best_move[1])
             self.board.update_board(best_move, self.colour)
             self.minimax.update_board(self.board)
@@ -164,14 +167,14 @@ class Player:
         for i, pos in enumerate(middle):
             if pos in my_pieces:
                 occupy_middle += 1
-            elif pos in self.board.free_squares:
+            # if there is a free square record where this square is
+            elif self.board.check_free_square(pos):
                 free_index = i
                 print(free_index)
 
         # if we have 3 pieces in the middle and also there is a free square, just return the location
         # of that free square -- this is where we should place our piece
         if occupy_middle == 3 and free_index > -1:
-            print(middle[free_index])
             return middle[free_index]
 
         # if it is not safe to occupy the middle, then don't do it -- we will need to do a minimax search to find

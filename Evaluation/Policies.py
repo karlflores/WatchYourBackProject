@@ -30,7 +30,9 @@ class Evaluation(object):
         # Index 1
         dist_cent = Features.total_dist_to_center(board, colour)
         # Index 2
-        num_actions = Features.num_actions(available_moves)
+        # num_actions = Features.num_actions(available_moves)
+        # we want to minimise the number of vulnerable pieces we have
+        num_vulnerable = Features.num_vulnerable_pieces(board, colour)
         # Index 3
         self_surrounded = Features.check_board_surrounded_my_piece(board,colour)
         # Index 4
@@ -45,14 +47,19 @@ class Evaluation(object):
         # Index 8 -- Minimise the number of vulnerable pieces we have on the edge of the board, but max the opponents
         edge_vuln = Features.diff_edge_vulnerable(board, colour)
         # Index 9 -- We want to minimise our places next to the corner but maximise the opponents pieces at a corner
-        next_to_corner = Features.place_next_to_corner(board,opponent) - Features.place_next_to_corner(board, colour)
+        next_to_corner = Features.place_next_to_corner(board,opponent) - 2*Features.place_next_to_corner(board, colour)
         # Index 10 -- We want to maxmimse the number of patterns we have compared to the number of patters the
         # opponent has
         diff_elim_pattern = Features.check_elim_pattern(board,colour) - Features.check_elim_pattern(board, opponent)
 
+        # Index 11 -- We want to minimise the difference in pieces between the root node and the current depth we
+        # are evaluating at -- we want to reduce the amount of pieces that we loose from the root
+        diff_root_pieces = Features.diff_pieces_from_root(board,colour)
+        # sprint(diff_root_pieces)
+
         # return the policy vectors with the features in the right index
-        return diff_pieces, dist_cent, num_actions, self_surrounded, opp_surrounded, middle_occupy, num_cluster, \
-            edge_vuln, next_to_corner, sum_min_man_dist, diff_elim_pattern
+        return diff_pieces, dist_cent, num_vulnerable, self_surrounded, opp_surrounded, middle_occupy, num_cluster, \
+            edge_vuln, next_to_corner, sum_min_man_dist, diff_elim_pattern, diff_root_pieces
 
     # get the dot product between the weight and policy vectors -- this is the evaluation value
     @staticmethod
@@ -77,8 +84,9 @@ class Evaluation(object):
             return self.dot_prod(self.weights, policy_vector)
         else:
             # diff_pieces, dist_cent, num_actions, self_surrounded, opp_surrounded, middle_occupy, num_cluster,
-            # edge_vuln, next_to_corner, sum_min_man_dist
-            self.weights = [1000, 50, 5, -100, 300, 2000, 500,220,550, 50, 5000]
+            # edge_vuln, next_to_corner, sum_min_man_dist, diff_elim_pattern, diff_root_pieces
+            self.weights = [1000, 500, 5, -100, 300, 2000, 100, 700, 550, 50, 500, 350]
+            # self.weights = [100, 80, 5, -50, 60, 150, 130, 95, 80, 45, 50, 90]
 
             # to get the evaluation value -- we just need to do the dot product betweeen the policy vector
             # and the weight vector

@@ -27,8 +27,9 @@ class Player:
         # each players internal board representation
         self.board = Board()
 
+        file_name = input("Enter File Name: ")
         # set up the minimax search strategy -- NEGAMAX
-        self.minimax = Negamax(self.board, self.colour, "/eval_weights2")
+        self.minimax = Negamax(self.board, self.colour, file_name)
 
         # set the colour of the opponent
         self.opponent = self.board.get_opp_piece_type(self.colour)
